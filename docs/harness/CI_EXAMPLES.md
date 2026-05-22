@@ -1,0 +1,83 @@
+# CI 예시
+
+## 로컬 Makefile 진입점
+
+CI와 같은 스크립트를 로컬에서 점검할 때는 `Makefile`을 사용할 수 있다.
+
+```bash
+make verify
+HARNESS_INTEGRATION_TEST_SCRIPT='scripts/ci/integration-test.sh' make verify-org
+make eval
+```
+
+
+
+조직 표준에서는 구조 검증과 실제 프로젝트 게이트를 분리해서 실행한다. 대형 조직에서는 임의 문자열 명령(`HARNESS_*_CMD`)보다 repository script(`HARNESS_*_SCRIPT`)를 우선한다.
+
+## GitHub Actions
+
+```yaml
+name: harness-verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify harness structure
+        run: |
+          HARNESS_VERIFY_MODE=project \
+          bash scripts/verify-harness-structure.sh
+
+      - name: Verify organization gates
+        run: |
+          HARNESS_VERIFY_MODE=project \
+          HARNESS_ORG_STANDARD=1 \
+          HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
+          HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' \
+          HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT='scripts/ci/primary-frontend-test.sh' \
+          HARNESS_SECURITY_SCAN_SCRIPT='scripts/ci/security-scan.sh' \
+          bash scripts/verify-harness-structure.sh
+```
+
+## 권장 repository script 예시
+
+```bash
+# scripts/ci/backend-test.sh
+#!/usr/bin/env bash
+set -euo pipefail
+./gradlew test
+```
+
+```bash
+# scripts/ci/security-scan.sh
+#!/usr/bin/env bash
+set -euo pipefail
+npm audit --audit-level=high
+```
+
+## 명령 실행 정책
+
+권장:
+
+- `HARNESS_*_SCRIPT`에 `scripts/ci/*.sh`, `.github/scripts/*.sh`, `ci/*.sh` 아래의 실행 가능한 파일을 지정한다.
+- 조직 표준 CI에서는 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`을 설정해 gate 설정이 maintainer-controlled임을 명시한다.
+- workflow와 `scripts/ci/**` 변경은 code-owner/branch protection으로 리뷰 필수 처리한다.
+
+Legacy:
+
+- `HARNESS_*_CMD`는 `bash -lc`로 실행되는 legacy escape hatch다.
+- 조직 표준에서 `HARNESS_*_CMD`를 쓰려면 `HARNESS_ALLOW_LEGACY_BASH_LC=1`과 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`을 모두 설정해야 한다.
+- 외부 입력, PR/issue 본문, 사용자 입력을 `HARNESS_*_CMD`에 연결하지 않는다.
+
+금지:
+
+- secret/token/key를 출력하는 명령을 gate로 등록
+- 외부 contributor가 임의로 수정 가능한 값으로 gate 구성
+- PR 본문 또는 issue 본문에서 명령 문자열을 읽어 실행

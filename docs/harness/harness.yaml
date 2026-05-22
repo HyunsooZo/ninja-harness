@@ -1,0 +1,214 @@
+project:
+  name: 범용 개발 하네스
+  maintainer: <project-maintainer>
+  workspace_root: <workspace-root>
+  mode: korean-strict-tdd-with-baseline-context
+
+repositories:
+  backend:
+    path: <backend-dir>
+    stack: <backend-stack-and-runtime>
+  primary_frontend:
+    path: <primary-frontend-dir>
+    stack: <primary-frontend-stack-and-runtime>
+  secondary_app:
+    path: <secondary-app-dir>
+    stack: <secondary-app-stack-and-runtime>
+
+source_of_truth:
+  entry:
+    - AGENTS.md
+    - docs/harness/context/BASELINE.md
+    - docs/harness/context/INDEX.md
+    - docs/harness/README.md
+    - docs/harness/QUICKSTART_5_MIN.md
+  harness:
+    - docs/harness/00_AGENT_BRIEF.md
+    - docs/harness/01_BACKEND.md
+    - docs/harness/02_PRIMARY_FRONTEND.md
+    - docs/harness/03_SECONDARY_APP.md
+    - docs/harness/04_INTEGRATION.md
+    - docs/harness/05_TESTING.md
+    - docs/harness/07_DESIGN_SYSTEM.md
+    - docs/harness/08_HARNESS_AUDIT.md
+    - docs/harness/09_EVIDENCE_GATE.md
+    - docs/harness/10_BACKEND_QUALITY_GATE.md
+    - docs/harness/11_PARALLEL_AGENT_GATE.md
+    - docs/harness/12_FIELD_VALIDATION.md
+    - docs/harness/13_AGENT_ORCHESTRATION.md
+    - docs/harness/ORG_ROLLOUT.md
+    - docs/harness/CI_EXAMPLES.md
+    - docs/harness/profiles/project-profile.md
+    - docs/harness/profiles/design-system-profile.md
+  skills:
+    repo_source: .agents/skills
+    claude_mirror: .claude/skills
+    sync_script: scripts/sync-skills.sh
+    require_mirror_match: true
+  state:
+    active_plans: docs/harness/plans/active
+    completed_plans: docs/harness/plans/completed
+    current_context: docs/harness/context
+    baseline: docs/harness/context/BASELINE.md
+    decisions: docs/harness/context/DECISIONS.md
+    context_index: docs/harness/context/INDEX.md
+    generated_context: docs/harness/context/generated
+
+workflow:
+  default:
+    - triage
+    - plan
+    - spec
+    - red
+    - green
+    - refactor
+    - verify
+    - review
+    - complete
+  trivial_allowed_without_plan: true
+  non_trivial_requires_active_plan: true
+  optional_project_gates: true
+  orchestration_default_mode: SINGLE_AGENT
+  orchestration_requires_active_plan_when_split: true
+
+rules:
+  tdd:
+    require_red_before_product_edit: true
+    require_green_before_refactor: true
+    require_verify_before_done: true
+    exception_requires_rationale: true
+  scope:
+    edit_only_requested_files_or_direct_dependencies: true
+    avoid_unrelated_refactor: true
+    avoid_unrequested_library: true
+  frontend:
+    require_i18n_for_visible_copy: true
+    forbid_inline_style: true
+    prefer_existing_style_tokens: true
+    forbid_external_ui_library_without_approval: true
+  backend:
+    keep_layer_boundary: true
+    validate_resource_scoped_auth: true
+    avoid_sensitive_response_leak: true
+    require_ddd_boundary_review: true
+    require_transaction_boundary_review: true
+    require_oop_solid_review: true
+    split_domain_and_persistence_agents: true
+  integration:
+    review_api_auth_resource_pagination_changes: true
+  commits:
+    require_explicit_user_request: true
+  project_gates:
+    enabled_by_env: HARNESS_RUN_PROJECT_CHECKS
+    script: scripts/verify-project-gates.sh
+    preferred_scripts:
+      backend: HARNESS_BACKEND_TEST_SCRIPT
+      primary_frontend: HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT
+      secondary_app: HARNESS_SECONDARY_APP_TEST_SCRIPT
+      integration: HARNESS_INTEGRATION_TEST_SCRIPT
+      security: HARNESS_SECURITY_SCAN_SCRIPT
+      accessibility: HARNESS_A11Y_CHECK_SCRIPT
+    legacy_commands:
+      backend: HARNESS_BACKEND_TEST_CMD
+      primary_frontend: HARNESS_PRIMARY_FRONTEND_TEST_CMD
+      secondary_app: HARNESS_SECONDARY_APP_TEST_CMD
+      integration: HARNESS_INTEGRATION_TEST_CMD
+      security: HARNESS_SECURITY_SCAN_CMD
+      accessibility: HARNESS_A11Y_CHECK_CMD
+    org_standard_requires_ack: HARNESS_ACK_TRUSTED_PROJECT_CMDS
+    legacy_bash_lc_opt_in: HARNESS_ALLOW_LEGACY_BASH_LC
+
+  context:
+    default_load_full_scan: false
+    full_scan_is_generated_artifact: true
+    prefer_baseline_and_recent_completed_plan: true
+    generated_scan_dir: docs/harness/context/generated
+    baseline: docs/harness/context/BASELINE.md
+    decisions: docs/harness/context/DECISIONS.md
+
+review_gates:
+  backend_auth_or_security:
+    - backend-security-reviewer
+    - integration-reviewer
+  api_contract:
+    - integration-reviewer
+    - test-automation-reviewer
+  primary_frontend_ui:
+    - primary-frontend-style-a11y-reviewer
+    - content-i18n-reviewer
+  secondary_app:
+    - secondary-app-runtime-ux-reviewer
+    - integration-reviewer
+  orchestration:
+    - task-orchestrator
+  backend_domain_persistence_split:
+    - task-orchestrator
+    - backend-domain-modeler
+    - backend-persistence-implementer
+    - backend-application-implementer
+  final_quality:
+    - quality-reviewer
+
+agent_orchestration:
+  default_mode: SINGLE_AGENT
+  orchestrator_agent: task-orchestrator
+  orchestration_skill: orchestration-planning
+  allow_single_agent_for_small_changes: true
+  require_active_plan_for_split_delegation: true
+  require_common_decisions_when_split: true
+  require_single_integrator: true
+  modes:
+    - SINGLE_AGENT
+    - SINGLE_AGENT_WITH_REVIEW
+    - SEQUENTIAL_LAYERED
+    - PARALLEL_INVESTIGATION
+    - PARALLEL_REVIEW
+    - PARALLEL_IMPLEMENT
+  backend_layer_order:
+    - task-orchestrator
+    - backend-domain-modeler
+    - backend-application-implementer
+    - backend-persistence-implementer
+    - backend-db-migration-implementer
+    - backend-api-implementer
+    - test-automation-reviewer
+    - integration-reviewer
+    - quality-reviewer
+
+parallel_agents:
+  default_mode: SEQUENTIAL
+  prefer_parallel_review: true
+  allow_parallel_implementation: conditional
+  require_parallelization_check: true
+  require_single_integration_coordinator: true
+  forbid_overlapping_file_edits: true
+  forbid_shared_transaction_boundary_edits: true
+  forbid_shared_migration_schema_edits: true
+  require_verify_after_fan_in: true
+  allow_backend_domain_persistence_parallelism: conditional
+
+
+organization:
+  rollout_guide: docs/harness/ORG_ROLLOUT.md
+  ci_examples: docs/harness/CI_EXAMPLES.md
+  governance: docs/harness/GOVERNANCE.md
+  security_policy: docs/harness/SECURITY_POLICY.md
+  adoption_scorecard: docs/harness/ADOPTION_SCORECARD.md
+  org_standard_flag: HARNESS_ORG_STANDARD
+  eval_scripts:
+    - scripts/collect-eval-metrics.sh
+    - scripts/check-completed-plan-quality.sh
+
+
+runtime:
+  codex_agent_model: gpt-5.5
+  codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL
+  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.
+
+owned_api_contract_impact:
+  policy_doc: docs/harness/04_INTEGRATION.md
+  required_plan_block: API 계약 영향도
+  router_agent: task-orchestrator
+  router_skill: integration-contract
+  frontend_to_backend_check: true
+  backend_to_frontend_search: true
