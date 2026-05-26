@@ -16,6 +16,11 @@ make eval
 
 ## GitHub Actions
 
+배포 템플릿은 활성 workflow를 직접 포함하지 않는다. 예시는
+`docs/harness/examples/github-actions/harness-verify.yml`에 두고, 실제
+프로젝트에서 `scripts/ci/**` gate script를 만든 뒤 `.github/workflows/`로
+복사해 사용한다.
+
 ```yaml
 name: harness-verify
 

@@ -48,6 +48,7 @@ VERIFY_MODE="$VERIFY_MODE" python3 - <<'PY'
 from pathlib import Path
 import os
 import re
+import sys
 
 try:
     import tomllib  # Python 3.11+
@@ -61,55 +62,67 @@ mode = os.environ.get('VERIFY_MODE', 'template')
 root = Path('.')
 text_file_suffixes = {'.md','.toml','.yaml','.yml','.json','.sh'}
 
+def fail(message: str) -> None:
+    raise SystemExit(f'[FAIL] {message}')
+
+def check(condition: bool, message: str) -> None:
+    if not condition:
+        fail(message)
+
+check(not sys.flags.optimize, 'Python optimization mode is not supported for harness verification; unset PYTHONOPTIMIZE and do not run python with -O')
+
 # Retired duplicate core docs must stay merged into their source documents.
 retired_docs = [
     root/'docs/harness/06_PROJECT_BASELINE.md',
     root/'docs/harness/12_CONTEXT_LOADING_RULE.md',
 ]
-assert not any(p.exists() for p in retired_docs), f'retired duplicate docs must not exist: {[str(p) for p in retired_docs if p.exists()]}'
+check(not any(p.exists() for p in retired_docs), f'retired duplicate docs must not exist: {[str(p) for p in retired_docs if p.exists()]}')
 
 
 # Makefile should provide one stable local/CI entry point for common harness tasks.
 makefile = root/'Makefile'
 make_text = makefile.read_text(encoding='utf-8')
 for target in ['help','doctor','verify','verify-template','verify-project','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
-    assert re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}'
+    check(re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}')
 for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
-    assert token in make_text, f'Makefile missing command/policy token: {token}'
+    check(token in make_text, f'Makefile missing command/policy token: {token}')
 for gate_var in ['HARNESS_BACKEND_TEST_SCRIPT','HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT','HARNESS_SECONDARY_APP_TEST_SCRIPT','HARNESS_INTEGRATION_TEST_SCRIPT','HARNESS_SECURITY_SCAN_SCRIPT','HARNESS_A11Y_CHECK_SCRIPT']:
-    assert gate_var in make_text, f'Makefile verify-org must recognize gate variable: {gate_var}'
-assert 'HARNESS_*_SCRIPT' in make_text, 'Makefile help must mention script-based organization gates'
-assert 'legacy HARNESS_*_CMD strings' in make_text, 'Makefile must frame legacy command gates as non-primary'
-assert 'HARNESS_*_CMD strings' in make_text and 'Makefile 진입점에서 안내하지 않는다' not in make_text, 'Makefile policy should be explicit in Makefile, not only docs'
+    check(gate_var in make_text, f'Makefile verify-org must recognize gate variable: {gate_var}')
+check('HARNESS_*_SCRIPT' in make_text, 'Makefile help must mention script-based organization gates')
+check('legacy HARNESS_*_CMD strings' in make_text, 'Makefile must frame legacy command gates as non-primary')
+check('HARNESS_*_CMD strings' in make_text and 'Makefile 진입점에서 안내하지 않는다' not in make_text, 'Makefile policy should be explicit in Makefile, not only docs')
 
 # No local OS/editor artifacts in package.
 ds_store = sorted(str(p) for p in root.rglob('.DS_Store'))
-assert not ds_store, f'.DS_Store files must be removed: {ds_store}'
+check(not ds_store, f'.DS_Store files must be removed: {ds_store}')
 apple_double = sorted(str(p) for p in root.rglob('._*'))
-assert not apple_double, f'AppleDouble files must be removed: {apple_double}'
+check(not apple_double, f'AppleDouble files must be removed: {apple_double}')
 macosx_dirs = sorted(str(p) for p in root.rglob('__MACOSX') if p.is_dir())
-assert not macosx_dirs, f'__MACOSX directories must be removed: {macosx_dirs}'
-assert not (root/'.claude/settings.local.json').exists(), '.claude/settings.local.json must not be distributed'
-assert not (root/'.codex/skills').exists(), '.codex/skills is retired; use .agents/skills as skill source of truth'
+check(not macosx_dirs, f'__MACOSX directories must be removed: {macosx_dirs}')
+check(not (root/'.claude/settings.local.json').exists(), '.claude/settings.local.json must not be distributed')
+check(not (root/'.codex/skills').exists(), '.codex/skills is retired; use .agents/skills as skill source of truth')
+workflow_dir = root/'.github/workflows'
+active_example_workflows = sorted(str(p) for p in workflow_dir.glob('*.example.y*ml')) if workflow_dir.exists() else []
+check(not active_example_workflows, f'GitHub Actions example workflows must live outside .github/workflows: {active_example_workflows}')
 # Distribution packages must not include always-success temporary gate scripts.
 for forbidden_gate in [root/'scripts/ci/__tmp-ok.sh']:
-    assert not forbidden_gate.exists(), f'temporary/dummy project gate script must not be distributed: {forbidden_gate}'
+    check(not forbidden_gate.exists(), f'temporary/dummy project gate script must not be distributed: {forbidden_gate}')
 for p in root.rglob('*'):
     if p.is_file() and p.name.startswith('__tmp-') and p.suffix == '.sh':
-        raise AssertionError(f'temporary shell script must not be distributed: {p}')
+        fail(f'temporary shell script must not be distributed: {p}')
 
 # Codex agent TOML validation.
 agents = sorted((root/'.codex/agents').glob('*.toml'))
 claude_agents = sorted((root/'.claude/agents').glob('*.md'))
 codex_names = {p.stem for p in agents}
 claude_names = {p.stem for p in claude_agents}
-assert codex_names == claude_names, f'codex/claude agent set mismatch: codex_only={sorted(codex_names-claude_names)}, claude_only={sorted(claude_names-codex_names)}'
+check(codex_names == claude_names, f'codex/claude agent set mismatch: codex_only={sorted(codex_names-claude_names)}, claude_only={sorted(claude_names-codex_names)}')
 
 def parse_claude_agent(path: Path):
     text = path.read_text(encoding='utf-8')
     frontmatter = {}
     match = re.match(r'^---\n(?P<body>.*?)\n---\n(?P<rest>.*)$', text, re.S)
-    assert match, f'missing frontmatter: {path}'
+    check(match, f'missing frontmatter: {path}')
     for line in match.group('body').splitlines():
         if ':' in line:
             key, value = line.split(':', 1)
@@ -134,40 +147,40 @@ expected_model = os.environ.get('HARNESS_EXPECTED_CODEX_MODEL') or (model_match.
 
 for p in agents:
     data = tomllib.loads(p.read_text(encoding='utf-8'))
-    assert data.get('name'), f'missing name: {p}'
-    assert data.get('model') == expected_model, f'model must be {expected_model}: {p}'
-    assert 'developer_instructions' in data, f'missing developer_instructions: {p}'
+    check(data.get('name'), f'missing name: {p}')
+    check(data.get('model') == expected_model, f'model must be {expected_model}: {p}')
+    check('developer_instructions' in data, f'missing developer_instructions: {p}')
     claude_path = root/'.claude/agents'/f'{p.stem}.md'
     frontmatter, claude_body = parse_claude_agent(claude_path)
     claude_frontmatters[p.stem] = frontmatter
-    assert frontmatter.get('name') == data.get('name'), f'agent name mismatch: {p} vs {claude_path}'
-    assert frontmatter.get('description') == data.get('description'), f'agent description mismatch: {p} vs {claude_path}'
+    check(frontmatter.get('name') == data.get('name'), f'agent name mismatch: {p} vs {claude_path}')
+    check(frontmatter.get('description') == data.get('description'), f'agent description mismatch: {p} vs {claude_path}')
     codex_body = data.get('developer_instructions', '').strip()
     codex_body = re.sub(r'\n{3,}', '\n\n', codex_body)
-    assert codex_body == claude_body, f'agent body mirror drift: {p} vs {claude_path}'
+    check(codex_body == claude_body, f'agent body mirror drift: {p} vs {claude_path}')
     if p.stem.endswith('reviewer'):
-        assert data.get('sandbox_mode') == 'read-only', f'reviewer must be read-only sandbox: {p}'
-        assert '읽기 전용 안전 계약' in data.get('developer_instructions', ''), f'missing read-only contract: {p}'
+        check(data.get('sandbox_mode') == 'read-only', f'reviewer must be read-only sandbox: {p}')
+        check('읽기 전용 안전 계약' in data.get('developer_instructions', ''), f'missing read-only contract: {p}')
     else:
-        assert data.get('sandbox_mode') != 'read-only', f'implementer should not be read-only: {p}'
+        check(data.get('sandbox_mode') != 'read-only', f'implementer should not be read-only: {p}')
 
 # Claude reviewer safety contract validation.
 for p in sorted((root/'.claude/agents').glob('*reviewer.md')):
     text = p.read_text(encoding='utf-8')
-    assert '읽기 전용 안전 계약' in text, f'missing read-only contract: {p}'
+    check('읽기 전용 안전 계약' in text, f'missing read-only contract: {p}')
 
 # Claude subagent tool/skill frontmatter validation.
 for name, frontmatter in sorted(claude_frontmatters.items()):
     tools = parse_frontmatter_list(frontmatter.get('tools', ''))
     skills = parse_frontmatter_list(frontmatter.get('skills', ''))
-    assert tools, f'missing Claude agent tools allowlist: .claude/agents/{name}.md'
-    assert skills, f'missing Claude agent skills preload: .claude/agents/{name}.md'
+    check(tools, f'missing Claude agent tools allowlist: .claude/agents/{name}.md')
+    check(skills, f'missing Claude agent skills preload: .claude/agents/{name}.md')
     if name.endswith('reviewer'):
         unsafe = {'Write', 'Edit', 'MultiEdit', 'Bash'}
-        assert not (tools & unsafe), f'reviewer has unsafe tools {sorted(tools & unsafe)}: .claude/agents/{name}.md'
-        assert tools <= {'Read', 'Grep', 'Glob'}, f'reviewer tools must stay read-only: .claude/agents/{name}.md -> {sorted(tools)}'
+        check(not (tools & unsafe), f'reviewer has unsafe tools {sorted(tools & unsafe)}: .claude/agents/{name}.md')
+        check(tools <= {'Read', 'Grep', 'Glob'}, f'reviewer tools must stay read-only: .claude/agents/{name}.md -> {sorted(tools)}')
     else:
-        assert {'Read', 'Grep', 'Glob'} <= tools, f'implementer missing base read tools: .claude/agents/{name}.md'
+        check({'Read', 'Grep', 'Glob'} <= tools, f'implementer missing base read tools: .claude/agents/{name}.md')
 
 print('[OK] codex agent TOML valid')
 print(f'[OK] codex agents: {len(agents)}')
@@ -176,12 +189,12 @@ print(f'[OK] claude agents: {len(claude_agents)}')
 # OpenAI/Codex repo skills are the source of truth; Claude skills are generated native mirrors.
 codex_skill_dirs = {p.parent.name: p.parent for p in (root/'.agents/skills').glob('*/SKILL.md')}
 claude_skill_dirs = {p.parent.name: p.parent for p in (root/'.claude/skills').glob('*/SKILL.md')}
-assert codex_skill_dirs, 'missing repo skills'
-assert codex_skill_dirs.keys() == claude_skill_dirs.keys(), (
+check(codex_skill_dirs, 'missing repo skills')
+check(codex_skill_dirs.keys() == claude_skill_dirs.keys(), (
     f'repo/claude skill set mismatch: '
     f'codex_only={sorted(codex_skill_dirs.keys()-claude_skill_dirs.keys())}, '
     f'claude_only={sorted(claude_skill_dirs.keys()-codex_skill_dirs.keys())}'
-)
+))
 
 ignored_names = {'.DS_Store'}
 def file_bytes(path: Path) -> bytes:
@@ -191,33 +204,33 @@ for name, codex_dir in sorted(codex_skill_dirs.items()):
     claude_dir = claude_skill_dirs[name]
     codex_files = {p.relative_to(codex_dir) for p in codex_dir.rglob('*') if p.is_file() and p.name not in ignored_names and not p.name.startswith('._')}
     claude_files = {p.relative_to(claude_dir) for p in claude_dir.rglob('*') if p.is_file() and p.name not in ignored_names and not p.name.startswith('._')}
-    assert codex_files == claude_files, f'skill mirror file set drift: {name}: codex_only={sorted(map(str, codex_files-claude_files))}, claude_only={sorted(map(str, claude_files-codex_files))}'
+    check(codex_files == claude_files, f'skill mirror file set drift: {name}: codex_only={sorted(map(str, codex_files-claude_files))}, claude_only={sorted(map(str, claude_files-codex_files))}')
     for rel in sorted(codex_files):
-        assert file_bytes(codex_dir/rel) == file_bytes(claude_dir/rel), f'skill mirror content drift: {name}/{rel}'
+        check(file_bytes(codex_dir/rel) == file_bytes(claude_dir/rel), f'skill mirror content drift: {name}/{rel}')
 
 # Skill frontmatter descriptions should be trigger-oriented, not generic.
 for name, skill_dir in sorted(codex_skill_dirs.items()):
     skill_text = (skill_dir/'SKILL.md').read_text(encoding='utf-8')
     m = re.search(r'^description:\s*(.+)$', skill_text, flags=re.M)
-    assert m, f'missing skill description: {skill_dir}/SKILL.md'
+    check(m, f'missing skill description: {skill_dir}/SKILL.md')
     desc = m.group(1).strip()
-    assert '기준을 적용한다' not in desc, f'skill description too generic: {skill_dir}/SKILL.md'
-    assert len(desc) >= 50, f'skill description should include trigger words: {skill_dir}/SKILL.md'
+    check('기준을 적용한다' not in desc, f'skill description too generic: {skill_dir}/SKILL.md')
+    check(len(desc) >= 50, f'skill description should include trigger words: {skill_dir}/SKILL.md')
 
 # Claude agent preloaded skills should exist in source skill set.
 all_skill_names = set(codex_skill_dirs)
 for name, frontmatter in sorted(claude_frontmatters.items()):
     declared = parse_frontmatter_list(frontmatter.get('skills', ''))
     missing = declared - all_skill_names
-    assert not missing, f'Claude agent declares missing skills {sorted(missing)}: .claude/agents/{name}.md'
+    check(not missing, f'Claude agent declares missing skills {sorted(missing)}: .claude/agents/{name}.md')
 
 sync_script = root/'scripts/sync-skills.sh'
-assert os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable'
+check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
-assert os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable'
+check(os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable')
 for script_name in ['collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'set-codex-agent-model.sh']:
     script_path = root/'scripts'/script_name
-    assert os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable'
+    check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
 print(f'[OK] claude skills: {len(claude_skill_dirs)}')
@@ -226,17 +239,17 @@ print('[OK] repo/claude skill mirrors verified')
 # Claude command set validation.
 expected_commands = {'start', 'plan', 'red', 'green', 'refactor', 'verify', 'review', 'complete'}
 actual_commands = {p.stem for p in (root/'.claude/commands').glob('*.md')}
-assert actual_commands == expected_commands, f'claude command mismatch: expected={sorted(expected_commands)}, actual={sorted(actual_commands)}'
+check(actual_commands == expected_commands, f'claude command mismatch: expected={sorted(expected_commands)}, actual={sorted(actual_commands)}')
 
 # No root generated 전체 스캔.
-assert not (root/'PROJECT_CONTEXT_SCAN.md').exists(), 'PROJECT_CONTEXT_SCAN.md must not be stored at root'
+check(not (root/'PROJECT_CONTEXT_SCAN.md').exists(), 'PROJECT_CONTEXT_SCAN.md must not be stored at root')
 
 # PROJECT_CONTEXT_SCAN references must call it 생성 산출물 or basic context exclusion.
 for p in root.rglob('*'):
     if p.is_file() and p.suffix in text_file_suffixes:
         text = p.read_text(encoding='utf-8', errors='ignore')
         if 'PROJECT_CONTEXT_SCAN.md' in text and '생성 산출물' not in text and 'generated/PROJECT_CONTEXT_SCAN.generated.md' not in text and '기본 컨텍스트' not in text:
-            raise AssertionError(f'unexpected PROJECT_CONTEXT_SCAN.md reference: {p}')
+            fail(f'unexpected PROJECT_CONTEXT_SCAN.md reference: {p}')
 
 # Generic harness files must not leak one target project's actor, stack, API prefix,
 # package root, or design-token values.
@@ -302,7 +315,7 @@ for scan_root in leak_scan_roots:
             if match:
                 leaks.append(f'{p}: {label}: {match.group(0)!r}')
                 break
-assert not leaks, f'프로젝트별 leakage in generic harness files (mode={mode}):\n' + '\n'.join(leaks)
+check(not leaks, f'프로젝트별 leakage in generic harness files (mode={mode}):\n' + '\n'.join(leaks))
 
 # Placeholder must not be used as an agent/skill file name.
 # Path placeholders like cd <secondary-app-dir> are allowed, but placeholder-derived agent names are not.
@@ -313,7 +326,8 @@ for p in root.rglob('*'):
     if p.is_file() and p.suffix in text_file_suffixes:
         text = p.read_text(encoding='utf-8', errors='ignore')
         match = bad_placeholder_ref.search(text)
-        assert not match, f'unresolved placeholder-derived name {match.group(0)!r}: {p}'
+        if match:
+            fail(f'unresolved placeholder-derived name {match.group(0)!r}: {p}')
 
 # Referenced Codex agents/skills in routing docs should exist.
 agent_names = {p.stem for p in (root/'.codex/agents').glob('*.toml')}
@@ -321,33 +335,33 @@ skill_names = {p.parent.name for p in (root/'.agents/skills').glob('*/SKILL.md')
 for doc in [root/'AGENTS.md', root/'docs/harness/skill-routing.md', root/'docs/harness/harness.yaml']:
     text = doc.read_text(encoding='utf-8')
     for ref in re.findall(r'`?\.codex/agents/([A-Za-z0-9_-]+)\.toml`?', text):
-        assert ref in agent_names, f'missing referenced codex agent {ref}: {doc}'
+        check(ref in agent_names, f'missing referenced codex agent {ref}: {doc}')
     for ref in re.findall(r'`?\.agents/skills/([A-Za-z0-9_-]+)/SKILL\.md`?', text):
-        assert ref in skill_names, f'missing referenced repo skill {ref}: {doc}'
+        check(ref in skill_names, f'missing referenced repo skill {ref}: {doc}')
     for ref in re.findall(r'`?\.claude/skills/([A-Za-z0-9_-]+)/SKILL\.md`?', text):
-        assert ref in claude_skill_dirs, f'missing referenced claude skill {ref}: {doc}'
+        check(ref in claude_skill_dirs, f'missing referenced claude skill {ref}: {doc}')
 
 # harness.yaml source_of_truth.entry must not contain duplicate lines.
 yaml_text = (root/'docs/harness/harness.yaml').read_text(encoding='utf-8')
 entry_match = re.search(r'source_of_truth:\n  entry:\n(?P<body>(?:    - .+\n)+)', yaml_text)
-assert entry_match, 'missing source_of_truth.entry'
+check(entry_match, 'missing source_of_truth.entry')
 entries = [line.strip()[2:].strip() for line in entry_match.group('body').splitlines() if line.strip().startswith('- ')]
-assert len(entries) == len(set(entries)), f'duplicate source_of_truth.entry: {entries}'
+check(len(entries) == len(set(entries)), f'duplicate source_of_truth.entry: {entries}')
 for ref in entries:
-    assert (root/ref).exists(), f'missing source_of_truth.entry path: {ref}'
+    check((root/ref).exists(), f'missing source_of_truth.entry path: {ref}')
 
 harness_match = re.search(r'  harness:\n(?P<body>(?:    - .+\n)+)', yaml_text)
-assert harness_match, 'missing source_of_truth.harness'
+check(harness_match, 'missing source_of_truth.harness')
 harness_refs = [line.strip()[2:].strip() for line in harness_match.group('body').splitlines() if line.strip().startswith('- ')]
-assert len(harness_refs) == len(set(harness_refs)), f'duplicate source_of_truth.harness: {harness_refs}'
+check(len(harness_refs) == len(set(harness_refs)), f'duplicate source_of_truth.harness: {harness_refs}')
 for ref in harness_refs:
-    assert (root/ref).exists(), f'missing source_of_truth.harness path: {ref}'
+    check((root/ref).exists(), f'missing source_of_truth.harness path: {ref}')
 
 skill_policy = re.search(r'  skills:\n(?P<body>(?:    .+\n)+)', yaml_text)
-assert skill_policy, 'missing source_of_truth.skills'
-assert 'repo_source: .agents/skills' in skill_policy.group('body'), 'missing repo skill source policy'
-assert 'claude_mirror: .claude/skills' in skill_policy.group('body'), 'missing claude skill mirror policy'
-assert 'sync_script: scripts/sync-skills.sh' in skill_policy.group('body'), 'missing skill sync script policy'
+check(skill_policy, 'missing source_of_truth.skills')
+check('repo_source: .agents/skills' in skill_policy.group('body'), 'missing repo skill source policy')
+check('claude_mirror: .claude/skills' in skill_policy.group('body'), 'missing claude skill mirror policy')
+check('sync_script: scripts/sync-skills.sh' in skill_policy.group('body'), 'missing skill sync script policy')
 
 print('[OK] reviewer safety verified')
 print('[OK] codex/claude agent mirrors verified')
@@ -358,114 +372,116 @@ print('[OK] routing references verified')
 print('[OK] source_of_truth entries verified')
 # Agent orchestration policy validation.
 orchestration_doc = root/'docs/harness/13_AGENT_ORCHESTRATION.md'
-assert orchestration_doc.exists(), 'missing docs/harness/13_AGENT_ORCHESTRATION.md'
+check(orchestration_doc.exists(), 'missing docs/harness/13_AGENT_ORCHESTRATION.md')
 orchestration_text = orchestration_doc.read_text(encoding='utf-8')
 for required in ['SINGLE_AGENT', 'SINGLE_AGENT_WITH_REVIEW', 'SEQUENTIAL_LAYERED', 'PARALLEL_REVIEW', '단일 통합자', '레이어별 에이전트는', 'task-orchestrator', 'fan-in', '큰 작업 감지 신호']:
-    assert required in orchestration_text, f'missing orchestration keyword: {required}'
-assert 'task-orchestrator' in agent_names, 'missing task-orchestrator codex agent'
-assert (root/'.claude/agents/task-orchestrator.md').exists(), 'missing task-orchestrator claude agent'
+    check(required in orchestration_text, f'missing orchestration keyword: {required}')
+check('task-orchestrator' in agent_names, 'missing task-orchestrator codex agent')
+check((root/'.claude/agents/task-orchestrator.md').exists(), 'missing task-orchestrator claude agent')
 for required_skill in ['orchestration-planning', 'backend-domain']:
-    assert required_skill in skill_names, f'missing required skill: {required_skill}'
-    assert required_skill in claude_skill_dirs, f'missing required Claude skill mirror: {required_skill}'
+    check(required_skill in skill_names, f'missing required skill: {required_skill}')
+    check(required_skill in claude_skill_dirs, f'missing required Claude skill mirror: {required_skill}')
 
 plan_template_text = (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding='utf-8')
-assert '## 에이전트 오케스트레이션' in plan_template_text, 'plan template must include agent orchestration block'
+check('## 에이전트 오케스트레이션' in plan_template_text, 'plan template must include agent orchestration block')
 for required in ['Orchestration', 'task-orchestrator', '수정 범위 이탈 확인']:
-    assert required in plan_template_text, f'plan template missing orchestration field: {required}'
+    check(required in plan_template_text, f'plan template missing orchestration field: {required}')
 
 plan_cmd_text = (root/'.claude/commands/plan.md').read_text(encoding='utf-8')
 for required in ['오케스트레이션 모드', 'task-orchestrator', '레이어 영향도', '통합 담당자']:
-    assert required in plan_cmd_text, f'/plan command missing orchestration requirement: {required}'
+    check(required in plan_cmd_text, f'/plan command missing orchestration requirement: {required}')
 
 executor_text = (root/'.agents/skills/executor/SKILL.md').read_text(encoding='utf-8')
 for required in ['13_AGENT_ORCHESTRATION.md', 'task-orchestrator', '에이전트 오케스트레이션']:
-    assert required in executor_text, f'executor skill missing orchestration requirement: {required}'
+    check(required in executor_text, f'executor skill missing orchestration requirement: {required}')
 
-assert 'agent_orchestration:' in yaml_text, 'harness.yaml missing agent_orchestration section'
+check('agent_orchestration:' in yaml_text, 'harness.yaml missing agent_orchestration section')
 for required in ['orchestrator_agent: task-orchestrator', 'orchestration_skill: orchestration-planning']:
-    assert required in yaml_text, f'harness.yaml missing orchestration policy: {required}'
-assert '13_AGENT_ORCHESTRATION.md' in (root/'AGENTS.md').read_text(encoding='utf-8'), 'AGENTS.md must route orchestration decisions'
-assert 'task-orchestrator' in (root/'AGENTS.md').read_text(encoding='utf-8'), 'AGENTS.md must name task-orchestrator'
-assert '13_AGENT_ORCHESTRATION.md' in (root/'CLAUDE.md').read_text(encoding='utf-8'), 'CLAUDE.md must route orchestration decisions'
-assert 'task-orchestrator' in (root/'CLAUDE.md').read_text(encoding='utf-8'), 'CLAUDE.md must name task-orchestrator'
+    check(required in yaml_text, f'harness.yaml missing orchestration policy: {required}')
+check('13_AGENT_ORCHESTRATION.md' in (root/'AGENTS.md').read_text(encoding='utf-8'), 'AGENTS.md must route orchestration decisions')
+check('task-orchestrator' in (root/'AGENTS.md').read_text(encoding='utf-8'), 'AGENTS.md must name task-orchestrator')
+check('13_AGENT_ORCHESTRATION.md' in (root/'CLAUDE.md').read_text(encoding='utf-8'), 'CLAUDE.md must route orchestration decisions')
+check('task-orchestrator' in (root/'CLAUDE.md').read_text(encoding='utf-8'), 'CLAUDE.md must name task-orchestrator')
 
 # Owned API contract impact policy validation.
 integration_text = (root/'docs/harness/04_INTEGRATION.md').read_text(encoding='utf-8')
 for required in ['Owned API Contract Impact Rule', '프론트엔드에서 API DTO', '백엔드에서 API 요청/응답', '프론트 호출부 검색어']:
-    assert required in integration_text or required in (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding='utf-8'), f'missing owned API contract impact rule: {required}'
+    check(required in integration_text or required in (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding='utf-8'), f'missing owned API contract impact rule: {required}')
 
 integration_skill_text = (root/'.agents/skills/integration-contract/SKILL.md').read_text(encoding='utf-8')
 for required in ['Owned API Contract Impact Rule', 'endpoint path', 'query key', 'hook/composable']:
-    assert required in integration_skill_text, f'integration-contract skill missing owned API check: {required}'
+    check(required in integration_skill_text, f'integration-contract skill missing owned API check: {required}')
 
 plan_text = (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding='utf-8')
 for required in ['## API 계약 영향도', '우리 백엔드 API 여부', '확인한 backend 파일/문서', '확인한 frontend 파일/검색 범위', '프론트 호출부 검색어']:
-    assert required in plan_text, f'plan template missing API impact field: {required}'
+    check(required in plan_text, f'plan template missing API impact field: {required}')
 
 for doc in ['docs/harness/01_BACKEND.md', 'docs/harness/02_PRIMARY_FRONTEND.md', 'docs/harness/03_SECONDARY_APP.md', 'docs/harness/13_AGENT_ORCHESTRATION.md', 'docs/harness/skill-routing.md']:
     text = (root/doc).read_text(encoding='utf-8')
-    assert 'Owned API' in text or 'API 계약 영향도' in text, f'{doc} missing owned API contract impact routing'
+    check('Owned API' in text or 'API 계약 영향도' in text, f'{doc} missing owned API contract impact routing')
 
-assert 'owned_api_contract_impact:' in yaml_text, 'harness.yaml missing owned_api_contract_impact section'
+check('owned_api_contract_impact:' in yaml_text, 'harness.yaml missing owned_api_contract_impact section')
 for required in ['frontend_to_backend_check: true', 'backend_to_frontend_search: true']:
-    assert required in yaml_text, f'harness.yaml missing owned API policy: {required}'
+    check(required in yaml_text, f'harness.yaml missing owned API policy: {required}')
 
 print('[OK] agent orchestration policy verified')
 print('[OK] owned API contract impact policy verified')
 
 # Organization standard polish validation.
-ci_example = (root/'.github/workflows/harness-verify.example.yml').read_text(encoding='utf-8')
-assert 'HARNESS_VERIFY_MODE=project \\' in ci_example, 'CI example should use readable multiline env assignment'
+ci_example_path = root/'docs/harness/examples/github-actions/harness-verify.yml'
+check(ci_example_path.exists(), f'missing GitHub Actions example: {ci_example_path}')
+ci_example = ci_example_path.read_text(encoding='utf-8')
+check('HARNESS_VERIFY_MODE=project \\' in ci_example, 'CI example should use readable multiline env assignment')
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
 for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD']:
-    assert required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}'
+    check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
 vpg_text = (root/'scripts/verify-project-gates.sh').read_text(encoding='utf-8')
 for required in ['SECURITY POLICY', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS', 'bash -lc']:
-    assert required in vpg_text, f'verify-project-gates missing trust policy: {required}'
+    check(required in vpg_text, f'verify-project-gates missing trust policy: {required}')
 for required in ['orchestration mode별 성공률', 'reviewer FAIL 사유 TOP 5', 'project gate 실패율']:
-    assert required in (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8'), f'eval metrics missing: {required}'
+    check(required in (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8'), f'eval metrics missing: {required}')
 for example in ['spring-boot-rest.md', 'node-nestjs.md']:
-    assert (root/'docs/harness/profiles/examples'/example).exists(), f'missing backend profile example: {example}'
+    check((root/'docs/harness/profiles/examples'/example).exists(), f'missing backend profile example: {example}')
 for example in ['react-next.md', 'vue-vite.md', 'frontend-testing.md']:
-    assert (root/'docs/harness/profiles/examples'/example).exists(), f'missing frontend profile example: {example}'
+    check((root/'docs/harness/profiles/examples'/example).exists(), f'missing frontend profile example: {example}')
 
 react_next_text = (root/'docs/harness/profiles/examples/react-next.md').read_text(encoding='utf-8')
 for token in ['Next.js Server / Client Component 기준', 'TanStack Query / React Query 기준', 'Storybook', 'Playwright', 'Owned API']:
-    assert token in react_next_text, f'react-next profile missing framework-specific guidance: {token}'
+    check(token in react_next_text, f'react-next profile missing framework-specific guidance: {token}')
 
 vue_vite_text = (root/'docs/harness/profiles/examples/vue-vite.md').read_text(encoding='utf-8')
 for token in ['Composition API 기준', 'Pinia / Store 기준', 'Router / Auth / Resource Scope 기준', 'Storybook/Histoire', 'Owned API']:
-    assert token in vue_vite_text, f'vue-vite profile missing framework-specific guidance: {token}'
+    check(token in vue_vite_text, f'vue-vite profile missing framework-specific guidance: {token}')
 
 frontend_testing_text = (root/'docs/harness/profiles/examples/frontend-testing.md').read_text(encoding='utf-8')
 for token in ['Test Pyramid 기준', 'Playwright 기준', 'Storybook / Visual Regression 기준', 'Testing Library / Component Test 기준', 'owned API fixture/mock 변경']:
-    assert token in frontend_testing_text, f'frontend-testing profile missing specific test guidance: {token}'
+    check(token in frontend_testing_text, f'frontend-testing profile missing specific test guidance: {token}')
 
 for doc in [root/'AGENTS.md', root/'CLAUDE.md']:
     doc_text = doc.read_text(encoding='utf-8')
-    assert 'HARNESS_*_SCRIPT' in doc_text, f'{doc} must prefer script-based project gates'
-    assert 'HARNESS_ALLOW_LEGACY_BASH_LC' in doc_text, f'{doc} must document legacy command opt-in'
+    check('HARNESS_*_SCRIPT' in doc_text, f'{doc} must prefer script-based project gates')
+    check('HARNESS_ALLOW_LEGACY_BASH_LC' in doc_text, f'{doc} must document legacy command opt-in')
     forbidden = [
         'HARNESS_*_CMD 환경변수를 설정해',
         'HARNESS_*_CMD 환경변수로 project gate를 실행한다',
     ]
     for phrase in forbidden:
-        assert phrase not in doc_text, f'{doc} still presents legacy command gate as primary: {phrase}'
+        check(phrase not in doc_text, f'{doc} still presents legacy command gate as primary: {phrase}')
 
 # Organization governance and safer project gate policy validation.
 org_docs = [root/'docs/harness/GOVERNANCE.md', root/'docs/harness/SECURITY_POLICY.md', root/'docs/harness/ADOPTION_SCORECARD.md']
 for doc in org_docs:
     text = doc.read_text(encoding='utf-8')
-    assert 'HARNESS_ACK_TRUSTED_PROJECT_CMDS' in text or doc.name == 'ADOPTION_SCORECARD.md', f'missing org ACK policy: {doc}'
-    assert 'HARNESS_*_SCRIPT' in text or doc.name == 'ADOPTION_SCORECARD.md', f'missing script gate policy: {doc}'
+    check('HARNESS_ACK_TRUSTED_PROJECT_CMDS' in text or doc.name == 'ADOPTION_SCORECARD.md', f'missing org ACK policy: {doc}')
+    check('HARNESS_*_SCRIPT' in text or doc.name == 'ADOPTION_SCORECARD.md', f'missing script gate policy: {doc}')
 
 project_gate_text = (root/'scripts/verify-project-gates.sh').read_text(encoding='utf-8')
-assert 'HARNESS_*_SCRIPT' in project_gate_text, 'project gate must support script-based gates'
-assert 'HARNESS_ALLOW_LEGACY_BASH_LC' in project_gate_text, 'legacy bash -lc must require explicit opt-in'
-assert 'resolve_repo_script' in project_gate_text, 'project gate must validate repository script path'
-assert 'RESOLVED_SCRIPT' in project_gate_text, 'project gate must avoid unsafe command-substitution resolution'
-assert 'reject()' in project_gate_text, 'project gate must return explicit validation failures'
-assert 'bash -lc "$cmd"' in project_gate_text, 'legacy command path should be explicit and auditable'
+check('HARNESS_*_SCRIPT' in project_gate_text, 'project gate must support script-based gates')
+check('HARNESS_ALLOW_LEGACY_BASH_LC' in project_gate_text, 'legacy bash -lc must require explicit opt-in')
+check('resolve_repo_script' in project_gate_text, 'project gate must validate repository script path')
+check('RESOLVED_SCRIPT' in project_gate_text, 'project gate must avoid unsafe command-substitution resolution')
+check('reject()' in project_gate_text, 'project gate must return explicit validation failures')
+check('bash -lc "$cmd"' in project_gate_text, 'legacy command path should be explicit and auditable')
 
 # Negative policy tests: invalid script gates must return non-zero so CI can enforce policy.
 import subprocess
@@ -490,24 +506,24 @@ for bad_value, label in invalid_gate_cases:
         stderr=subprocess.PIPE,
         text=True,
     )
-    assert result.returncode != 0, f'invalid project gate should fail ({label}): {bad_value}'
+    check(result.returncode != 0, f'invalid project gate should fail ({label}): {bad_value}')
 
-ci_text = (root/'.github/workflows/harness-verify.example.yml').read_text(encoding='utf-8')
-assert 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1' in ci_text, 'CI example must include trusted gate ACK'
-assert 'HARNESS_BACKEND_TEST_SCRIPT' in ci_text, 'CI example must prefer script-based backend gate'
-assert 'HARNESS_BACKEND_TEST_CMD' not in ci_text, 'CI example should not use legacy command gate'
+ci_text = ci_example_path.read_text(encoding='utf-8')
+check('HARNESS_ACK_TRUSTED_PROJECT_CMDS=1' in ci_text, 'CI example must include trusted gate ACK')
+check('HARNESS_BACKEND_TEST_SCRIPT' in ci_text, 'CI example must prefer script-based backend gate')
+check('HARNESS_BACKEND_TEST_CMD' not in ci_text, 'CI example should not use legacy command gate')
 
 ci_examples_text = (root/'docs/harness/CI_EXAMPLES.md').read_text(encoding='utf-8')
 for token in ['HARNESS_*_SCRIPT', 'HARNESS_ALLOW_LEGACY_BASH_LC', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1']:
-    assert token in ci_examples_text, f'CI examples missing {token}'
+    check(token in ci_examples_text, f'CI examples missing {token}')
 
 metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8')
 for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간']:
-    assert token in metrics_text, f'eval metrics missing {token}'
+    check(token in metrics_text, f'eval metrics missing {token}')
 
 collect_eval_text = (root/'scripts/collect-eval-metrics.sh').read_text(encoding='utf-8')
 for token in ['Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration']:
-    assert token in collect_eval_text, f'eval collector missing {token}'
+    check(token in collect_eval_text, f'eval collector missing {token}')
 
 print('[OK] governance and project gate policy verified')
 

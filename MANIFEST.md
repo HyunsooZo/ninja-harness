@@ -158,7 +158,7 @@ parallel_agents:
 - `scripts/sync-skills.sh`는 `.agents/skills -> .claude/skills` 단방향 동기화를 수행한다.
 - Claude subagent frontmatter에 `tools` allowlist와 `skills` preload를 추가했다.
 - reviewer 계열은 `tools: [Read, Grep, Glob]`만 허용하고 read-only 안전 계약을 유지한다.
-- `docs/harness/ORG_ROLLOUT.md`, `docs/harness/CI_EXAMPLES.md`, `.github/workflows/harness-verify.example.yml`을 추가했다.
+- `docs/harness/ORG_ROLLOUT.md`, `docs/harness/CI_EXAMPLES.md`, `docs/harness/examples/github-actions/harness-verify.yml`을 추가했다.
 - `scripts/collect-eval-metrics.sh`, `scripts/check-completed-plan-quality.sh`를 추가해 eval/완료 계획 품질 점검 루프를 보강했다.
 - `HARNESS_ORG_STANDARD=1` 모드는 실제 project gate와 completed plan 품질 점검을 조직 표준 검증으로 연결한다.
 
@@ -242,4 +242,3 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - `doctor`, `project-gates-required`, `check-sync` target을 추가했다.
 - Makefile은 조직 표준에서 script gate를 우선하고 legacy `HARNESS_*_CMD` 문자열은 primary path로 안내하지 않는다.
 - `verify-harness-structure.sh`가 Makefile target, organization gate 변수, integration script gate 지원 여부를 검증한다.
-

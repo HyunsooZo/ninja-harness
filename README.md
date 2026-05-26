@@ -87,6 +87,7 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 │       ├── SECURITY_POLICY.md
 │       ├── ADOPTION_SCORECARD.md
 │       ├── profiles/
+│       ├── examples/
 │       ├── evals/
 │       └── plans/
 └── scripts/
@@ -346,6 +347,10 @@ make check-plans
 조직 표준에서는 실제 project gate를 연결해야 합니다.
 
 권장 방식은 `HARNESS_*_SCRIPT`입니다.
+
+GitHub Actions 예시는 `docs/harness/examples/github-actions/harness-verify.yml`에
+비활성 파일로 보관합니다. 실제 프로젝트에서 `scripts/ci/**` gate script를
+만든 뒤 `.github/workflows/`로 복사해 사용합니다.
 
 ```bash
 HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
