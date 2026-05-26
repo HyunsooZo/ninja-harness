@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "deny": [
+      "Write(.env*)",
+      "Edit(.env*)",
+      "Write(**/*.pem)",
+      "Edit(**/*.pem)",
+      "Write(**/*secret*)",
+      "Edit(**/*secret*)"
+    ],
+    "ask": [
+      "Edit(package.json)",
+      "Edit(build.gradle)",
+      "Edit(settings.gradle)",
+      "Edit(docker-compose*.yml)",
+      "Bash(git commit*)",
+      "Bash(git push*)"
+    ]
+  }
+}

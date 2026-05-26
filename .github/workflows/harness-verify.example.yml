@@ -1,0 +1,26 @@
+name: harness-verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify harness structure
+        run: |
+          HARNESS_VERIFY_MODE=project \
+          bash scripts/verify-harness-structure.sh
+
+      - name: Verify organization gates
+        run: |
+          HARNESS_VERIFY_MODE=project \
+          HARNESS_ORG_STANDARD=1 \
+          HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
+          HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' \
+          HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT='scripts/ci/primary-frontend-test.sh' \
+          bash scripts/verify-harness-structure.sh

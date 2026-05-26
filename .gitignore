@@ -1,0 +1,12 @@
+# Generated context scans
+PROJECT_CONTEXT_SCAN.md
+*.context-scan.md
+docs/harness/context/generated/*.md
+!docs/harness/context/generated/.gitkeep
+
+# OS/editor
+.DS_Store
+._*
+__MACOSX/
+.idea/
+.claude/settings.local.json
