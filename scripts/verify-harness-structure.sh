@@ -117,17 +117,18 @@ for p in root.rglob('*'):
     if p.is_file() and p.name.startswith('__tmp-') and p.suffix == '.sh':
         fail(f'temporary shell script must not be distributed: {p}')
 sensitive_artifacts = []
+sensitive_config_suffixes = {'', '.json', '.yaml', '.yml', '.txt', '.conf', '.config', '.ini', '.properties', '.toml'}
 for p in root.rglob('*'):
     if not p.is_file():
         continue
     if any(part == '.git' for part in p.parts):
         continue
     lower_name = p.name.lower()
+    lower_suffix = p.suffix.lower()
     if (
         lower_name.startswith('.env')
         or lower_name.endswith(('.pem', '.p12', '.key', '.keystore'))
-        or 'secret' in lower_name
-        or 'token' in lower_name
+        or (('secret' in lower_name or 'token' in lower_name) and lower_suffix in sensitive_config_suffixes)
     ):
         sensitive_artifacts.append(str(p))
 check(not sensitive_artifacts, f'sensitive artifact must not be distributed: {sensitive_artifacts}')
@@ -292,7 +293,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'token policy markdown remains allowed', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -326,7 +327,7 @@ for token in [
 root_readme_text = (root/'README.md').read_text(encoding='utf-8')
 for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make integrity', 'make eval', 'make verify-org']:
     check(token in root_readme_text, f'root README release checklist missing token: {token}')
-for token in ['.env*', '*.pem', '*.p12', '*.key', '*secret*', '*token*']:
+for token in ['.env*', '*.pem', '*.p12', '*.key', '*.keystore', '*secret*.json', '*token*.json', 'token-policy.md']:
     check(token in root_readme_text, f'root README distribution exclusion missing sensitive token: {token}')
 
 # PROJECT_CONTEXT_SCAN references must call it 생성 산출물 or basic context exclusion.

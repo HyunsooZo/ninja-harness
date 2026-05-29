@@ -479,9 +479,18 @@ __tmp-*.sh
 *.pem
 *.p12
 *.key
-*secret*
-*token*
+*.keystore
+*secret*.json
+*secret*.yml
+*secret*.yaml
+*secret*.txt
+*token*.json
+*token*.yml
+*token*.yaml
+*token*.txt
 ```
+
+`token-policy.md`처럼 정책을 설명하는 문서 파일명은 허용하지만, secret/token 이름을 가진 로컬 설정성 산출물은 배포 전에 제거합니다.
 
 ---
 

@@ -18,6 +18,8 @@ cleanup() {
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
   rm -f .env.harness-self-test
+  rm -f session-token.json
+  rm -f docs/harness/context/generated/token-policy.md
   if [[ "$created_ci_dir" == "1" ]]; then
     rmdir scripts/ci 2>/dev/null || true
   fi
@@ -138,6 +140,17 @@ printf 'PLACEHOLDER_ONLY=1\n' > .env.harness-self-test
 expect_fail "sensitive artifact rejects local env file" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 rm -f .env.harness-self-test
+
+printf '{"placeholder": true}\n' > session-token.json
+expect_fail "sensitive artifact rejects token config file" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+rm -f session-token.json
+
+mkdir -p docs/harness/context/generated
+printf '# Token policy placeholder\n' > docs/harness/context/generated/token-policy.md
+expect_pass "token policy markdown remains allowed" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+rm -f docs/harness/context/generated/token-policy.md
 
 expect_fail "source_of_truth rejects missing required entry" \
   with_harness_yaml_without_line "- CLAUDE.md" \
