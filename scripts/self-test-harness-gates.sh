@@ -17,6 +17,7 @@ cleanup() {
   fi
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
+  rm -f .env.harness-self-test
   if [[ "$created_ci_dir" == "1" ]]; then
     rmdir scripts/ci 2>/dev/null || true
   fi
@@ -132,6 +133,11 @@ expect_fail "verify rejects invalid mode" \
 
 expect_fail "filled-profile gate requires project mode" \
   env HARNESS_REQUIRE_FILLED_PROFILE=1 HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+printf 'PLACEHOLDER_ONLY=1\n' > .env.harness-self-test
+expect_fail "sensitive artifact rejects local env file" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+rm -f .env.harness-self-test
 
 expect_fail "source_of_truth rejects missing required entry" \
   with_harness_yaml_without_line "- CLAUDE.md" \
