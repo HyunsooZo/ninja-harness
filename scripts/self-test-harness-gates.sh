@@ -246,6 +246,12 @@ expect_fail "manifest parity rejects missing policy line" \
     "allow_parallel_implementation: conditional" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "makefile rejects hardcoded bash path" \
+  with_file_replacing_line "Makefile" \
+    "SHELL := bash" \
+    "SHELL := /bin/bash" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "source_of_truth rejects missing backend rubric" \
   with_harness_yaml_without_line "- docs/harness/rubrics/backend.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh

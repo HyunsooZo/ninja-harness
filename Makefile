@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := bash
 .SHELLFLAGS := -euo pipefail -c
 .DEFAULT_GOAL := help
 
