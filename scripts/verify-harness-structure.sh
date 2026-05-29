@@ -213,6 +213,8 @@ for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser'
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
+for token in ['Codex agent TOML', 'skills = [...]', 'skill preload metadata']:
+    check(token in readme_text_for_runtime, f'README compatibility section missing token: {token}')
 
 for p in agents:
     data = tomllib.loads(p.read_text(encoding='utf-8'))
@@ -222,8 +224,12 @@ for p in agents:
     claude_path = root/'.claude/agents'/f'{p.stem}.md'
     frontmatter, claude_body = parse_claude_agent(claude_path)
     claude_frontmatters[p.stem] = frontmatter
+    codex_skills = set(data.get('skills') or [])
+    claude_skills = parse_frontmatter_list(frontmatter.get('skills', ''))
     check(frontmatter.get('name') == data.get('name'), f'agent name mismatch: {p} vs {claude_path}')
     check(frontmatter.get('description') == data.get('description'), f'agent description mismatch: {p} vs {claude_path}')
+    check(codex_skills, f'missing Codex agent skills preload: {p}')
+    check(codex_skills == claude_skills, f'agent skills preload drift: {p} vs {claude_path}')
     codex_body = data.get('developer_instructions', '').strip()
     codex_body = re.sub(r'\n{3,}', '\n\n', codex_body)
     check(codex_body == claude_body, f'agent body mirror drift: {p} vs {claude_path}')
@@ -293,6 +299,12 @@ for name, frontmatter in sorted(claude_frontmatters.items()):
     missing = declared - all_skill_names
     check(not missing, f'Claude agent declares missing skills {sorted(missing)}: .claude/agents/{name}.md')
 
+for p in agents:
+    data = tomllib.loads(p.read_text(encoding='utf-8'))
+    declared = set(data.get('skills') or [])
+    missing = declared - all_skill_names
+    check(not missing, f'Codex agent declares missing skills {sorted(missing)}: {p}')
+
 sync_script = root/'scripts/sync-skills.sh'
 check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
@@ -302,7 +314,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')

@@ -122,6 +122,33 @@ PY
   return "$status"
 }
 
+with_file_without_line() {
+  local path="$1"
+  local needle="$2"
+  shift 2
+  local backup="$tmp_dir/$(basename "$path").backup"
+  cp "$path" "$backup"
+  python3 - "$path" "$needle" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+needle = sys.argv[2]
+lines = path.read_text(encoding='utf-8').splitlines()
+filtered = [line for line in lines if line.strip() != needle]
+if len(filtered) == len(lines):
+    raise SystemExit(f'missing test needle in {path}: {needle}')
+path.write_text('\n'.join(filtered) + '\n', encoding='utf-8')
+PY
+  local status=0
+  set +e
+  "$@"
+  status=$?
+  set -e
+  cp "$backup" "$path"
+  return "$status"
+}
+
 good_profile="$tmp_dir/good-profile.md"
 bad_profile="$tmp_dir/bad-profile.md"
 printf 'project: N/A\nruntime: N/A\n' > "$good_profile"
@@ -214,6 +241,11 @@ expect_fail "runtime rejects missing POSIX utility manifest" \
 
 expect_fail "runtime rejects missing Python TOML parser manifest" \
   with_harness_yaml_without_line "toml_parser: tomllib_or_tomli" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "agent metadata rejects missing Codex skills preload" \
+  with_file_without_line ".codex/agents/backend-api-implementer.toml" \
+    'skills = ["backend-api", "backend-application", "integration-contract", "testing-strategy"]' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "project gate manifest rejects missing preferred script" \

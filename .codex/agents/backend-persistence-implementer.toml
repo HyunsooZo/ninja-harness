@@ -2,6 +2,7 @@ name = "backend-persistence-implementer"
 description = "영속성 작업(Repository adapter, ORM mapping, query, lock, 영속성 test)에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["backend-persistence", "testing-strategy"]
 sandbox_mode = "workspace-write"
 developer_instructions = """
 영속성 작업(Repository adapter, ORM mapping, query, lock, 영속성 test)에 사용한다.

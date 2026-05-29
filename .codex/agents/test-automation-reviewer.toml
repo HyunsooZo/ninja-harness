@@ -2,6 +2,7 @@ name = "test-automation-reviewer"
 description = "백엔드, 프론트엔드, 보조 앱 테스트의 검증 계획과 충분성 작업에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["testing-strategy", "review-rubric"]
 sandbox_mode = "read-only"
 developer_instructions = """
 백엔드, 프론트엔드, 보조 앱 테스트의 검증 계획과 충분성 작업에 사용한다.

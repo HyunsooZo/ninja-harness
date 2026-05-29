@@ -2,6 +2,7 @@ name = "backend-domain-modeler"
 description = "도메인 모델링(Entity, Value Object, Aggregate, domain service, policy, invariant)에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["backend-domain", "review-rubric"]
 sandbox_mode = "workspace-write"
 developer_instructions = """
 도메인 모델링(Entity, Value Object, Aggregate, domain service, policy, invariant)에 사용한다.

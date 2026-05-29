@@ -92,11 +92,11 @@
 
 ## Codex / Claude 호환성
 
-- Codex: `.codex/agents/*.toml`, `.agents/skills/*/SKILL.md`를 사용한다.
+- Codex: `.codex/agents/*.toml`, `.agents/skills/*/SKILL.md`를 사용한다. Codex agent TOML은 `skills = [...]`로 역할별 스킬 preload metadata를 선언한다.
 - Claude Code: `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md`, `CLAUDE.md`를 사용한다.
 - 스킬 원본은 `.agents/skills/**`이고, `.claude/skills/**`는 `scripts/sync-skills.sh`로 생성/갱신하는 native skill mirror다.
 - 공통 기준은 `AGENTS.md`, `CLAUDE.md`, `docs/harness/**`다.
-- 런타임별 파일은 같은 역할, 범위, 안전 제약을 미러링한다.
+- 런타임별 파일은 같은 역할, 범위, 안전 제약, skill preload metadata를 미러링한다.
 
 ## 실전 검증과 프로젝트 게이트
 

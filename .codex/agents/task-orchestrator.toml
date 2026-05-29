@@ -2,6 +2,7 @@ name = "task-orchestrator"
 description = "작업 분해, 에이전트 위임, fan-in 수렴, 검증 라우팅에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy"]
 sandbox_mode = "workspace-write"
 developer_instructions = """
 작업 분해, 에이전트 위임, fan-in 수렴, 검증 라우팅에 사용한다.

@@ -2,6 +2,7 @@ name = "spec-reviewer"
 description = "위험한 변경 묶음 또는 milestone spec 작업에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["review-rubric", "integration-contract"]
 sandbox_mode = "read-only"
 developer_instructions = """
 위험한 변경 묶음 또는 milestone spec 작업에 사용한다.

@@ -2,6 +2,7 @@ name = "secondary-app-runtime-ux-reviewer"
 description = "보조 앱 모바일 UX, 런타임, 접근성, 안전 영역, 터치 흐름 작업에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["secondary-app-runtime", "ux-flow", "frontend-a11y", "review-rubric"]
 sandbox_mode = "read-only"
 developer_instructions = """
 보조 앱 모바일 UX, 런타임, 접근성, 안전 영역, 터치 흐름 작업에 사용한다.

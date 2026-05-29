@@ -2,6 +2,7 @@ name = "content-i18n-reviewer"
 description = "콘텐츠/i18n 리뷰(UI 문구, i18n/content 키, 접근성 이름, 빈 상태/오류 상태, 행위자/리소스 용어)에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["content-i18n-ux", "review-rubric"]
 sandbox_mode = "read-only"
 developer_instructions = """
 콘텐츠/i18n 리뷰(UI 문구, i18n/content 키, 접근성 이름, 빈 상태/오류 상태, 행위자/리소스 용어)에 사용한다.

@@ -2,6 +2,7 @@ name = "primary-frontend-style-a11y-reviewer"
 description = "주요 프론트엔드 SCSS, responsive, accessibility, focus, contrast, i18n, UX regression 작업에 사용한다."
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+skills = ["frontend-a11y", "design-system", "responsive-layout", "review-rubric"]
 sandbox_mode = "read-only"
 developer_instructions = """
 주요 프론트엔드 SCSS, responsive, accessibility, focus, contrast, i18n, UX regression 작업에 사용한다.
