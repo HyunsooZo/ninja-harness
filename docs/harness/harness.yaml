@@ -68,6 +68,7 @@ workflow:
   trivial_allowed_without_plan: true
   non_trivial_requires_active_plan: true
   optional_project_gates: true
+  project_readiness_gate: scripts/check-profile-readiness.sh
   orchestration_default_mode: SINGLE_AGENT
   orchestration_requires_active_plan_when_split: true
 
@@ -100,6 +101,8 @@ rules:
     require_explicit_user_request: true
   project_gates:
     enabled_by_env: HARNESS_RUN_PROJECT_CHECKS
+    profile_readiness_enabled_by_env: HARNESS_REQUIRE_FILLED_PROFILE
+    profile_readiness_script: scripts/check-profile-readiness.sh
     script: scripts/verify-project-gates.sh
     preferred_scripts:
       backend: HARNESS_BACKEND_TEST_SCRIPT

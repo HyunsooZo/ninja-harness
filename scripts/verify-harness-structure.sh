@@ -36,6 +36,7 @@ required=(
   ".claude/agents"
   ".claude/commands"
   "scripts/sync-skills.sh"
+  "scripts/check-profile-readiness.sh"
   "scripts/verify-project-gates.sh"
   "scripts/collect-eval-metrics.sh"
 )
@@ -82,10 +83,12 @@ check(not any(p.exists() for p in retired_docs), f'retired duplicate docs must n
 # Makefile should provide one stable local/CI entry point for common harness tasks.
 makefile = root/'Makefile'
 make_text = makefile.read_text(encoding='utf-8')
-for target in ['help','doctor','verify','verify-template','verify-project','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
+for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
     check(re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}')
-for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
+for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
     check(token in make_text, f'Makefile missing command/policy token: {token}')
+for token in ['command -v bash','command -v python3','supported OS','unsupported OS']:
+    check(token in make_text, f'Makefile doctor missing runtime readiness token: {token}')
 for gate_var in ['HARNESS_BACKEND_TEST_SCRIPT','HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT','HARNESS_SECONDARY_APP_TEST_SCRIPT','HARNESS_INTEGRATION_TEST_SCRIPT','HARNESS_SECURITY_SCAN_SCRIPT','HARNESS_A11Y_CHECK_SCRIPT']:
     check(gate_var in make_text, f'Makefile verify-org must recognize gate variable: {gate_var}')
 check('HARNESS_*_SCRIPT' in make_text, 'Makefile help must mention script-based organization gates')
@@ -228,7 +231,7 @@ sync_script = root/'scripts/sync-skills.sh'
 check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
 check(os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable')
-for script_name in ['collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'set-codex-agent-model.sh']:
+for script_name in ['check-profile-readiness.sh', 'collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'set-codex-agent-model.sh']:
     script_path = root/'scripts'/script_name
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
@@ -378,7 +381,7 @@ for required in ['SINGLE_AGENT', 'SINGLE_AGENT_WITH_REVIEW', 'SEQUENTIAL_LAYERED
     check(required in orchestration_text, f'missing orchestration keyword: {required}')
 check('task-orchestrator' in agent_names, 'missing task-orchestrator codex agent')
 check((root/'.claude/agents/task-orchestrator.md').exists(), 'missing task-orchestrator claude agent')
-for required_skill in ['orchestration-planning', 'backend-domain']:
+for required_skill in ['orchestration-planning', 'backend-domain', 'backend-api', 'backend-db-migration']:
     check(required_skill in skill_names, f'missing required skill: {required_skill}')
     check(required_skill in claude_skill_dirs, f'missing required Claude skill mirror: {required_skill}')
 
@@ -530,6 +533,14 @@ print('[OK] governance and project gate policy verified')
 print('[OK] organization standard polish verified')
 
 PY
+
+if [[ "${HARNESS_REQUIRE_FILLED_PROFILE:-0}" == "1" ]]; then
+  if [[ "$VERIFY_MODE" != "project" ]]; then
+    echo "[FAIL] HARNESS_REQUIRE_FILLED_PROFILE=1 requires HARNESS_VERIFY_MODE=project" >&2
+    exit 1
+  fi
+  bash scripts/check-profile-readiness.sh
+fi
 
 echo "[OK] harness structure verified ($VERIFY_MODE)"
 

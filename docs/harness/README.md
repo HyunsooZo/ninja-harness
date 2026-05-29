@@ -111,6 +111,30 @@ bash scripts/verify-harness-structure.sh
 
 Script gate가 비어 있으면 기본적으로 `SKIP` 처리한다. 조직 표준처럼 최소 하나 이상의 실제 게이트를 강제하려면 `HARNESS_REQUIRE_PROJECT_CHECKS=1`을 함께 지정한다. legacy `HARNESS_*_CMD`는 `HARNESS_ALLOW_LEGACY_BASH_LC=1`로 명시 허용된 경우에만 사용한다. 세부 성숙도 기준과 eval 루프는 `12_FIELD_VALIDATION.md`와 `docs/harness/evals/`를 따른다.
 
+## Runtime / OS 지원 범위
+
+하네스 자체 스크립트는 `bash`, `make`, `python3`를 전제로 한다. 기본 지원 대상은 macOS와 Linux/WSL이다. Git Bash/MSYS/Cygwin 계열은 POSIX 호환 shell 위에서 best-effort로 다루며, 조직 CI parity가 필요하면 WSL 또는 Linux runner를 우선한다. Windows native `cmd.exe`/PowerShell만 있는 환경은 지원 대상이 아니다.
+
+```bash
+make doctor
+```
+
+`make doctor`는 필수 스크립트 실행 권한, bash 문법, `bash`/`python3`/`make` 존재 여부, 지원 OS 범위를 확인한다. 이 검증은 프로젝트 build/test를 실행하지 않는다.
+
+## 프로젝트 적용 준비도
+
+`make verify`는 template/project 구조 검증이며, 실제 프로젝트 값이 모두 채워졌다는 뜻은 아니다. 새 저장소에 하네스를 적용한 뒤에는 placeholder를 실제 값 또는 angle bracket 없는 `N/A`로 바꾸고 readiness gate를 실행한다.
+
+```bash
+make project-ready
+# 또는
+HARNESS_VERIFY_MODE=project \
+HARNESS_REQUIRE_FILLED_PROFILE=1 \
+bash scripts/verify-harness-structure.sh
+```
+
+이 gate는 `docs/harness/context/BASELINE.md`, `docs/harness/profiles/project-profile.md`, `docs/harness/profiles/design-system-profile.md`, `docs/harness/harness.yaml`에 남은 `<...>` placeholder를 실패 처리한다.
+
 ## 프로파일 예시
 
 백엔드/프론트엔드 프로젝트에 바로 맞춰볼 수 있는 예시는 `docs/harness/profiles/examples/`에 둔다.
@@ -168,6 +192,8 @@ make help
 make verify
 make verify-template
 make verify-project
+make project-ready
+make check-profile
 make sync-skills
 make eval
 make check-plans

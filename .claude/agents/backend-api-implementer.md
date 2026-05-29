@@ -2,7 +2,7 @@
 name: backend-api-implementer
 description: 컨트롤러, DTO, request/response 매핑, validation 등 presentation 경계 작업에 사용한다.
 tools: [Read, Grep, Glob, Bash, Edit, MultiEdit, Write]
-skills: [backend-application, integration-contract, testing-strategy]
+skills: [backend-api, backend-application, integration-contract, testing-strategy]
 ---
 
 # backend-api-implementer

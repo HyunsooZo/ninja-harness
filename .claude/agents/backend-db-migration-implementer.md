@@ -2,7 +2,7 @@
 name: backend-db-migration-implementer
 description: 스키마 마이그레이션, ORM 매핑, 데이터베이스 쿼리/인덱스, 캐시, 로컬 런타임 관련 작업에 사용한다.
 tools: [Read, Grep, Glob, Bash, Edit, MultiEdit, Write]
-skills: [backend-persistence, testing-strategy]
+skills: [backend-db-migration, backend-persistence, testing-strategy]
 ---
 
 # backend-db-migration-implementer

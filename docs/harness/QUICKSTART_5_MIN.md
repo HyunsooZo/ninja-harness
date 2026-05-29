@@ -29,6 +29,7 @@
 
 ```bash
 make help
+make doctor
 make verify
 ```
 
@@ -41,6 +42,18 @@ HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 # 실제 프로젝트 적용 후 검증
 HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh
 ```
+
+`make verify`는 하네스 구조 검증이다. 실제 프로젝트 값이 모두 채워졌는지까지 보려면 placeholder readiness gate를 별도로 실행한다.
+
+```bash
+make project-ready
+# 또는
+HARNESS_VERIFY_MODE=project \
+HARNESS_REQUIRE_FILLED_PROFILE=1 \
+bash scripts/verify-harness-structure.sh
+```
+
+이 gate는 `BASELINE.md`, `profiles/**`, `harness.yaml`에 남은 `<...>` placeholder를 실패 처리한다. 사용하지 않는 영역은 `N/A`처럼 angle bracket 없는 값으로 적는다.
 
 스킬을 수정했다면 먼저 실행한다.
 

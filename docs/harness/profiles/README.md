@@ -12,6 +12,7 @@
 - 번호가 붙은 핵심 문서는 재사용 가능하고 프로필 기반이어야 한다.
 - 프로젝트별 값은 이 디렉터리 또는 `docs/harness/context/**`에 둔다.
 - 새 프로젝트에 하네스를 적용할 때는 핵심 문서를 바꾸기 전에 이 프로필부터 채운다.
+- 적용 준비도를 확인할 때는 `make project-ready` 또는 `bash scripts/check-profile-readiness.sh`를 실행한다. 남은 `<...>` placeholder는 실패 처리되며, 사용하지 않는 영역은 `N/A`처럼 angle bracket 없는 값으로 적는다.
 
 ## Examples
 

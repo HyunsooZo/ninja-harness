@@ -2,7 +2,7 @@
 
 이 저장소는 범용 한국어 개발 하네스를 사용한다. Claude Code는 아래 기준을 우선한다.
 
-- 공통 로컬 진입점은 `Makefile`이다. 구조 검증은 `make verify`, skill 동기화는 `make sync-skills`, 조직 표준 검증은 `HARNESS_*_SCRIPT=... make verify-org`를 우선 사용한다.
+- 공통 로컬 진입점은 `Makefile`이다. 로컬 도구 점검은 `make doctor`, 구조 검증은 `make verify`, 실제 프로젝트 placeholder 준비도 검증은 `make project-ready`, skill 동기화는 `make sync-skills`, 조직 표준 검증은 `HARNESS_*_SCRIPT=... make verify-org`를 우선 사용한다.
 
 ## 우선순위
 
@@ -42,7 +42,7 @@
 - 동작 변경은 RED -> GREEN -> REFACTOR를 따른다.
 - 증거는 `docs/harness/plans/active/`에 남기고 완료 후 `completed/`로 이동한다.
 - 자동화 테스트가 부적합하면 예외 사유, 대체 검증, 잔여 위험을 적는다.
-- 구조 검증과 실제 프로젝트 검증을 구분한다. 실제 build/test/lint 확인이 필요하면 `HARNESS_RUN_PROJECT_CHECKS=1`과 `HARNESS_*_SCRIPT` 환경변수로 project gate를 실행한다. 조직 표준에서는 repository script gate를 우선하고, legacy `HARNESS_*_CMD`는 `HARNESS_ALLOW_LEGACY_BASH_LC=1`로 명시 허용된 경우에만 사용한다.
+- 구조 검증과 실제 프로젝트 검증을 구분한다. 실제 프로젝트 값이 모두 채워졌는지 확인하려면 `make project-ready` 또는 `HARNESS_REQUIRE_FILLED_PROFILE=1 HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh`를 실행한다. 실제 build/test/lint 확인이 필요하면 `HARNESS_RUN_PROJECT_CHECKS=1`과 `HARNESS_*_SCRIPT` 환경변수로 project gate를 실행한다. 조직 표준에서는 repository script gate를 우선하고, legacy `HARNESS_*_CMD`는 `HARNESS_ALLOW_LEGACY_BASH_LC=1`로 명시 허용된 경우에만 사용한다.
 - `.env*`, secret, key, pem 파일은 사용자 명시 없이는 수정하지 않는다.
 - 사용자가 명시적으로 요청하지 않으면 커밋/푸시를 수행하지 않는다.
 

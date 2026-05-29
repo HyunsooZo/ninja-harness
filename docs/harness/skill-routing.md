@@ -10,9 +10,10 @@
 | 구현, 수정, 리팩토링, 멀티스텝 작업 | `executor` | `00_AGENT_BRIEF.md`, 관련 레이어 문서, `05_TESTING.md` |
 | 계획 수립, 영향도 분석, 리스크 정리 | `task-orchestrator` + `orchestration-planning` | `00_AGENT_BRIEF.md`, `13_AGENT_ORCHESTRATION.md`, `08_HARNESS_AUDIT.md` |
 | 에이전트 분리/위임 판단 | `task-orchestrator` 또는 `orchestration-planning` | `13_AGENT_ORCHESTRATION.md`, `11_PARALLEL_AGENT_GATE.md` |
-| 백엔드 컨트롤러/DTO/검증/표현 경계 | 백엔드 API 구현 범위 | `01_BACKEND.md`, 관련 백엔드 컨텍스트 |
+| 백엔드 컨트롤러/DTO/검증/표현 경계 | 백엔드 API 구현 범위 | `01_BACKEND.md`, `04_INTEGRATION.md`, `backend-api`, 관련 백엔드 컨텍스트 |
 | 백엔드 애플리케이션 서비스/유스케이스/트랜잭션/멱등성 | 백엔드 애플리케이션 구현 범위 | `01_BACKEND.md`, `backend-application` |
 | 백엔드 도메인/리포지토리/영속성 | 도메인은 `backend-domain`, 영속성은 `backend-persistence` | `01_BACKEND.md`, `backend-domain`, `backend-persistence` |
+| 백엔드 스키마/마이그레이션/인덱스/DB 런타임 | DB migration 구현 범위 | `01_BACKEND.md`, `10_BACKEND_QUALITY_GATE.md`, `backend-db-migration` |
 | 백엔드 보안 민감 변경 | 백엔드 보안 리뷰어 | `01_BACKEND.md`, `backend-security` |
 | 주요 프론트엔드 UI/UX | 프론트엔드 화면/컴포넌트 구현 범위 | `02_PRIMARY_FRONTEND.md`, `primary-frontend-ui` |
 | 주요 프론트엔드 타입 API/서비스 작업 | 프론트엔드 TypeScript 구현 범위 | `02_PRIMARY_FRONTEND.md`, `frontend-typescript` |
@@ -63,11 +64,11 @@
 | 범위 | 에이전트 / 스킬 |
 |---|---|
 | 작업 분해, 위임, fan-in 수렴 | `task-orchestrator`, `orchestration-planning` |
-| 백엔드 컨트롤러, DTO, 검증, 표현 경계 | `backend-api-implementer` |
+| 백엔드 컨트롤러, DTO, 검증, 표현 경계 | `backend-api-implementer`, `backend-api` |
 | 백엔드 애플리케이션 서비스, 유스케이스, 트랜잭션 경계, 멱등성 | `backend-application-implementer` |
 | 백엔드 도메인 모델, 애그리거트, 불변 조건 | `backend-domain-modeler` |
 | 백엔드 리포지토리, ORM, 쿼리, 잠금, 영속성 테스트 | `backend-persistence-implementer` |
-| 백엔드 스키마/마이그레이션/데이터/런타임 의존성 | `backend-db-migration-implementer` |
+| 백엔드 스키마/마이그레이션/데이터/런타임 의존성 | `backend-db-migration-implementer`, `backend-db-migration` |
 | 백엔드 보안 리뷰 | `backend-security-reviewer` |
 | 주요 프론트엔드 화면, 스타일, i18n | `primary-frontend-view-implementer` |
 | 주요 프론트엔드 공유 컴포넌트 | `primary-frontend-component-implementer` |
