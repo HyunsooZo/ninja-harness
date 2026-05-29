@@ -339,6 +339,12 @@ expect_fail "agent metadata rejects non-list skills preload" \
     'skills = "backend-api"' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "agent preload rejects missing local skill coverage" \
+  with_file_replacing_line ".codex/agents/task-orchestrator.toml" \
+    'skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy", "harness-maintenance"]' \
+    'skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy"]' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate manifest rejects missing preferred script" \
   with_harness_yaml_without_line "backend: HARNESS_BACKEND_TEST_SCRIPT" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh

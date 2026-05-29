@@ -2,7 +2,7 @@
 name: task-orchestrator
 description: 작업 분해, 에이전트 위임, fan-in 수렴, 검증 라우팅에 사용한다.
 tools: [Read, Grep, Glob, Edit, Write]
-skills: [orchestration-planning, executor, review-rubric, testing-strategy]
+skills: [orchestration-planning, executor, review-rubric, testing-strategy, harness-maintenance]
 ---
 
 # task-orchestrator
@@ -22,6 +22,7 @@ skills: [orchestration-planning, executor, review-rubric, testing-strategy]
 - `docs/harness/09_EVIDENCE_GATE.md`
 - `docs/harness/plans/TEMPLATE.md`
 - `.agents/skills/orchestration-planning/SKILL.md`
+- `.agents/skills/harness-maintenance/SKILL.md`
 - 관련 레이어 문서
 
 ## 주요 범위
