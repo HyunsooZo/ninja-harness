@@ -116,6 +116,21 @@ for forbidden_gate in [root/'scripts/ci/__tmp-ok.sh']:
 for p in root.rglob('*'):
     if p.is_file() and p.name.startswith('__tmp-') and p.suffix == '.sh':
         fail(f'temporary shell script must not be distributed: {p}')
+sensitive_artifacts = []
+for p in root.rglob('*'):
+    if not p.is_file():
+        continue
+    if any(part == '.git' for part in p.parts):
+        continue
+    lower_name = p.name.lower()
+    if (
+        lower_name.startswith('.env')
+        or lower_name.endswith(('.pem', '.p12', '.key', '.keystore'))
+        or 'secret' in lower_name
+        or 'token' in lower_name
+    ):
+        sensitive_artifacts.append(str(p))
+check(not sensitive_artifacts, f'sensitive artifact must not be distributed: {sensitive_artifacts}')
 
 # Codex agent TOML validation.
 agents = sorted((root/'.codex/agents').glob('*.toml'))
@@ -311,6 +326,8 @@ for token in [
 root_readme_text = (root/'README.md').read_text(encoding='utf-8')
 for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make integrity', 'make eval', 'make verify-org']:
     check(token in root_readme_text, f'root README release checklist missing token: {token}')
+for token in ['.env*', '*.pem', '*.p12', '*.key', '*secret*', '*token*']:
+    check(token in root_readme_text, f'root README distribution exclusion missing sensitive token: {token}')
 
 # PROJECT_CONTEXT_SCAN references must call it 생성 산출물 or basic context exclusion.
 for p in root.rglob('*'):

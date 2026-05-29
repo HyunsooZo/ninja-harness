@@ -475,6 +475,12 @@ __MACOSX
 .claude/settings.local.json
 .codex/skills
 __tmp-*.sh
+.env*
+*.pem
+*.p12
+*.key
+*secret*
+*token*
 ```
 
 ---
