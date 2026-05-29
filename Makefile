@@ -71,6 +71,7 @@ doctor:
 	@command -v bash >/dev/null || { echo "[FAIL] bash is required"; exit 1; }
 	@command -v python3 >/dev/null || { echo "[FAIL] python3 is required"; exit 1; }
 	@command -v make >/dev/null || { echo "[FAIL] make is required"; exit 1; }
+	@command -v git >/dev/null || { echo "[FAIL] git is required"; exit 1; }
 	@os="$$(uname -s 2>/dev/null || echo unknown)"; \
 	case "$$os" in \
 		Darwin|Linux) echo "[OK] supported OS: $$os" ;; \
@@ -80,6 +81,7 @@ doctor:
 	@bash --version | head -n 1
 	@python3 --version
 	@make --version | head -n 1
+	@git --version
 	@bash -n scripts/*.sh
 	@echo "[OK] harness local tooling looks ready"
 

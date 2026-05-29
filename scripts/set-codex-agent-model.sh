@@ -37,7 +37,7 @@ else:
         f'  codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL\n'
         f'  supported_os: macos_linux_wsl_posix_shell\n'
         f'  unsupported_windows_native: true\n'
-        f'  required_tools: bash make python3\n'
+        f'  required_tools: bash make python3 git\n'
         f'  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.\n'
     )
 harness.write_text(text, encoding='utf-8')
