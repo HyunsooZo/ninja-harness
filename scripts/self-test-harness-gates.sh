@@ -207,6 +207,11 @@ expect_fail "source_of_truth rejects missing required state" \
   with_harness_yaml_without_line "decisions: docs/harness/context/DECISIONS.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "manifest parity rejects missing policy line" \
+  with_file_without_line "MANIFEST.md" \
+    "allow_parallel_implementation: conditional" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "source_of_truth rejects missing backend rubric" \
   with_harness_yaml_without_line "- docs/harness/rubrics/backend.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
