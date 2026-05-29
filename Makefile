@@ -43,6 +43,7 @@ help:
 	@echo "  make check-sync              Verify skill mirrors after sync"
 	@echo "  make eval                    Collect completed-plan eval metrics"
 	@echo "  make check-plans             Check completed plan quality"
+	@echo "  make check-active-plans      Fail if active plans remain"
 	@echo "  make set-model MODEL=<model> Update Codex agent model in all TOML files"
 	@echo "  make clean                   Remove OS/editor metadata files"
 	@echo ""

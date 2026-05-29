@@ -89,6 +89,16 @@ for target in ['help','doctor','verify','verify-template','verify-project','proj
     check(re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}')
 for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/self-test-harness-gates.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
     check(token in make_text, f'Makefile missing command/policy token: {token}')
+help_match = re.search(r'^help:\n(?P<body>.*?)(?=^[A-Za-z0-9_.-]+:|\Z)', make_text, re.M | re.S)
+check(help_match, 'Makefile missing help target body')
+help_body = help_match.group('body')
+public_make_targets = [
+    target
+    for target in re.findall(r'^([A-Za-z0-9_.-]+):', make_text, re.M)
+    if target not in {'help'} and not target.startswith('.')
+]
+missing_help_targets = [target for target in public_make_targets if f'make {target}' not in help_body]
+check(not missing_help_targets, f'Makefile help missing public targets: {missing_help_targets}')
 for token in ['integrity: doctor verify self-test-gates check-plans check-active-plans', 'git diff --check', 'no active plans']:
     check(token in make_text, f'Makefile missing integrity token: {token}')
 for token in ['command -v bash','command -v python3','HARNESS_POSIX_UTILITIES','POSIX utility is required','find_spec("tomllib")','find_spec("tomli")','Python TOML parser','supported OS','unsupported OS']:
