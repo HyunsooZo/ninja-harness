@@ -27,6 +27,8 @@
 | 프론트/백 계약 변경 | executor + 통합 리뷰 | `04_INTEGRATION.md`, `integration-contract` |
 | Owned API DTO/request/response 변경 | `task-orchestrator` + `integration-contract` + 필요 시 백엔드/프론트 구현자 | `04_INTEGRATION.md`, `13_AGENT_ORCHESTRATION.md`, `docs/harness/context/integration/api-matrix.md` |
 | 테스트 전략/검증 점검 | 테스트 자동화 리뷰어 | `05_TESTING.md`, `testing-strategy` |
+| 리뷰 판정/심각도/증거 품질 일관성 | 리뷰 기준 스킬 | `05_TESTING.md`, `09_EVIDENCE_GATE.md`, `review-rubric` |
+| 최종 납품 품질/잔여 위험/인계 요약 | 납품 품질 스킬 | `05_TESTING.md`, `09_EVIDENCE_GATE.md`, `delivery-rubric` |
 | 하네스 유지보수 | 하네스 유지보수 스킬 | `08_HARNESS_AUDIT.md`, `harness-maintenance` |
 | 최종 품질 점검 | 품질 리뷰어 범위 | `05_TESTING.md`, `08_HARNESS_AUDIT.md` |
 
@@ -84,7 +86,8 @@
 | 테스트 충분성 리뷰 | `test-automation-reviewer` |
 | 위험 마일스톤/스펙 리뷰 | `spec-reviewer` |
 | API/인증/리소스/페이지네이션 통합 리뷰 | `integration-reviewer` |
-| 최종 통합 품질 리뷰 | `quality-reviewer` |
+| 리뷰 판정/심각도/증거 품질 일관성 | `review-rubric` |
+| 최종 납품 품질/잔여 위험/인계 요약 | `quality-reviewer`, `delivery-rubric` |
 
 ## 상태 용어
 

@@ -383,6 +383,12 @@ for doc in [root/'AGENTS.md', root/'docs/harness/skill-routing.md', root/'docs/h
     for ref in re.findall(r'`?\.claude/skills/([A-Za-z0-9_-]+)/SKILL\.md`?', text):
         check(ref in claude_skill_dirs, f'missing referenced claude skill {ref}: {doc}')
 
+skill_routing_text = (root/'docs/harness/skill-routing.md').read_text(encoding='utf-8')
+unrouted_skills = sorted(skill for skill in skill_names if skill not in skill_routing_text)
+check(not unrouted_skills, f'skill-routing.md missing local skills: {unrouted_skills}')
+for required in ['review-rubric', 'delivery-rubric', '판정', '잔여 위험']:
+    check(required in skill_routing_text, f'skill-routing.md missing review/delivery routing token: {required}')
+
 yaml_text = (root/'docs/harness/harness.yaml').read_text(encoding='utf-8')
 
 def check_agent_ref(ref: str, source: str) -> None:
