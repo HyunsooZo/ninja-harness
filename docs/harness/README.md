@@ -199,16 +199,24 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 
 ```bash
 make help
+make doctor
 make verify
 make verify-template
 make verify-project
+make verify-org
 make project-ready
 make check-profile
 make self-test-gates
+make check-active-plans
 make integrity
+make project-gates
+make project-gates-required
 make sync-skills
+make check-sync
 make eval
 make check-plans
+make set-model MODEL=<model>
+make clean
 ```
 
 조직 표준 검증은 최소 하나 이상의 trusted repository script gate를 연결해야 한다.

@@ -159,6 +159,10 @@ make help
 | `make verify` | template / project 검증을 모두 실행합니다. |
 | `make verify-template` | template mode 검증을 실행합니다. |
 | `make verify-project` | project mode 검증을 실행합니다. |
+| `make project-ready` | project mode에서 profile/context placeholder가 남아 있으면 실패합니다. |
+| `make check-profile` | project profile/context placeholder만 점검합니다. |
+| `make self-test-gates` | 핵심 positive/negative gate self-test를 실행합니다. |
+| `make check-active-plans` | 완료되지 않은 active plan이 남아 있으면 실패합니다. |
 | `make verify-org` | 조직 표준 모드 검증을 실행합니다. 최소 하나의 gate script가 필요합니다. |
 | `make project-gates` | 설정된 project gate를 실행합니다. |
 | `make project-gates-required` | project gate가 없으면 실패합니다. |

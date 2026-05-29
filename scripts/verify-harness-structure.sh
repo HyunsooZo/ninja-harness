@@ -398,6 +398,10 @@ for token in [
 root_readme_text = (root/'README.md').read_text(encoding='utf-8')
 for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make integrity', 'make eval', 'make verify-org']:
     check(token in root_readme_text, f'root README release checklist missing token: {token}')
+harness_readme_text = (root/'docs/harness/README.md').read_text(encoding='utf-8')
+for doc_name, doc_text in [('README.md', root_readme_text), ('docs/harness/README.md', harness_readme_text)]:
+    missing_doc_targets = [target for target in public_make_targets if f'make {target}' not in doc_text]
+    check(not missing_doc_targets, f'{doc_name} missing public Makefile target docs: {missing_doc_targets}')
 for token in [
     'docs/harness/plans/completed/*.md',
     '.env*', '*.pem', '*.p12', '*.key', '*.keystore', 'token-policy.md',
