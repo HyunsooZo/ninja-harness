@@ -69,6 +69,8 @@ workflow:
   non_trivial_requires_active_plan: true
   optional_project_gates: true
   project_readiness_gate: scripts/check-profile-readiness.sh
+  final_integrity_target: make integrity
+  gate_self_test: scripts/self-test-harness-gates.sh
   orchestration_default_mode: SINGLE_AGENT
   orchestration_requires_active_plan_when_split: true
 

@@ -2,7 +2,7 @@
 
 이 파일은 Codex/Claude가 작업 시작 시 읽는 짧은 진입 지도다. 세부 기준은 `docs/harness/**`와 `docs/harness/profiles/**`를 따른다.
 
-- 공통 로컬 진입점은 `Makefile`이다. 로컬 도구 점검은 `make doctor`, 구조 검증은 `make verify`, 실제 프로젝트 placeholder 준비도 검증은 `make project-ready`, skill 동기화는 `make sync-skills`, 조직 표준 검증은 `HARNESS_*_SCRIPT=... make verify-org`를 우선 사용한다.
+- 공통 로컬 진입점은 `Makefile`이다. 로컬 도구 점검은 `make doctor`, 구조 검증은 `make verify`, 실제 프로젝트 placeholder 준비도 검증은 `make project-ready`, 하네스 자체 최종 무결성 검증은 `make integrity`, skill 동기화는 `make sync-skills`, 조직 표준 검증은 `HARNESS_*_SCRIPT=... make verify-org`를 우선 사용한다.
 
 ## 항상 읽을 문서
 

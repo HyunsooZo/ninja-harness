@@ -6,6 +6,7 @@ HARNESS_VERIFY ?= scripts/verify-harness-structure.sh
 HARNESS_PROJECT_GATES ?= scripts/verify-project-gates.sh
 HARNESS_SYNC_SKILLS ?= scripts/sync-skills.sh
 HARNESS_CHECK_PROFILE ?= scripts/check-profile-readiness.sh
+HARNESS_SELF_TEST_GATES ?= scripts/self-test-harness-gates.sh
 HARNESS_EVAL ?= scripts/collect-eval-metrics.sh
 HARNESS_CHECK_PLANS ?= scripts/check-completed-plan-quality.sh
 HARNESS_SET_MODEL ?= scripts/set-codex-agent-model.sh
@@ -21,7 +22,7 @@ ORG_GATE_SCRIPT_VARS := \
 .PHONY: \
   help doctor verify verify-template verify-project verify-org \
   project-ready check-profile project-gates project-gates-required sync-skills check-sync \
-  eval check-plans set-model clean
+  self-test-gates check-active-plans integrity eval check-plans set-model clean
 
 help:
 	@echo "Harness commands:"
@@ -32,6 +33,8 @@ help:
 	@echo "  make verify-project          Run project-mode harness verification"
 	@echo "  make project-ready           Verify project mode and fail on unfilled profile placeholders"
 	@echo "  make check-profile           Check project profile/context placeholders only"
+	@echo "  make self-test-gates         Verify key positive and negative harness gate behavior"
+	@echo "  make integrity               Run final local harness integrity checks"
 	@echo "  make verify-org              Run organization-standard verification with real project gates"
 	@echo "  make project-gates           Run configured project gates only; skips if none configured"
 	@echo "  make project-gates-required  Run project gates only and fail when no gate is configured"
@@ -58,6 +61,7 @@ doctor:
 		"$(HARNESS_PROJECT_GATES)" \
 		"$(HARNESS_SYNC_SKILLS)" \
 		"$(HARNESS_CHECK_PROFILE)" \
+		"$(HARNESS_SELF_TEST_GATES)" \
 		"$(HARNESS_EVAL)" \
 		"$(HARNESS_CHECK_PLANS)" \
 		"$(HARNESS_SET_MODEL)"; do \
@@ -94,6 +98,22 @@ project-ready:
 
 check-profile:
 	bash "$(HARNESS_CHECK_PROFILE)"
+
+self-test-gates:
+	bash "$(HARNESS_SELF_TEST_GATES)"
+
+check-active-plans:
+	@active="$$(find docs/harness/plans/active -mindepth 1 ! -name .gitkeep -print)"; \
+	if [ -n "$$active" ]; then \
+		echo "[FAIL] active plans must be completed before final integrity:"; \
+		echo "$$active"; \
+		exit 1; \
+	fi
+	@echo "[OK] no active plans"
+
+integrity: doctor verify self-test-gates check-plans check-active-plans
+	@git diff --check
+	@echo "[OK] harness integrity verified"
 
 # Organization-standard verification intentionally requires script gates, not
 # legacy HARNESS_*_CMD strings.  The gate scripts must live under the allowlisted

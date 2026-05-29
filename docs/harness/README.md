@@ -159,6 +159,16 @@ HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh
 
 `HARNESS_VERIFY_MODE`를 생략하면 `template` 모드로 실행한다.
 
+## 최종 무결성 검증
+
+릴리스 전 또는 하네스 자체를 수정한 뒤에는 분리된 확인을 한 번에 묶은 최종 gate를 실행한다.
+
+```bash
+make integrity
+```
+
+이 target은 `make doctor`, `make verify`, gate self-test, completed plan 품질 검사, active plan 잔여 여부, `git diff --check`를 함께 확인한다. 실제 프로젝트 build/test/lint는 여전히 project gate 영역이므로 조직 표준에서는 `HARNESS_*_SCRIPT=... make verify-org`를 별도로 연결한다.
+
 ## 에이전트 오케스트레이션
 
 레이어별 에이전트 분리는 작업을 무조건 여러 에이전트에게 나누라는 뜻이 아니다. 작은 단일 수정은 `SINGLE_AGENT`로 처리하고, 여러 레이어의 도메인 규칙/트랜잭션/영속성/API 계약이 함께 바뀔 때는 main agent가 혼자 구현하지 않고 `task-orchestrator`와 `13_AGENT_ORCHESTRATION.md` 기준으로 분리한다. 분리 후에는 단일 통합자가 결정사항과 충돌을 수렴한다.
@@ -194,6 +204,8 @@ make verify-template
 make verify-project
 make project-ready
 make check-profile
+make self-test-gates
+make integrity
 make sync-skills
 make eval
 make check-plans

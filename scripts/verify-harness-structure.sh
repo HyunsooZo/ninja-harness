@@ -37,6 +37,7 @@ required=(
   ".claude/commands"
   "scripts/sync-skills.sh"
   "scripts/check-profile-readiness.sh"
+  "scripts/self-test-harness-gates.sh"
   "scripts/verify-project-gates.sh"
   "scripts/collect-eval-metrics.sh"
 )
@@ -83,10 +84,12 @@ check(not any(p.exists() for p in retired_docs), f'retired duplicate docs must n
 # Makefile should provide one stable local/CI entry point for common harness tasks.
 makefile = root/'Makefile'
 make_text = makefile.read_text(encoding='utf-8')
-for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
+for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','self-test-gates','check-active-plans','integrity','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
     check(re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}')
-for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
+for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/self-test-harness-gates.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
     check(token in make_text, f'Makefile missing command/policy token: {token}')
+for token in ['integrity: doctor verify self-test-gates check-plans check-active-plans', 'git diff --check', 'no active plans']:
+    check(token in make_text, f'Makefile missing integrity token: {token}')
 for token in ['command -v bash','command -v python3','supported OS','unsupported OS']:
     check(token in make_text, f'Makefile doctor missing runtime readiness token: {token}')
 for gate_var in ['HARNESS_BACKEND_TEST_SCRIPT','HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT','HARNESS_SECONDARY_APP_TEST_SCRIPT','HARNESS_INTEGRATION_TEST_SCRIPT','HARNESS_SECURITY_SCAN_SCRIPT','HARNESS_A11Y_CHECK_SCRIPT']:
@@ -231,9 +234,13 @@ sync_script = root/'scripts/sync-skills.sh'
 check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
 check(os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable')
-for script_name in ['check-profile-readiness.sh', 'collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'set-codex-agent-model.sh']:
+for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'set-codex-agent-model.sh']:
     script_path = root/'scripts'/script_name
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
+
+self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1']:
+    check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
 print(f'[OK] claude skills: {len(claude_skill_dirs)}')

@@ -93,9 +93,10 @@
 ## 최종 검토
 
 ```bash
+make integrity
 bash scripts/verify-harness-structure.sh
 find . -name .DS_Store -print
 find docs/harness/plans/active -mindepth 1 ! -name .gitkeep -print
 ```
 
-프로젝트별 표현 누출은 구조 검증 스크립트가 핵심 문서에 대해 확인한다. 이력 계획과 프로필/컨텍스트 파일은 의도적으로 제외한다.
+`make integrity`는 doctor, 구조 검증, gate self-test, completed plan 품질, active plan 잔여 여부, whitespace 검사를 묶은 최종 local gate다. 프로젝트별 표현 누출은 구조 검증 스크립트가 핵심 문서에 대해 확인한다. 이력 계획과 프로필/컨텍스트 파일은 의도적으로 제외한다.

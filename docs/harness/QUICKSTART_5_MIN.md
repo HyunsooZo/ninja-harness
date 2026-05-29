@@ -106,6 +106,12 @@ cp docs/harness/plans/TEMPLATE.md docs/harness/plans/active/YYYY-MM-DD-task-name
 - 관련 context/profile 갱신
 - reviewer 판정 또는 최종 self-review 작성
 
+하네스 자체를 수정했거나 배포 전 상태를 확인할 때는 active plan을 completed로 이동한 뒤 최종 무결성 gate를 실행한다.
+
+```bash
+make integrity
+```
+
 ## 7. 자주 헷갈리는 기준
 
 - `.agents/skills/**`는 skill 원본이다.
