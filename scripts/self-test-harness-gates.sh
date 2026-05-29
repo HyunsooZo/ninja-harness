@@ -105,6 +105,10 @@ expect_fail "source_of_truth rejects missing required entry" \
   with_harness_yaml_without_line "- CLAUDE.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "source_of_truth rejects missing required state" \
+  with_harness_yaml_without_line "decisions: docs/harness/context/DECISIONS.md" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \

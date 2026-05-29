@@ -239,7 +239,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -406,6 +406,27 @@ check(skill_policy, 'missing source_of_truth.skills')
 check('repo_source: .agents/skills' in skill_policy.group('body'), 'missing repo skill source policy')
 check('claude_mirror: .claude/skills' in skill_policy.group('body'), 'missing claude skill mirror policy')
 check('sync_script: scripts/sync-skills.sh' in skill_policy.group('body'), 'missing skill sync script policy')
+
+state_match = re.search(r'  state:\n(?P<body>(?:    [A-Za-z0-9_]+: .+\n)+)', yaml_text)
+check(state_match, 'missing source_of_truth.state')
+state_refs = {}
+for line in state_match.group('body').splitlines():
+    key, value = line.strip().split(': ', 1)
+    state_refs[key] = value.strip()
+required_state_refs = {
+    'active_plans': 'docs/harness/plans/active',
+    'completed_plans': 'docs/harness/plans/completed',
+    'current_context': 'docs/harness/context',
+    'baseline': 'docs/harness/context/BASELINE.md',
+    'decisions': 'docs/harness/context/DECISIONS.md',
+    'context_index': 'docs/harness/context/INDEX.md',
+    'generated_context': 'docs/harness/context/generated',
+}
+missing_state_keys = set(required_state_refs) - set(state_refs)
+check(not missing_state_keys, f'missing source_of_truth.state keys: {sorted(missing_state_keys)}')
+for key, ref in required_state_refs.items():
+    check(state_refs.get(key) == ref, f'source_of_truth.state.{key} must be {ref}: {state_refs.get(key)}')
+    check((root/ref).exists(), f'missing source_of_truth.state path: {key} -> {ref}')
 
 print('[OK] reviewer safety verified')
 print('[OK] codex/claude agent mirrors verified')
