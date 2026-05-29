@@ -18,6 +18,7 @@ repositories:
 source_of_truth:
   entry:
     - AGENTS.md
+    - CLAUDE.md
     - docs/harness/context/BASELINE.md
     - docs/harness/context/INDEX.md
     - docs/harness/README.md
@@ -38,6 +39,9 @@ source_of_truth:
     - docs/harness/13_AGENT_ORCHESTRATION.md
     - docs/harness/ORG_ROLLOUT.md
     - docs/harness/CI_EXAMPLES.md
+    - docs/harness/GOVERNANCE.md
+    - docs/harness/SECURITY_POLICY.md
+    - docs/harness/ADOPTION_SCORECARD.md
     - docs/harness/profiles/project-profile.md
     - docs/harness/profiles/design-system-profile.md
   skills:

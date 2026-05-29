@@ -359,6 +359,16 @@ entries = [line.strip()[2:].strip() for line in entry_match.group('body').splitl
 check(len(entries) == len(set(entries)), f'duplicate source_of_truth.entry: {entries}')
 for ref in entries:
     check((root/ref).exists(), f'missing source_of_truth.entry path: {ref}')
+required_entries = {
+    'AGENTS.md',
+    'CLAUDE.md',
+    'docs/harness/context/BASELINE.md',
+    'docs/harness/context/INDEX.md',
+    'docs/harness/README.md',
+    'docs/harness/QUICKSTART_5_MIN.md',
+}
+missing_entries = required_entries - set(entries)
+check(not missing_entries, f'missing required source_of_truth.entry refs: {sorted(missing_entries)}')
 
 harness_match = re.search(r'  harness:\n(?P<body>(?:    - .+\n)+)', yaml_text)
 check(harness_match, 'missing source_of_truth.harness')
@@ -366,6 +376,30 @@ harness_refs = [line.strip()[2:].strip() for line in harness_match.group('body')
 check(len(harness_refs) == len(set(harness_refs)), f'duplicate source_of_truth.harness: {harness_refs}')
 for ref in harness_refs:
     check((root/ref).exists(), f'missing source_of_truth.harness path: {ref}')
+required_harness_refs = {
+    'docs/harness/00_AGENT_BRIEF.md',
+    'docs/harness/01_BACKEND.md',
+    'docs/harness/02_PRIMARY_FRONTEND.md',
+    'docs/harness/03_SECONDARY_APP.md',
+    'docs/harness/04_INTEGRATION.md',
+    'docs/harness/05_TESTING.md',
+    'docs/harness/07_DESIGN_SYSTEM.md',
+    'docs/harness/08_HARNESS_AUDIT.md',
+    'docs/harness/09_EVIDENCE_GATE.md',
+    'docs/harness/10_BACKEND_QUALITY_GATE.md',
+    'docs/harness/11_PARALLEL_AGENT_GATE.md',
+    'docs/harness/12_FIELD_VALIDATION.md',
+    'docs/harness/13_AGENT_ORCHESTRATION.md',
+    'docs/harness/ORG_ROLLOUT.md',
+    'docs/harness/CI_EXAMPLES.md',
+    'docs/harness/GOVERNANCE.md',
+    'docs/harness/SECURITY_POLICY.md',
+    'docs/harness/ADOPTION_SCORECARD.md',
+    'docs/harness/profiles/project-profile.md',
+    'docs/harness/profiles/design-system-profile.md',
+}
+missing_harness_refs = required_harness_refs - set(harness_refs)
+check(not missing_harness_refs, f'missing required source_of_truth.harness refs: {sorted(missing_harness_refs)}')
 
 skill_policy = re.search(r'  skills:\n(?P<body>(?:    .+\n)+)', yaml_text)
 check(skill_policy, 'missing source_of_truth.skills')
