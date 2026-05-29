@@ -215,6 +215,11 @@ for token in ['Darwin|Linux', 'CYGWIN*|MINGW*|MSYS*', 'prefer WSL for CI parity'
     check(token in make_text, f'Makefile doctor missing OS support token: {token}')
 for tool in runtime_refs['required_tools'].split():
     check(f'command -v {tool}' in make_text, f'Makefile doctor missing required tool check: {tool}')
+posix_make_match = re.search(r'^HARNESS_POSIX_UTILITIES \?= (.+)$', make_text, flags=re.M)
+check(posix_make_match, 'Makefile missing HARNESS_POSIX_UTILITIES ?= assignment')
+check(posix_make_match.group(1).strip() == runtime_refs['posix_utilities'], (
+    f'Makefile/runtime posix utility list mismatch: {posix_make_match.group(1).strip()} != {runtime_refs["posix_utilities"]}'
+))
 for tool in runtime_refs['posix_utilities'].split():
     check(tool in make_text, f'Makefile doctor missing POSIX utility from readiness list: {tool}')
 check('command -v "$$tool"' in make_text, 'Makefile doctor must validate every configured POSIX utility')
