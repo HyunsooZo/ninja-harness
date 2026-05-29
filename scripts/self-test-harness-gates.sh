@@ -177,6 +177,10 @@ expect_fail "agent orchestration rejects missing single integrator" \
   with_harness_yaml_without_line "require_single_integrator: true" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "context rules reject full scan default removal" \
+  with_harness_yaml_without_line "default_load_full_scan: false" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \

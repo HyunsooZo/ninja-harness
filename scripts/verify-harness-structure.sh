@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -660,6 +660,42 @@ for section, expected_values in expected_rules.items():
     for key, expected in expected_values.items():
         actual = rules_sections[section].get(key)
         check(actual == expected, f'rules.{section}.{key} must be {expected}: {actual}')
+
+context_rules_match = re.search(
+    r'  context:\n(?P<body>(?:    [A-Za-z0-9_]+: .+\n?)+)',
+    rules_body,
+)
+check(context_rules_match, 'missing rules.context manifest')
+context_rules = {}
+for line in context_rules_match.group('body').splitlines():
+    key, value = line.strip().split(': ', 1)
+    context_rules[key] = value.strip()
+expected_context_rules = {
+    'default_load_full_scan': 'false',
+    'full_scan_is_generated_artifact': 'true',
+    'prefer_baseline_and_recent_completed_plan': 'true',
+    'generated_scan_dir': 'docs/harness/context/generated',
+    'baseline': 'docs/harness/context/BASELINE.md',
+    'decisions': 'docs/harness/context/DECISIONS.md',
+}
+missing_context_rule_keys = set(expected_context_rules) - set(context_rules)
+check(not missing_context_rule_keys, (
+    f'missing rules.context manifest keys: {sorted(missing_context_rule_keys)}'
+))
+for key, expected in expected_context_rules.items():
+    actual = context_rules.get(key)
+    check(actual == expected, f'rules.context.{key} must be {expected}: {actual}')
+for key in ['generated_scan_dir', 'baseline', 'decisions']:
+    ref = context_rules[key]
+    check((root/ref).exists(), f'missing rules.context path: {key} -> {ref}')
+
+context_index_text = (root/'docs/harness/context/INDEX.md').read_text(encoding='utf-8')
+for required in ['전체 스캔', '기본 컨텍스트', 'generated/']:
+    check(required in context_index_text, f'context INDEX missing context policy token: {required}')
+context_readme_text = (root/'docs/harness/context/README.md').read_text(encoding='utf-8')
+for required in ['전체 스캔', '기본 컨텍스트', 'generated/PROJECT_CONTEXT_SCAN.generated.md']:
+    check(required in context_readme_text, f'context README missing context policy token: {required}')
+
 testing_text = (root/'docs/harness/05_TESTING.md').read_text(encoding='utf-8')
 for required in ['RED -> GREEN -> REFACTOR -> VERIFY', 'RED', 'GREEN', 'VERIFY', '예외 사유']:
     check(required in testing_text, f'testing doc missing rules token: {required}')
