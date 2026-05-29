@@ -83,6 +83,7 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 
 - 기본: `HARNESS_*_SCRIPT`로 repository script를 실행한다.
 - 허용 경로: `scripts/ci/**`, `.github/scripts/**`, `ci/**`.
+- 허용 경로 안의 script 파일과 경로 구성 요소는 symlink이면 안 된다.
 - Legacy: `HARNESS_*_CMD`는 `bash -lc`로 실행된다.
 - 조직 표준에서 legacy command를 쓰려면 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`과 `HARNESS_ALLOW_LEGACY_BASH_LC=1`을 모두 설정한다.
 - 외부 입력, PR 본문, 이슈 내용, 사용자 입력을 그대로 gate 변수에 연결하지 않는다.

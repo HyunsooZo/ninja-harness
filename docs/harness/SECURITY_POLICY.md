@@ -3,6 +3,7 @@
 ## Project gate 실행 정책
 
 `HARNESS_*_SCRIPT`가 기본이다. 지정된 script는 repository 내부의 허용 경로에 있어야 하고 실행 가능해야 한다.
+허용 경로 안의 script 파일과 경로 구성 요소는 symlink이면 안 된다. Gate script는 실제 repository 파일이어야 하며, symlink로 repository 밖 스크립트를 가리키는 구성은 거부한다.
 
 허용 기본 경로:
 

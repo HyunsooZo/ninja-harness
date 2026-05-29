@@ -71,6 +71,7 @@ npm audit --audit-level=high
 권장:
 
 - `HARNESS_*_SCRIPT`에 `scripts/ci/*.sh`, `.github/scripts/*.sh`, `ci/*.sh` 아래의 실행 가능한 파일을 지정한다.
+- Gate script 파일과 경로 구성 요소는 symlink이면 안 된다.
 - 조직 표준 CI에서는 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`을 설정해 gate 설정이 maintainer-controlled임을 명시한다.
 - workflow와 `scripts/ci/**` 변경은 code-owner/branch protection으로 리뷰 필수 처리한다.
 

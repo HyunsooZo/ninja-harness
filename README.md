@@ -379,6 +379,8 @@ scripts/ci/**
 ci/**
 ```
 
+허용 경로 안의 script 파일과 경로 구성 요소는 symlink이면 안 됩니다. Gate script는 실제 repository 파일이어야 하며, symlink로 repository 밖 스크립트를 가리키는 구성은 거부됩니다.
+
 legacy command 방식인 `HARNESS_*_CMD`는 기본 사용하지 않습니다.  
 필요한 경우 아래 값을 명시해야 합니다.
 

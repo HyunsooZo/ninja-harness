@@ -1155,7 +1155,7 @@ check(ci_example_path.exists(), f'missing GitHub Actions example: {ci_example_pa
 ci_example = ci_example_path.read_text(encoding='utf-8')
 check('HARNESS_VERIFY_MODE=project \\' in ci_example, 'CI example should use readable multiline env assignment')
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
-for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD']:
+for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
 vpg_text = (root/'scripts/verify-project-gates.sh').read_text(encoding='utf-8')
 for required in ['SECURITY POLICY', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS', 'bash -lc', 'no symlink escapes']:
@@ -1253,6 +1253,8 @@ check('HARNESS_BACKEND_TEST_CMD' not in ci_text, 'CI example should not use lega
 ci_examples_text = (root/'docs/harness/CI_EXAMPLES.md').read_text(encoding='utf-8')
 for token in ['make integrity', 'HARNESS_*_SCRIPT', 'HARNESS_ALLOW_LEGACY_BASH_LC', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1']:
     check(token in ci_examples_text, f'CI examples missing {token}')
+for doc in [root/'README.md', root/'docs/harness/SECURITY_POLICY.md', root/'docs/harness/CI_EXAMPLES.md']:
+    check('symlink' in doc.read_text(encoding='utf-8'), f'{doc} missing project gate symlink policy')
 
 metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8')
 for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간']:
