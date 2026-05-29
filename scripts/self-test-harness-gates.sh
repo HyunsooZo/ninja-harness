@@ -17,6 +17,7 @@ cleanup() {
   fi
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
+  rm -f scripts/ci/.harness-self-test-link.sh
   rm -f .env.harness-self-test
   rm -f session-token.json
   rm -f api-secret.properties
@@ -367,6 +368,21 @@ if [[ ! -d scripts/ci ]]; then
 fi
 printf '#!/usr/bin/env bash\nset -euo pipefail\necho "[OK] self-test project gate"\n' > scripts/ci/.harness-self-test-ok.sh
 chmod +x scripts/ci/.harness-self-test-ok.sh
+
+python3 - <<'PY'
+from pathlib import Path
+
+target = Path('scripts/ci/.harness-self-test-ok.sh').resolve()
+link = Path('scripts/ci/.harness-self-test-link.sh')
+if link.exists() or link.is_symlink():
+    link.unlink()
+link.symlink_to(target)
+PY
+
+expect_fail "project gate rejects symlink script" \
+  env HARNESS_RUN_PROJECT_CHECKS=1 \
+      HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-link.sh \
+      bash scripts/verify-project-gates.sh
 
 expect_pass "project gate accepts allowlisted executable script" \
   env HARNESS_RUN_PROJECT_CHECKS=1 \

@@ -15,6 +15,7 @@ cd "$ROOT"
 # - no absolute paths
 # - no parent traversal
 # - no shell metacharacters
+# - no symlink escapes
 # - target must exist and be executable
 
 ran_any=0
@@ -51,6 +52,7 @@ resolve_repo_script() {
 
   local script="$ROOT/$value"
   [[ -f "$script" ]] || reject "script gate not found: $value" || return $?
+  [[ ! -L "$script" ]] || reject "script gate must not be a symlink: $value" || return $?
   [[ -x "$script" ]] || reject "script gate must be executable: $value" || return $?
 
   case "$value" in
