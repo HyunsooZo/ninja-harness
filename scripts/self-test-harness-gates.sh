@@ -19,6 +19,7 @@ cleanup() {
   rm -f scripts/ci/.harness-self-test-ok.sh
   rm -f .env.harness-self-test
   rm -f session-token.json
+  rm -f api-secret.properties
   rm -f docs/harness/context/generated/token-policy.md
   if [[ "$created_ci_dir" == "1" ]]; then
     rmdir scripts/ci 2>/dev/null || true
@@ -145,6 +146,11 @@ printf '{"placeholder": true}\n' > session-token.json
 expect_fail "sensitive artifact rejects token config file" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 rm -f session-token.json
+
+printf 'placeholder=true\n' > api-secret.properties
+expect_fail "sensitive artifact rejects secret properties file" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+rm -f api-secret.properties
 
 mkdir -p docs/harness/context/generated
 printf '# Token policy placeholder\n' > docs/harness/context/generated/token-policy.md
