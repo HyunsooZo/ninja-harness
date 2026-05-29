@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -556,6 +556,75 @@ final_target_name = final_target.split(' ', 1)[1]
 check(re.search(rf'^{re.escape(final_target_name)}:', make_text, re.M), (
     f'workflow.final_integrity_target references missing Makefile target: {final_target}'
 ))
+
+rules_match = re.search(r'^rules:\n(?P<body>.*?)(?:\n\nreview_gates:)', yaml_text, flags=re.S | re.M)
+check(rules_match, 'missing rules manifest')
+rules_body = rules_match.group('body')
+rules_sections = {}
+current_rule_section = None
+expected_rules = {
+    'tdd': {
+        'require_red_before_product_edit': 'true',
+        'require_green_before_refactor': 'true',
+        'require_verify_before_done': 'true',
+        'exception_requires_rationale': 'true',
+    },
+    'scope': {
+        'edit_only_requested_files_or_direct_dependencies': 'true',
+        'avoid_unrelated_refactor': 'true',
+        'avoid_unrequested_library': 'true',
+    },
+    'frontend': {
+        'require_i18n_for_visible_copy': 'true',
+        'forbid_inline_style': 'true',
+        'prefer_existing_style_tokens': 'true',
+        'forbid_external_ui_library_without_approval': 'true',
+    },
+    'backend': {
+        'keep_layer_boundary': 'true',
+        'validate_resource_scoped_auth': 'true',
+        'avoid_sensitive_response_leak': 'true',
+        'require_ddd_boundary_review': 'true',
+        'require_transaction_boundary_review': 'true',
+        'require_oop_solid_review': 'true',
+        'split_domain_and_persistence_agents': 'true',
+    },
+    'integration': {
+        'review_api_auth_resource_pagination_changes': 'true',
+    },
+    'commits': {
+        'require_explicit_user_request': 'true',
+    },
+}
+for raw_line in rules_body.splitlines():
+    stripped = raw_line.strip()
+    if not stripped:
+        continue
+    if raw_line.startswith('  ') and not raw_line.startswith('    ') and stripped.endswith(':'):
+        current_rule_section = stripped[:-1]
+        if current_rule_section in expected_rules:
+            rules_sections[current_rule_section] = {}
+        continue
+    if raw_line.startswith('    ') and current_rule_section in expected_rules and ': ' in stripped:
+        key, value = stripped.split(': ', 1)
+        rules_sections[current_rule_section][key] = value.strip()
+for section, expected_values in expected_rules.items():
+    check(section in rules_sections, f'missing rules.{section}')
+    for key, expected in expected_values.items():
+        actual = rules_sections[section].get(key)
+        check(actual == expected, f'rules.{section}.{key} must be {expected}: {actual}')
+testing_text = (root/'docs/harness/05_TESTING.md').read_text(encoding='utf-8')
+for required in ['RED -> GREEN -> REFACTOR -> VERIFY', 'RED', 'GREEN', 'VERIFY', '예외 사유']:
+    check(required in testing_text, f'testing doc missing rules token: {required}')
+agent_brief_text = (root/'docs/harness/00_AGENT_BRIEF.md').read_text(encoding='utf-8')
+for required in ['프로젝트별', '관련 없는', '컨텍스트', '검증']:
+    check(required in agent_brief_text, f'agent brief missing rules token: {required}')
+backend_text = (root/'docs/harness/01_BACKEND.md').read_text(encoding='utf-8')
+for required in ['레이어', '권한', '트랜잭션', 'DDD']:
+    check(required in backend_text, f'backend doc missing rules token: {required}')
+frontend_text = (root/'docs/harness/02_PRIMARY_FRONTEND.md').read_text(encoding='utf-8')
+for required in ['i18n', '인라인 스타일', '디자인', '접근성']:
+    check(required in frontend_text, f'primary frontend doc missing rules token: {required}')
 
 skill_policy = re.search(r'  skills:\n(?P<body>(?:    .+\n)+)', yaml_text)
 check(skill_policy, 'missing source_of_truth.skills')
