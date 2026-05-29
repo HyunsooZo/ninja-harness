@@ -18,7 +18,7 @@ for plan in "${plans[@]}"; do
   missing=()
   [[ "$text" == *"RED"* || "$text" == *"사전 실패"* ]] || missing+=("RED evidence")
   [[ "$text" == *"GREEN"* || "$text" == *"구현"* ]] || missing+=("GREEN evidence")
-  [[ "$text" == *"REFACTOR"* || "$text" == *"리팩토링"* ]] || missing+=("REFACTOR decision")
+  [[ "$text" == *"REFACTOR"* || "$text" == *"리팩토링"* || "$text" == *"리팩터링"* ]] || missing+=("REFACTOR decision")
   [[ "$text" == *"VERIFY"* || "$text" == *"검증"* ]] || missing+=("VERIFY evidence")
   [[ "$text" == *"잔여 위험"* || "$text" == *"Risk"* || "$text" == *"risk"* ]] || missing+=("residual risk")
 
