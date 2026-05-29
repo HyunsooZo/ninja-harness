@@ -149,6 +149,40 @@ PY
   return "$status"
 }
 
+with_file_replacing_line() {
+  local path="$1"
+  local needle="$2"
+  local replacement="$3"
+  shift 3
+  local backup="$tmp_dir/file-replacing-line.backup"
+  cp "$path" "$backup"
+  python3 - "$path" "$needle" "$replacement" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+needle = sys.argv[2]
+replacement = sys.argv[3]
+lines = path.read_text(encoding='utf-8').splitlines()
+changed = False
+for index, line in enumerate(lines):
+    if line.strip() == needle:
+        lines[index] = replacement
+        changed = True
+        break
+if not changed:
+    raise SystemExit(f'missing test needle in {path}: {needle}')
+path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+PY
+  local status=0
+  set +e
+  "$@"
+  status=$?
+  set -e
+  cp "$backup" "$path"
+  return "$status"
+}
+
 good_profile="$tmp_dir/good-profile.md"
 bad_profile="$tmp_dir/bad-profile.md"
 printf 'project: N/A\nruntime: N/A\n' > "$good_profile"
@@ -251,6 +285,24 @@ expect_fail "runtime rejects missing Python TOML parser manifest" \
 expect_fail "agent metadata rejects missing Codex skills preload" \
   with_file_without_line ".codex/agents/backend-api-implementer.toml" \
     'skills = ["backend-api", "backend-application", "integration-contract", "testing-strategy"]' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "agent metadata rejects invalid sandbox mode" \
+  with_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
+    'sandbox_mode = "workspace-write"' \
+    'sandbox_mode = "full-access"' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "agent metadata rejects invalid reasoning effort" \
+  with_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
+    'model_reasoning_effort = "high"' \
+    'model_reasoning_effort = "extreme"' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "agent metadata rejects non-list skills preload" \
+  with_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
+    'skills = ["backend-api", "backend-application", "integration-contract", "testing-strategy"]' \
+    'skills = "backend-api"' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "project gate manifest rejects missing preferred script" \
