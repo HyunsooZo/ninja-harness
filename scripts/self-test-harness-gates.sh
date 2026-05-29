@@ -126,7 +126,7 @@ with_file_without_line() {
   local path="$1"
   local needle="$2"
   shift 2
-  local backup="$tmp_dir/$(basename "$path").backup"
+  local backup="$tmp_dir/file-without-line.backup"
   cp "$path" "$backup"
   python3 - "$path" "$needle" <<'PY'
 from pathlib import Path
