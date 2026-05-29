@@ -84,6 +84,38 @@ PY
   return "$status"
 }
 
+with_harness_yaml_insert_after_line() {
+  local needle="$1"
+  local insertion="$2"
+  shift 2
+  harness_yaml_backup="$tmp_dir/harness.yaml.backup"
+  cp docs/harness/harness.yaml "$harness_yaml_backup"
+  python3 - "$needle" "$insertion" <<'PY'
+from pathlib import Path
+import sys
+
+needle = sys.argv[1]
+insertion = sys.argv[2]
+path = Path('docs/harness/harness.yaml')
+lines = path.read_text(encoding='utf-8').splitlines()
+for index, line in enumerate(lines):
+    if line == needle:
+        lines.insert(index + 1, insertion)
+        path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+        break
+else:
+    raise SystemExit(f'missing test needle in harness.yaml: {needle}')
+PY
+  local status=0
+  set +e
+  "$@"
+  status=$?
+  set -e
+  cp "$harness_yaml_backup" docs/harness/harness.yaml
+  harness_yaml_backup=""
+  return "$status"
+}
+
 good_profile="$tmp_dir/good-profile.md"
 bad_profile="$tmp_dir/bad-profile.md"
 printf 'project: N/A\nruntime: N/A\n' > "$good_profile"
@@ -111,6 +143,10 @@ expect_fail "source_of_truth rejects missing required state" \
 
 expect_fail "organization manifest rejects missing governance" \
   with_harness_yaml_without_line "governance: docs/harness/GOVERNANCE.md" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "review_gates reject missing agent" \
+  with_harness_yaml_insert_after_line "  final_quality:" "    - missing-reviewer" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "project gate rejects absolute script path" \

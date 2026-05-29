@@ -239,7 +239,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -351,8 +351,61 @@ for doc in [root/'AGENTS.md', root/'docs/harness/skill-routing.md', root/'docs/h
     for ref in re.findall(r'`?\.claude/skills/([A-Za-z0-9_-]+)/SKILL\.md`?', text):
         check(ref in claude_skill_dirs, f'missing referenced claude skill {ref}: {doc}')
 
-# harness.yaml source_of_truth.entry must not contain duplicate lines.
 yaml_text = (root/'docs/harness/harness.yaml').read_text(encoding='utf-8')
+
+def check_agent_ref(ref: str, source: str) -> None:
+    check(ref in agent_names, f'harness.yaml {source} references missing agent: {ref}')
+    check(ref in claude_names, f'harness.yaml {source} references missing Claude agent mirror: {ref}')
+
+review_gates_match = re.search(r'^review_gates:\n(?P<body>.*?)(?:\n\nagent_orchestration:)', yaml_text, flags=re.S | re.M)
+check(review_gates_match, 'missing review_gates manifest')
+review_gate_refs = []
+review_gate_keys = set()
+current_review_gate = None
+for raw_line in review_gates_match.group('body').splitlines():
+    if re.match(r'^  [A-Za-z0-9_]+:\s*$', raw_line):
+        current_review_gate = raw_line.strip()[:-1]
+        review_gate_keys.add(current_review_gate)
+        continue
+    if raw_line.startswith('    - '):
+        check(current_review_gate, f'review_gates list item without gate: {raw_line}')
+        review_gate_refs.append((current_review_gate, raw_line.strip()[2:].strip()))
+        continue
+    check(not raw_line.strip(), f'unexpected review_gates manifest line: {raw_line}')
+required_review_gates = {
+    'backend_auth_or_security',
+    'api_contract',
+    'primary_frontend_ui',
+    'secondary_app',
+    'orchestration',
+    'backend_domain_persistence_split',
+    'final_quality',
+}
+check(review_gate_keys == required_review_gates, (
+    f'review_gates keys mismatch: expected={sorted(required_review_gates)}, actual={sorted(review_gate_keys)}'
+))
+for gate, ref in review_gate_refs:
+    check_agent_ref(ref, f'review_gates.{gate}')
+
+agent_orchestration_match = re.search(r'^agent_orchestration:\n(?P<body>.*?)(?:\n\nparallel_agents:)', yaml_text, flags=re.S | re.M)
+check(agent_orchestration_match, 'missing agent_orchestration manifest')
+backend_layer_order = []
+in_backend_layer_order = False
+for raw_line in agent_orchestration_match.group('body').splitlines():
+    stripped = raw_line.strip()
+    if raw_line == '  backend_layer_order:':
+        in_backend_layer_order = True
+        continue
+    if in_backend_layer_order and raw_line.startswith('    - '):
+        backend_layer_order.append(stripped[2:].strip())
+        continue
+    if in_backend_layer_order and stripped and not raw_line.startswith('    '):
+        in_backend_layer_order = False
+check(backend_layer_order, 'missing agent_orchestration.backend_layer_order')
+for ref in backend_layer_order:
+    check_agent_ref(ref, 'agent_orchestration.backend_layer_order')
+
+# harness.yaml source_of_truth.entry must not contain duplicate lines.
 entry_match = re.search(r'source_of_truth:\n  entry:\n(?P<body>(?:    - .+\n)+)', yaml_text)
 check(entry_match, 'missing source_of_truth.entry')
 entries = [line.strip()[2:].strip() for line in entry_match.group('body').splitlines() if line.strip().startswith('- ')]
