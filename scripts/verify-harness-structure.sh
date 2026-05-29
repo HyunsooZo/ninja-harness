@@ -163,6 +163,9 @@ for line in runtime_match.group('body').splitlines():
 required_runtime_refs = {
     'codex_agent_model': model_match.group(1) if model_match else '',
     'codex_model_override_env': 'HARNESS_EXPECTED_CODEX_MODEL',
+    'supported_os': 'macos_linux_wsl_posix_shell',
+    'unsupported_windows_native': 'true',
+    'required_tools': 'bash make python3',
     'note': '조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.',
 }
 missing_runtime_keys = set(required_runtime_refs) - set(runtime_refs)
@@ -172,6 +175,13 @@ for key, expected in required_runtime_refs.items():
 check(runtime_refs['codex_agent_model'], 'runtime.codex_agent_model must not be empty')
 check(runtime_refs['codex_model_override_env'] == 'HARNESS_EXPECTED_CODEX_MODEL', 'runtime override env mismatch')
 check((root/'scripts/set-codex-agent-model.sh').exists(), 'missing runtime model management script')
+for token in ['Darwin|Linux', 'CYGWIN*|MINGW*|MSYS*', 'prefer WSL for CI parity', 'unsupported OS']:
+    check(token in make_text, f'Makefile doctor missing OS support token: {token}')
+for tool in runtime_refs['required_tools'].split():
+    check(f'command -v {tool}' in make_text, f'Makefile doctor missing required tool check: {tool}')
+readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
+for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'bash', 'python3', 'make']:
+    check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
 
 for p in agents:
     data = tomllib.loads(p.read_text(encoding='utf-8'))
@@ -261,7 +271,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')

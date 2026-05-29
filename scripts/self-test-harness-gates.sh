@@ -161,6 +161,10 @@ expect_fail "runtime manifest rejects missing override env" \
   with_harness_yaml_without_line "codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "runtime rejects missing OS support manifest" \
+  with_harness_yaml_without_line "supported_os: macos_linux_wsl_posix_shell" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate manifest rejects missing preferred script" \
   with_harness_yaml_without_line "backend: HARNESS_BACKEND_TEST_SCRIPT" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
