@@ -196,6 +196,7 @@ check(runtime_refs['codex_model_override_env'] == 'HARNESS_EXPECTED_CODEX_MODEL'
 set_model_script = root/'scripts/set-codex-agent-model.sh'
 check(set_model_script.exists(), 'missing runtime model management script')
 set_model_text = set_model_script.read_text(encoding='utf-8')
+check("sync_runtime_model(root/'MANIFEST.md')" in set_model_text, 'set-model script must update MANIFEST.md runtime model')
 for key, expected in required_runtime_refs.items():
     if key == 'codex_agent_model':
         continue
@@ -344,6 +345,11 @@ if mode == 'template':
         ))
 
 manifest_text = (root/'MANIFEST.md').read_text(encoding='utf-8')
+manifest_model_match = re.search(r'^  codex_agent_model:\s*(\S+)\s*$', manifest_text, flags=re.M)
+check(manifest_model_match, 'MANIFEST.md missing runtime codex_agent_model')
+check(manifest_model_match.group(1) == runtime_refs['codex_agent_model'], (
+    f'MANIFEST.md runtime model must match harness.yaml: {manifest_model_match.group(1)} != {runtime_refs["codex_agent_model"]}'
+))
 for token in [
     'CLAUDE.md',
     'docs/harness/ORG_ROLLOUT.md',
