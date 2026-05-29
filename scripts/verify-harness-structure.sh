@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -502,6 +502,87 @@ check(not missing_state_keys, f'missing source_of_truth.state keys: {sorted(miss
 for key, ref in required_state_refs.items():
     check(state_refs.get(key) == ref, f'source_of_truth.state.{key} must be {ref}: {state_refs.get(key)}')
     check((root/ref).exists(), f'missing source_of_truth.state path: {key} -> {ref}')
+
+project_gate_match = re.search(r'  project_gates:\n(?P<body>.*?)(?:\n\n  context:)', yaml_text, flags=re.S)
+check(project_gate_match, 'missing project gate manifest')
+project_gate_body = project_gate_match.group('body')
+project_gate_scalars = {}
+preferred_scripts = {}
+legacy_commands = {}
+current_project_gate_section = None
+for raw_line in project_gate_body.splitlines():
+    stripped = raw_line.strip()
+    if not stripped:
+        continue
+    if raw_line.startswith('    ') and not raw_line.startswith('      ') and stripped.endswith(':'):
+        current_project_gate_section = stripped[:-1]
+        continue
+    if raw_line.startswith('      ') and current_project_gate_section in {'preferred_scripts', 'legacy_commands'}:
+        key, value = stripped.split(': ', 1)
+        if current_project_gate_section == 'preferred_scripts':
+            preferred_scripts[key] = value.strip()
+        else:
+            legacy_commands[key] = value.strip()
+        continue
+    current_project_gate_section = None
+    key, value = stripped.split(': ', 1)
+    project_gate_scalars[key] = value.strip()
+
+expected_preferred_scripts = {
+    'backend': 'HARNESS_BACKEND_TEST_SCRIPT',
+    'primary_frontend': 'HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT',
+    'secondary_app': 'HARNESS_SECONDARY_APP_TEST_SCRIPT',
+    'integration': 'HARNESS_INTEGRATION_TEST_SCRIPT',
+    'security': 'HARNESS_SECURITY_SCAN_SCRIPT',
+    'accessibility': 'HARNESS_A11Y_CHECK_SCRIPT',
+}
+expected_legacy_commands = {
+    'backend': 'HARNESS_BACKEND_TEST_CMD',
+    'primary_frontend': 'HARNESS_PRIMARY_FRONTEND_TEST_CMD',
+    'secondary_app': 'HARNESS_SECONDARY_APP_TEST_CMD',
+    'integration': 'HARNESS_INTEGRATION_TEST_CMD',
+    'security': 'HARNESS_SECURITY_SCAN_CMD',
+    'accessibility': 'HARNESS_A11Y_CHECK_CMD',
+}
+expected_project_gate_scalars = {
+    'enabled_by_env': 'HARNESS_RUN_PROJECT_CHECKS',
+    'profile_readiness_enabled_by_env': 'HARNESS_REQUIRE_FILLED_PROFILE',
+    'profile_readiness_script': 'scripts/check-profile-readiness.sh',
+    'script': 'scripts/verify-project-gates.sh',
+    'org_standard_requires_ack': 'HARNESS_ACK_TRUSTED_PROJECT_CMDS',
+    'legacy_bash_lc_opt_in': 'HARNESS_ALLOW_LEGACY_BASH_LC',
+}
+for key, expected in expected_project_gate_scalars.items():
+    check(project_gate_scalars.get(key) == expected, (
+        f'rules.project_gates.{key} must be {expected}: {project_gate_scalars.get(key)}'
+    ))
+    if key.endswith('script'):
+        check((root/expected).exists(), f'missing rules.project_gates script path: {expected}')
+check(preferred_scripts == expected_preferred_scripts, (
+    f'rules.project_gates.preferred_scripts mismatch: expected={expected_preferred_scripts}, actual={preferred_scripts}'
+))
+check(legacy_commands == expected_legacy_commands, (
+    f'rules.project_gates.legacy_commands mismatch: expected={expected_legacy_commands}, actual={legacy_commands}'
+))
+project_gate_text_for_manifest = (root/project_gate_scalars['script']).read_text(encoding='utf-8')
+actual_run_gates = {
+    name: (script_var, cmd_var)
+    for name, script_var, cmd_var in re.findall(
+        r'run_gate "([^"]+)" "\$\{([A-Z0-9_]+):-\}" "\$\{([A-Z0-9_]+):-\}"',
+        project_gate_text_for_manifest,
+    )
+}
+expected_run_gates = {
+    'backend': ('HARNESS_BACKEND_TEST_SCRIPT', 'HARNESS_BACKEND_TEST_CMD'),
+    'primary-frontend': ('HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT', 'HARNESS_PRIMARY_FRONTEND_TEST_CMD'),
+    'secondary-app': ('HARNESS_SECONDARY_APP_TEST_SCRIPT', 'HARNESS_SECONDARY_APP_TEST_CMD'),
+    'integration': ('HARNESS_INTEGRATION_TEST_SCRIPT', 'HARNESS_INTEGRATION_TEST_CMD'),
+    'security': ('HARNESS_SECURITY_SCAN_SCRIPT', 'HARNESS_SECURITY_SCAN_CMD'),
+    'accessibility': ('HARNESS_A11Y_CHECK_SCRIPT', 'HARNESS_A11Y_CHECK_CMD'),
+}
+check(actual_run_gates == expected_run_gates, (
+    f'project gate run_gate matrix mismatch: expected={expected_run_gates}, actual={actual_run_gates}'
+))
 
 print('[OK] reviewer safety verified')
 print('[OK] codex/claude agent mirrors verified')
