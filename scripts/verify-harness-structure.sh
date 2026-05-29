@@ -239,7 +239,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -493,6 +493,57 @@ print('[OK] agent orchestration policy verified')
 print('[OK] owned API contract impact policy verified')
 
 # Organization standard polish validation.
+organization_match = re.search(
+    r'^organization:\n(?P<body>.*?)(?:\n\nruntime:)',
+    yaml_text,
+    flags=re.S | re.M,
+)
+check(organization_match, 'missing organization manifest')
+organization_body = organization_match.group('body')
+organization_refs = {}
+organization_eval_scripts = []
+current_list = None
+for raw_line in organization_body.splitlines():
+    stripped = raw_line.strip()
+    if not stripped:
+        continue
+    if stripped.endswith(':') and not stripped.startswith('- '):
+        current_list = stripped[:-1]
+        organization_refs[current_list] = []
+        continue
+    if stripped.startswith('- '):
+        check(current_list == 'eval_scripts', f'unexpected organization list item: {stripped}')
+        organization_eval_scripts.append(stripped[2:].strip())
+        continue
+    current_list = None
+    key, value = stripped.split(': ', 1)
+    organization_refs[key] = value.strip()
+
+required_organization_refs = {
+    'rollout_guide': 'docs/harness/ORG_ROLLOUT.md',
+    'ci_examples': 'docs/harness/CI_EXAMPLES.md',
+    'governance': 'docs/harness/GOVERNANCE.md',
+    'security_policy': 'docs/harness/SECURITY_POLICY.md',
+    'adoption_scorecard': 'docs/harness/ADOPTION_SCORECARD.md',
+}
+for key, ref in required_organization_refs.items():
+    check(organization_refs.get(key) == ref, f'organization.{key} must be {ref}: {organization_refs.get(key)}')
+    check((root/ref).exists(), f'missing organization manifest path: {key} -> {ref}')
+check(organization_refs.get('org_standard_flag') == 'HARNESS_ORG_STANDARD', (
+    f"organization.org_standard_flag must be HARNESS_ORG_STANDARD: {organization_refs.get('org_standard_flag')}"
+))
+required_eval_scripts = {
+    'scripts/collect-eval-metrics.sh',
+    'scripts/check-completed-plan-quality.sh',
+}
+check(set(organization_eval_scripts) == required_eval_scripts, (
+    f'organization.eval_scripts mismatch: expected={sorted(required_eval_scripts)}, actual={sorted(organization_eval_scripts)}'
+))
+for ref in organization_eval_scripts:
+    script_path = root/ref
+    check(script_path.exists(), f'missing organization eval script: {ref}')
+    check(os.access(script_path, os.X_OK), f'organization eval script must be executable: {ref}')
+
 ci_example_path = root/'docs/harness/examples/github-actions/harness-verify.yml'
 check(ci_example_path.exists(), f'missing GitHub Actions example: {ci_example_path}')
 ci_example = ci_example_path.read_text(encoding='utf-8')
