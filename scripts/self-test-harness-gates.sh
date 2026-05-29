@@ -173,6 +173,10 @@ expect_fail "rules manifest rejects unrelated refactor removal" \
   with_harness_yaml_without_line "avoid_unrelated_refactor: true" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "agent orchestration rejects missing single integrator" \
+  with_harness_yaml_without_line "require_single_integrator: true" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \

@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -411,18 +411,65 @@ for gate, ref in review_gate_refs:
 
 agent_orchestration_match = re.search(r'^agent_orchestration:\n(?P<body>.*?)(?:\n\nparallel_agents:)', yaml_text, flags=re.S | re.M)
 check(agent_orchestration_match, 'missing agent_orchestration manifest')
+agent_orchestration_refs = {}
+agent_orchestration_modes = []
 backend_layer_order = []
+in_modes = False
 in_backend_layer_order = False
 for raw_line in agent_orchestration_match.group('body').splitlines():
     stripped = raw_line.strip()
+    if not stripped:
+        continue
+    if raw_line == '  modes:':
+        in_modes = True
+        in_backend_layer_order = False
+        continue
     if raw_line == '  backend_layer_order:':
+        in_modes = False
         in_backend_layer_order = True
+        continue
+    if in_modes and raw_line.startswith('    - '):
+        agent_orchestration_modes.append(stripped[2:].strip())
         continue
     if in_backend_layer_order and raw_line.startswith('    - '):
         backend_layer_order.append(stripped[2:].strip())
         continue
-    if in_backend_layer_order and stripped and not raw_line.startswith('    '):
+    if (in_modes or in_backend_layer_order) and stripped and not raw_line.startswith('    '):
+        in_modes = False
         in_backend_layer_order = False
+    if raw_line.startswith('  ') and ': ' in stripped:
+        key, value = stripped.split(': ', 1)
+        agent_orchestration_refs[key] = value.strip()
+required_agent_orchestration_refs = {
+    'default_mode': 'SINGLE_AGENT',
+    'orchestrator_agent': 'task-orchestrator',
+    'orchestration_skill': 'orchestration-planning',
+    'allow_single_agent_for_small_changes': 'true',
+    'require_active_plan_for_split_delegation': 'true',
+    'require_common_decisions_when_split': 'true',
+    'require_single_integrator': 'true',
+}
+for key, expected in required_agent_orchestration_refs.items():
+    actual = agent_orchestration_refs.get(key)
+    check(actual == expected, f'agent_orchestration.{key} must be {expected}: {actual}')
+check_agent_ref(agent_orchestration_refs['orchestrator_agent'], 'agent_orchestration.orchestrator_agent')
+check(agent_orchestration_refs['orchestration_skill'] in skill_names, (
+    f'agent_orchestration.orchestration_skill references missing skill: {agent_orchestration_refs["orchestration_skill"]}'
+))
+check(agent_orchestration_refs['orchestration_skill'] in claude_skill_dirs, (
+    f'agent_orchestration.orchestration_skill references missing Claude skill mirror: {agent_orchestration_refs["orchestration_skill"]}'
+))
+expected_agent_orchestration_modes = [
+    'SINGLE_AGENT',
+    'SINGLE_AGENT_WITH_REVIEW',
+    'SEQUENTIAL_LAYERED',
+    'PARALLEL_INVESTIGATION',
+    'PARALLEL_REVIEW',
+    'PARALLEL_IMPLEMENT',
+]
+check(agent_orchestration_modes == expected_agent_orchestration_modes, (
+    f'agent_orchestration.modes mismatch: expected={expected_agent_orchestration_modes}, actual={agent_orchestration_modes}'
+))
 check(backend_layer_order, 'missing agent_orchestration.backend_layer_order')
 for ref in backend_layer_order:
     check_agent_ref(ref, 'agent_orchestration.backend_layer_order')
