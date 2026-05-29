@@ -10,6 +10,7 @@ HARNESS_SELF_TEST_GATES ?= scripts/self-test-harness-gates.sh
 HARNESS_EVAL ?= scripts/collect-eval-metrics.sh
 HARNESS_CHECK_PLANS ?= scripts/check-completed-plan-quality.sh
 HARNESS_SET_MODEL ?= scripts/set-codex-agent-model.sh
+HARNESS_POSIX_UTILITIES ?= find cp rm mkdir chmod rmdir sed env uname head
 
 ORG_GATE_SCRIPT_VARS := \
   HARNESS_BACKEND_TEST_SCRIPT \
@@ -72,6 +73,10 @@ doctor:
 	@command -v python3 >/dev/null || { echo "[FAIL] python3 is required"; exit 1; }
 	@command -v make >/dev/null || { echo "[FAIL] make is required"; exit 1; }
 	@command -v git >/dev/null || { echo "[FAIL] git is required"; exit 1; }
+	@for tool in $(HARNESS_POSIX_UTILITIES); do \
+		command -v "$$tool" >/dev/null || { echo "[FAIL] POSIX utility is required: $$tool"; exit 1; }; \
+		done
+	@echo "[OK] POSIX utilities ready: $(HARNESS_POSIX_UTILITIES)"
 	@python3 -c 'import importlib.util, sys; parser = "tomllib" if importlib.util.find_spec("tomllib") else ("tomli" if importlib.util.find_spec("tomli") else ""); print("[OK] Python TOML parser ready: " + parser if parser else "[FAIL] Python TOML parser is required: use Python 3.11+ or install tomli", file=sys.stdout if parser else sys.stderr); sys.exit(0 if parser else 1)'
 	@os="$$(uname -s 2>/dev/null || echo unknown)"; \
 	case "$$os" in \

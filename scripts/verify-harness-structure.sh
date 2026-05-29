@@ -91,7 +91,7 @@ for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARN
     check(token in make_text, f'Makefile missing command/policy token: {token}')
 for token in ['integrity: doctor verify self-test-gates check-plans check-active-plans', 'git diff --check', 'no active plans']:
     check(token in make_text, f'Makefile missing integrity token: {token}')
-for token in ['command -v bash','command -v python3','find_spec("tomllib")','find_spec("tomli")','Python TOML parser','supported OS','unsupported OS']:
+for token in ['command -v bash','command -v python3','HARNESS_POSIX_UTILITIES','POSIX utility is required','find_spec("tomllib")','find_spec("tomli")','Python TOML parser','supported OS','unsupported OS']:
     check(token in make_text, f'Makefile doctor missing runtime readiness token: {token}')
 for gate_var in ['HARNESS_BACKEND_TEST_SCRIPT','HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT','HARNESS_SECONDARY_APP_TEST_SCRIPT','HARNESS_INTEGRATION_TEST_SCRIPT','HARNESS_SECURITY_SCAN_SCRIPT','HARNESS_A11Y_CHECK_SCRIPT']:
     check(gate_var in make_text, f'Makefile verify-org must recognize gate variable: {gate_var}')
@@ -183,6 +183,7 @@ required_runtime_refs = {
     'supported_os': 'macos_linux_wsl_posix_shell',
     'unsupported_windows_native': 'true',
     'required_tools': 'bash make python3 git',
+    'posix_utilities': 'find cp rm mkdir chmod rmdir sed env uname head',
     'toml_parser': 'tomllib_or_tomli',
     'note': '조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.',
 }
@@ -203,11 +204,14 @@ for token in ['Darwin|Linux', 'CYGWIN*|MINGW*|MSYS*', 'prefer WSL for CI parity'
     check(token in make_text, f'Makefile doctor missing OS support token: {token}')
 for tool in runtime_refs['required_tools'].split():
     check(f'command -v {tool}' in make_text, f'Makefile doctor missing required tool check: {tool}')
+for tool in runtime_refs['posix_utilities'].split():
+    check(tool in make_text, f'Makefile doctor missing POSIX utility from readiness list: {tool}')
+check('command -v "$$tool"' in make_text, 'Makefile doctor must validate every configured POSIX utility')
 check(runtime_refs['toml_parser'] == 'tomllib_or_tomli', 'runtime TOML parser contract mismatch')
 for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser']:
     check(token in make_text, f'Makefile doctor missing Python TOML parser check token: {token}')
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
-for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'bash', 'python3', 'make', 'git', 'tomllib', 'tomli', 'Python TOML 파서']:
+for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
 
 for p in agents:
@@ -298,7 +302,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing git required tool', 'runtime rejects missing Python TOML parser manifest', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -340,6 +344,7 @@ for token in [
     'owned_api_contract_impact:',
     'supported_os: macos_linux_wsl_posix_shell',
     'required_tools: bash make python3 git',
+    'posix_utilities: find cp rm mkdir chmod rmdir sed env uname head',
     'toml_parser: tomllib_or_tomli',
 ]:
     check(token in manifest_text, f'MANIFEST.md missing current manifest token: {token}')
