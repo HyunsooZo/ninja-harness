@@ -232,15 +232,25 @@ for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'b
 for token in ['Codex agent TOML', 'skills = [...]', 'skill preload metadata']:
     check(token in readme_text_for_runtime, f'README compatibility section missing token: {token}')
 
+allowed_reasoning_efforts = {'none', 'minimal', 'low', 'medium', 'high', 'xhigh'}
+allowed_sandbox_modes = {'read-only', 'workspace-write', 'danger-full-access'}
+
 for p in agents:
     data = tomllib.loads(p.read_text(encoding='utf-8'))
+    for key in ['name', 'description', 'model', 'model_reasoning_effort', 'sandbox_mode', 'developer_instructions']:
+        check(isinstance(data.get(key), str) and data.get(key).strip(), f'Codex agent {key} must be a non-empty string: {p}')
+    check(data.get('model_reasoning_effort') in allowed_reasoning_efforts, f'Codex agent model_reasoning_effort has unsupported value: {p}')
+    check(data.get('sandbox_mode') in allowed_sandbox_modes, f'Codex agent sandbox_mode has unsupported value: {p}')
     check(data.get('name'), f'missing name: {p}')
     check(data.get('model') == expected_model, f'model must be {expected_model}: {p}')
     check('developer_instructions' in data, f'missing developer_instructions: {p}')
     claude_path = root/'.claude/agents'/f'{p.stem}.md'
     frontmatter, claude_body = parse_claude_agent(claude_path)
     claude_frontmatters[p.stem] = frontmatter
-    codex_skills = set(data.get('skills') or [])
+    raw_codex_skills = data.get('skills')
+    check(isinstance(raw_codex_skills, list), f'Codex agent skills must be a list: {p}')
+    check(all(isinstance(skill, str) and skill.strip() for skill in raw_codex_skills), f'Codex agent skills must be non-empty strings: {p}')
+    codex_skills = set(raw_codex_skills)
     claude_skills = parse_frontmatter_list(frontmatter.get('skills', ''))
     check(frontmatter.get('name') == data.get('name'), f'agent name mismatch: {p} vs {claude_path}')
     check(frontmatter.get('description') == data.get('description'), f'agent description mismatch: {p} vs {claude_path}')
