@@ -193,7 +193,7 @@ required_runtime_refs = {
     'supported_os': 'macos_linux_wsl_posix_shell',
     'unsupported_windows_native': 'true',
     'required_tools': 'bash make python3 git',
-    'posix_utilities': 'find cp rm mkdir chmod rmdir sed env uname head',
+    'posix_utilities': 'find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
     'toml_parser': 'tomllib_or_tomli',
     'note': '조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.',
 }
@@ -222,7 +222,7 @@ check(runtime_refs['toml_parser'] == 'tomllib_or_tomli', 'runtime TOML parser co
 for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser']:
     check(token in make_text, f'Makefile doctor missing Python TOML parser check token: {token}')
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
-for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'tomllib', 'tomli', 'Python TOML 파서']:
+for token in ['macOS와 Linux/WSL', 'Git Bash/MSYS/Cygwin', 'Windows native', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'cat', 'dirname', 'pwd', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
 for token in ['Codex agent TOML', 'skills = [...]', 'skill preload metadata']:
     check(token in readme_text_for_runtime, f'README compatibility section missing token: {token}')
@@ -390,7 +390,7 @@ for token in [
     'owned_api_contract_impact:',
     'supported_os: macos_linux_wsl_posix_shell',
     'required_tools: bash make python3 git',
-    'posix_utilities: find cp rm mkdir chmod rmdir sed env uname head',
+    'posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
     'toml_parser: tomllib_or_tomli',
 ]:
     check(token in manifest_text, f'MANIFEST.md missing current manifest token: {token}')

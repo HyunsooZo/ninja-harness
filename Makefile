@@ -10,7 +10,7 @@ HARNESS_SELF_TEST_GATES ?= scripts/self-test-harness-gates.sh
 HARNESS_EVAL ?= scripts/collect-eval-metrics.sh
 HARNESS_CHECK_PLANS ?= scripts/check-completed-plan-quality.sh
 HARNESS_SET_MODEL ?= scripts/set-codex-agent-model.sh
-HARNESS_POSIX_UTILITIES ?= find cp rm mkdir chmod rmdir sed env uname head
+HARNESS_POSIX_UTILITIES ?= find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd
 
 ORG_GATE_SCRIPT_VARS := \
   HARNESS_BACKEND_TEST_SCRIPT \

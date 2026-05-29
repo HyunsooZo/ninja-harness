@@ -241,7 +241,7 @@ expect_fail "runtime rejects missing git required tool" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing POSIX utility manifest" \
-  with_harness_yaml_without_line "posix_utilities: find cp rm mkdir chmod rmdir sed env uname head" \
+  with_harness_yaml_without_line "posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing Python TOML parser manifest" \
