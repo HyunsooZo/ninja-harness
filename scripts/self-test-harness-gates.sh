@@ -21,6 +21,7 @@ cleanup() {
   rm -f session-token.json
   rm -f api-secret.properties
   rm -f docs/harness/context/generated/token-policy.md
+  rm -f scripts/.harness-self-test-outside.sh
   if [[ "$created_ci_dir" == "1" ]]; then
     rmdir scripts/ci 2>/dev/null || true
   fi
@@ -219,6 +220,15 @@ expect_fail "project gate rejects absolute script path" \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
       HARNESS_BACKEND_TEST_SCRIPT=/tmp/not-allowed.sh \
       bash scripts/verify-project-gates.sh
+
+printf '#!/usr/bin/env bash\nset -euo pipefail\necho "[OK] outside project gate"\n' > scripts/.harness-self-test-outside.sh
+chmod +x scripts/.harness-self-test-outside.sh
+
+expect_fail "project gate rejects non-allowlisted repo script" \
+  env HARNESS_BACKEND_TEST_SCRIPT=scripts/.harness-self-test-outside.sh \
+      bash scripts/verify-project-gates.sh
+
+rm -f scripts/.harness-self-test-outside.sh
 
 if [[ ! -d scripts/ci ]]; then
   mkdir -p scripts/ci

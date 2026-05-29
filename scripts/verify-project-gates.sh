@@ -56,9 +56,7 @@ resolve_repo_script() {
   case "$value" in
     scripts/ci/*|.github/scripts/*|ci/*) ;;
     *)
-      if [[ "${HARNESS_ALLOW_ANY_REPO_SCRIPT:-0}" != "1" ]]; then
-        reject "script gate must live under scripts/ci/, .github/scripts/, or ci/: $value" || return $?
-      fi
+      reject "script gate must live under scripts/ci/, .github/scripts/, or ci/: $value" || return $?
       ;;
   esac
 
