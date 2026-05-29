@@ -256,6 +256,17 @@ expect_fail "source_of_truth rejects missing backend rubric" \
   with_harness_yaml_without_line "- docs/harness/rubrics/backend.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "skill routing rejects missing agent mapping" \
+  with_file_without_line "docs/harness/skill-routing.md" \
+    '| 데이터 시각화 리뷰 | `data-viz-reviewer` |' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "skill routing rejects unknown agent mapping" \
+  with_file_replacing_line "docs/harness/skill-routing.md" \
+    '| 주요 프론트엔드 화면, 스타일, i18n | `primary-frontend-view-implementer` |' \
+    '| 주요 프론트엔드 화면, 스타일, i18n | `missing-frontend-implementer` |' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "organization manifest rejects missing governance" \
   with_harness_yaml_without_line "governance: docs/harness/GOVERNANCE.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
