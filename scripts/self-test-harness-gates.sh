@@ -258,6 +258,11 @@ expect_fail "gitignore rejects missing secret config ignore" \
     "*secret*.json" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "project profile rejects missing frontend test command" \
+  with_file_without_line "docs/harness/profiles/project-profile.md" \
+    '| 주요 프론트엔드 테스트 | `<primary-frontend-test-command>` |' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "makefile rejects hardcoded bash path" \
   with_file_replacing_line "Makefile" \
     "SHELL := bash" \

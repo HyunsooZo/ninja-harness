@@ -62,10 +62,21 @@
 
 ## 검증 명령
 
-구체 명령은 `docs/harness/context/BASELINE.md`에도 둔다.
+기본 검증 명령은 `docs/harness/context/BASELINE.md`와 일치시킨다.
+대상/런타임/스타일 확인 명령은 `docs/harness/05_TESTING.md`의 명령 출처와 일치시킨다.
 
-```bash
-<backend-test-command>
-<primary-frontend-build-command>
-<secondary-app-build-command>
-```
+| 영역 | 명령 |
+|---|---|
+| 백엔드 전체 테스트 | `<backend-test-command>` |
+| 백엔드 대상 테스트 | `<backend-targeted-test-command>` |
+| 백엔드 빌드 | `<backend-build-command>` |
+| 백엔드 런타임/의존성 확인 | `<backend-runtime-command>` |
+| 주요 프론트엔드 테스트 | `<primary-frontend-test-command>` |
+| 주요 프론트엔드 대상 테스트 | `<primary-frontend-targeted-test-command>` |
+| 주요 프론트엔드 빌드 | `<primary-frontend-build-command>` |
+| 주요 프론트엔드 스타일/타입 확인 | `<primary-frontend-style-command>` |
+| 보조 앱 테스트 | `<secondary-app-test-command>` |
+| 보조 앱 빌드 | `<secondary-app-build-command>` |
+| 보조 앱 런타임 확인 | `<secondary-app-runtime-command>` |
+
+사용하지 않는 영역은 `N/A`로 둔다.
