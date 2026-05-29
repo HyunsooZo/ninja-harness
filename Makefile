@@ -177,5 +177,5 @@ set-model:
 clean:
 	find . -name ".DS_Store" -delete
 	find . -name "._*" -delete
-	rm -rf __MACOSX
+	find . -type d -name "__MACOSX" -prune -exec rm -rf {} +
 	find . -name "__tmp-*.sh" -delete

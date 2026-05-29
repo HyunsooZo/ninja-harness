@@ -263,6 +263,14 @@ expect_fail "project profile rejects missing frontend test command" \
     '| 주요 프론트엔드 테스트 | `<primary-frontend-test-command>` |' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+mkdir -p docs/harness/context/generated/.harness-clean-test/__MACOSX
+expect_pass "clean removes nested macOS metadata" \
+  make clean
+if [[ -d docs/harness/context/generated/.harness-clean-test/__MACOSX ]]; then
+  fail "nested __MACOSX should be removed by make clean"
+fi
+rm -rf docs/harness/context/generated/.harness-clean-test
+
 expect_fail "makefile rejects hardcoded bash path" \
   with_file_replacing_line "Makefile" \
     "SHELL := bash" \
