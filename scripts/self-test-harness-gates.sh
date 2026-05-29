@@ -18,6 +18,7 @@ cleanup() {
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
   rm -f scripts/ci/.harness-self-test-link.sh
+  rm -f scripts/ci/.harness-self-test-link-dir
   rm -f .env.harness-self-test
   rm -f session-token.json
   rm -f api-secret.properties
@@ -382,6 +383,25 @@ PY
 expect_fail "project gate rejects symlink script" \
   env HARNESS_RUN_PROJECT_CHECKS=1 \
       HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-link.sh \
+      bash scripts/verify-project-gates.sh
+
+mkdir -p "$tmp_dir/project-gate-target"
+printf '#!/usr/bin/env bash\nset -euo pipefail\necho "[OK] parent symlink project gate"\n' > "$tmp_dir/project-gate-target/ok.sh"
+chmod +x "$tmp_dir/project-gate-target/ok.sh"
+python3 - "$tmp_dir/project-gate-target" <<'PY'
+from pathlib import Path
+import sys
+
+target = Path(sys.argv[1]).resolve()
+link = Path('scripts/ci/.harness-self-test-link-dir')
+if link.exists() or link.is_symlink():
+    link.unlink()
+link.symlink_to(target, target_is_directory=True)
+PY
+
+expect_fail "project gate rejects parent symlink script path" \
+  env HARNESS_RUN_PROJECT_CHECKS=1 \
+      HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-link-dir/ok.sh \
       bash scripts/verify-project-gates.sh
 
 expect_pass "project gate accepts allowlisted executable script" \

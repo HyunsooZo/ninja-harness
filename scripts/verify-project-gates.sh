@@ -35,6 +35,19 @@ is_blank() {
   [[ -z "${1// }" ]]
 }
 
+reject_symlink_components() {
+  local value="$1"
+  local current=""
+  local IFS="/"
+  local -a parts
+
+  read -r -a parts <<< "$value"
+  for part in "${parts[@]}"; do
+    current="${current:+$current/}$part"
+    [[ ! -L "$ROOT/$current" ]] || reject "script gate path component must not be a symlink: $current" || return $?
+  done
+}
+
 resolve_repo_script() {
   local value="$1"
   RESOLVED_SCRIPT=""
@@ -50,9 +63,10 @@ resolve_repo_script() {
     *\;*|*\&*|*\|*|*\`*|*'$('*|*'${'*) reject "script path contains shell metacharacters: $value" || return $? ;;
   esac
 
+  reject_symlink_components "$value" || return $?
+
   local script="$ROOT/$value"
   [[ -f "$script" ]] || reject "script gate not found: $value" || return $?
-  [[ ! -L "$script" ]] || reject "script gate must not be a symlink: $value" || return $?
   [[ -x "$script" ]] || reject "script gate must be executable: $value" || return $?
 
   case "$value" in
