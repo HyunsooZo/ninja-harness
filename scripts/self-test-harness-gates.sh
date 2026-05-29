@@ -10,7 +10,11 @@ print(tempfile.mkdtemp(prefix='harness-gate-self-test-'))
 PY
 )"
 created_ci_dir=0
+harness_yaml_backup=""
 cleanup() {
+  if [[ -n "$harness_yaml_backup" && -f "$harness_yaml_backup" ]]; then
+    cp "$harness_yaml_backup" docs/harness/harness.yaml
+  fi
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
   if [[ "$created_ci_dir" == "1" ]]; then
@@ -53,6 +57,33 @@ expect_fail() {
   pass "$name"
 }
 
+with_harness_yaml_without_line() {
+  local needle="$1"
+  shift
+  harness_yaml_backup="$tmp_dir/harness.yaml.backup"
+  cp docs/harness/harness.yaml "$harness_yaml_backup"
+  python3 - "$needle" <<'PY'
+from pathlib import Path
+import sys
+
+needle = sys.argv[1]
+path = Path('docs/harness/harness.yaml')
+lines = path.read_text(encoding='utf-8').splitlines()
+filtered = [line for line in lines if line.strip() != needle]
+if len(filtered) == len(lines):
+    raise SystemExit(f'missing test needle in harness.yaml: {needle}')
+path.write_text('\n'.join(filtered) + '\n', encoding='utf-8')
+PY
+  local status=0
+  set +e
+  "$@"
+  status=$?
+  set -e
+  cp "$harness_yaml_backup" docs/harness/harness.yaml
+  harness_yaml_backup=""
+  return "$status"
+}
+
 good_profile="$tmp_dir/good-profile.md"
 bad_profile="$tmp_dir/bad-profile.md"
 printf 'project: N/A\nruntime: N/A\n' > "$good_profile"
@@ -69,6 +100,10 @@ expect_fail "verify rejects invalid mode" \
 
 expect_fail "filled-profile gate requires project mode" \
   env HARNESS_REQUIRE_FILLED_PROFILE=1 HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "source_of_truth rejects missing required entry" \
+  with_harness_yaml_without_line "- CLAUDE.md" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
