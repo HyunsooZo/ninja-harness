@@ -72,6 +72,7 @@ doctor:
 	@command -v python3 >/dev/null || { echo "[FAIL] python3 is required"; exit 1; }
 	@command -v make >/dev/null || { echo "[FAIL] make is required"; exit 1; }
 	@command -v git >/dev/null || { echo "[FAIL] git is required"; exit 1; }
+	@python3 -c 'import importlib.util, sys; parser = "tomllib" if importlib.util.find_spec("tomllib") else ("tomli" if importlib.util.find_spec("tomli") else ""); print("[OK] Python TOML parser ready: " + parser if parser else "[FAIL] Python TOML parser is required: use Python 3.11+ or install tomli", file=sys.stdout if parser else sys.stderr); sys.exit(0 if parser else 1)'
 	@os="$$(uname -s 2>/dev/null || echo unknown)"; \
 	case "$$os" in \
 		Darwin|Linux) echo "[OK] supported OS: $$os" ;; \

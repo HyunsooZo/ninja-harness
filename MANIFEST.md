@@ -217,6 +217,7 @@ runtime:
   supported_os: macos_linux_wsl_posix_shell
   unsupported_windows_native: true
   required_tools: bash make python3 git
+  toml_parser: tomllib_or_tomli
   note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.
 
 owned_api_contract_impact:

@@ -208,6 +208,10 @@ expect_fail "runtime rejects missing git required tool" \
   with_harness_yaml_without_line "required_tools: bash make python3 git" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "runtime rejects missing Python TOML parser manifest" \
+  with_harness_yaml_without_line "toml_parser: tomllib_or_tomli" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate manifest rejects missing preferred script" \
   with_harness_yaml_without_line "backend: HARNESS_BACKEND_TEST_SCRIPT" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
