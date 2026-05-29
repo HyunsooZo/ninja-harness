@@ -14,16 +14,17 @@
 ## 표준 적용 단계
 
 1. 파일럿 프로젝트 1~3개 선정
-2. `HARNESS_VERIFY_MODE=project` 통과
-3. `HARNESS_ORG_STANDARD=1`과 최소 1개 실제 project gate 연결
-4. completed plan 20개 이상 또는 2주 이상 운영 데이터 수집
-5. eval 지표 검토
-6. 회귀 사례를 `docs/harness/evals/regression-cases.md`에 반영
-7. 팀 표준 또는 조직 표준으로 승격
+2. `make integrity` 통과
+3. 적용 저장소에서 `make project-ready` 또는 동등한 profile readiness 통과
+4. `HARNESS_ORG_STANDARD=1`과 최소 1개 실제 project gate 연결
+5. completed plan 20개 이상 또는 2주 이상 운영 데이터 수집
+6. eval 지표 검토
+7. 회귀 사례를 `docs/harness/evals/regression-cases.md`에 반영
+8. 팀 표준 또는 조직 표준으로 승격
 
 ## 필수 정책
 
-- agent/skill 수정 시 mirror sync와 verify를 모두 통과한다.
+- agent/skill 수정 시 mirror sync와 `make integrity`를 모두 통과한다.
 - 조직 표준 CI는 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`을 명시한다.
 - project gate는 `HARNESS_*_SCRIPT`를 기본으로 사용한다.
 - legacy `HARNESS_*_CMD`는 예외 승인 없이 사용하지 않는다.

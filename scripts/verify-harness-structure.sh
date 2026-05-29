@@ -484,6 +484,15 @@ for doc in org_docs:
     text = doc.read_text(encoding='utf-8')
     check('HARNESS_ACK_TRUSTED_PROJECT_CMDS' in text or doc.name == 'ADOPTION_SCORECARD.md', f'missing org ACK policy: {doc}')
     check('HARNESS_*_SCRIPT' in text or doc.name == 'ADOPTION_SCORECARD.md', f'missing script gate policy: {doc}')
+governance_text = (root/'docs/harness/GOVERNANCE.md').read_text(encoding='utf-8')
+scorecard_text = (root/'docs/harness/ADOPTION_SCORECARD.md').read_text(encoding='utf-8')
+plans_readme_text = (root/'docs/harness/plans/README.md').read_text(encoding='utf-8')
+for token in ['make integrity', 'make project-ready', 'HARNESS_ORG_STANDARD=1']:
+    check(token in governance_text, f'GOVERNANCE missing integrity rollout token: {token}')
+for token in ['make integrity', 'make project-ready', '최종 무결성']:
+    check(token in scorecard_text, f'ADOPTION_SCORECARD missing integrity score token: {token}')
+for token in ['make integrity', '범용 template package', '완료 기록을 누적']:
+    check(token in plans_readme_text, f'plans README missing lifecycle integrity token: {token}')
 
 project_gate_text = (root/'scripts/verify-project-gates.sh').read_text(encoding='utf-8')
 check('HARNESS_*_SCRIPT' in project_gate_text, 'project gate must support script-based gates')

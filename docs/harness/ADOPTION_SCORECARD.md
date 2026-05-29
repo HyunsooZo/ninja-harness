@@ -4,7 +4,8 @@
 
 | 영역 | 기준 | 점수 |
 |---|---|---:|
-| 구조 검증 | `HARNESS_VERIFY_MODE=project` 통과 | 0/1 |
+| 최종 무결성 | `make integrity` 통과 | 0/2 |
+| 프로젝트 준비도 | 적용 저장소에서 `make project-ready` 또는 동등한 profile readiness 통과 | 0/1 |
 | 조직 게이트 | `HARNESS_ORG_STANDARD=1` + 최소 1개 script gate | 0/2 |
 | 보안 ACK | `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1` 사용 | 0/1 |
 | Script gate 사용 | legacy `HARNESS_*_CMD` 없이 `HARNESS_*_SCRIPT` 사용 | 0/2 |
@@ -17,10 +18,10 @@
 
 ## 판정
 
-- 0~8: 파일럿 전 준비 부족
-- 9~13: 파일럿 가능
-- 14~16: 팀 표준 가능
-- 17 이상: 조직 표준 후보
+- 0~9: 파일럿 전 준비 부족
+- 10~14: 파일럿 가능
+- 15~17: 팀 표준 가능
+- 18 이상: 조직 표준 후보
 
 ## 운영 메모
 

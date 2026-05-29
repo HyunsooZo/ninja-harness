@@ -5,7 +5,7 @@
 ## 디렉터리
 
 - `active/`: 진행 중인 단순하지 않은 작업 계획과 단계별 증거를 둔다.
-- `completed/`: 현재 프로젝트에서 완료된 작업의 최종 실행 기록을 둔다. 배포본에는 `.gitkeep`만 둔다.
+- `completed/`: 현재 프로젝트에서 완료된 작업의 최종 실행 기록을 둔다. 범용 template package는 하네스 자체 변경의 증거 계획을 포함할 수 있고, 실제 적용 저장소는 자기 프로젝트의 완료 기록을 누적한다.
 - `examples/`: 하네스 작성/정리 예시 plan을 둔다. 실제 프로젝트 컨텍스트로 기본 로딩하지 않는다.
 - `TEMPLATE.md`: 새 plan의 기본 형식이다.
 
@@ -42,7 +42,7 @@
 
 ## 완료
 
-완료 시 활성 계획을 `completed/`로 이동하고 `Completion Report`를 채운다. 관련 domain/view/API 사실은 `docs/harness/context/**`에 반영한다.
+완료 시 활성 계획을 `completed/`로 이동하고 `Completion Report`를 채운다. 하네스 자체 변경은 완료 후 `make integrity`를 통과해야 한다. 관련 domain/view/API 사실은 `docs/harness/context/**`에 반영한다.
 
 전체 스캔 산출물은 완료 계획에 복사하지 않는다. 장기적으로 필요한 사실만 `docs/harness/context/BASELINE.md`, `DECISIONS.md`, 관련 세부 컨텍스트 문서에 반영한다.
 
