@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -426,6 +426,38 @@ for raw_line in agent_orchestration_match.group('body').splitlines():
 check(backend_layer_order, 'missing agent_orchestration.backend_layer_order')
 for ref in backend_layer_order:
     check_agent_ref(ref, 'agent_orchestration.backend_layer_order')
+
+parallel_agents_match = re.search(r'^parallel_agents:\n(?P<body>.*?)(?:\n\norganization:)', yaml_text, flags=re.S | re.M)
+check(parallel_agents_match, 'missing parallel_agents manifest')
+parallel_agent_refs = {}
+for raw_line in parallel_agents_match.group('body').splitlines():
+    stripped = raw_line.strip()
+    if not stripped:
+        continue
+    key, value = stripped.split(': ', 1)
+    parallel_agent_refs[key] = value.strip()
+required_parallel_agent_refs = {
+    'default_mode': 'SEQUENTIAL',
+    'prefer_parallel_review': 'true',
+    'allow_parallel_implementation': 'conditional',
+    'require_parallelization_check': 'true',
+    'require_single_integration_coordinator': 'true',
+    'forbid_overlapping_file_edits': 'true',
+    'forbid_shared_transaction_boundary_edits': 'true',
+    'forbid_shared_migration_schema_edits': 'true',
+    'require_verify_after_fan_in': 'true',
+    'allow_backend_domain_persistence_parallelism': 'conditional',
+}
+missing_parallel_keys = set(required_parallel_agent_refs) - set(parallel_agent_refs)
+check(not missing_parallel_keys, f'missing parallel_agents keys: {sorted(missing_parallel_keys)}')
+for key, expected in required_parallel_agent_refs.items():
+    check(parallel_agent_refs.get(key) == expected, f'parallel_agents.{key} must be {expected}: {parallel_agent_refs.get(key)}')
+parallel_gate_text = (root/'docs/harness/11_PARALLEL_AGENT_GATE.md').read_text(encoding='utf-8')
+for required in ['기본값은 순차 실행', '같은 파일', '트랜잭션 경계', '마이그레이션/스키마', '단일 통합자', 'VERIFY']:
+    check(required in parallel_gate_text, f'parallel gate doc missing safety token: {required}')
+plan_template_text_for_parallel = (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding='utf-8')
+for required in ['## 병렬화 점검', '겹치는 파일 여부', '통합 담당자', '### 병렬 에이전트 디스패치', '### 수렴 결과']:
+    check(required in plan_template_text_for_parallel, f'plan template missing parallel field: {required}')
 
 # harness.yaml source_of_truth.entry must not contain duplicate lines.
 entry_match = re.search(r'source_of_truth:\n  entry:\n(?P<body>(?:    - .+\n)+)', yaml_text)

@@ -165,6 +165,10 @@ expect_fail "workflow manifest rejects missing integrity target" \
   with_harness_yaml_without_line "final_integrity_target: make integrity" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "parallel manifest rejects overlapping file edits" \
+  with_harness_yaml_without_line "forbid_overlapping_file_edits: true" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
