@@ -308,6 +308,10 @@ for token in [
 ]:
     check(token in manifest_text, f'MANIFEST.md missing current manifest token: {token}')
 
+root_readme_text = (root/'README.md').read_text(encoding='utf-8')
+for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make integrity', 'make eval', 'make verify-org']:
+    check(token in root_readme_text, f'root README release checklist missing token: {token}')
+
 # PROJECT_CONTEXT_SCAN references must call it 생성 산출물 or basic context exclusion.
 for p in root.rglob('*'):
     if p.is_file() and p.suffix in text_file_suffixes:

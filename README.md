@@ -450,6 +450,7 @@ make set-model MODEL=<model-name>
 make doctor
 make verify
 make check-sync
+make integrity
 make eval
 ```
 
