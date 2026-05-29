@@ -455,4 +455,15 @@ expect_fail "organization mode blocks legacy command without explicit opt-in" \
       HARNESS_BACKEND_TEST_CMD='echo legacy' \
       bash scripts/verify-project-gates.sh
 
+expect_fail "legacy command blocks without explicit opt-in" \
+  env HARNESS_REQUIRE_PROJECT_CHECKS=1 \
+      HARNESS_BACKEND_TEST_CMD='echo legacy' \
+      bash scripts/verify-project-gates.sh
+
+expect_pass "legacy command accepts explicit opt-in" \
+  env HARNESS_REQUIRE_PROJECT_CHECKS=1 \
+      HARNESS_ALLOW_LEGACY_BASH_LC=1 \
+      HARNESS_BACKEND_TEST_CMD='echo legacy' \
+      bash scripts/verify-project-gates.sh
+
 echo "[OK] harness gate self-tests passed: $pass_count"

@@ -110,13 +110,13 @@ run_legacy_cmd_gate() {
     return 1
   fi
 
+  [[ "${HARNESS_ALLOW_LEGACY_BASH_LC:-0}" == "1" ]] || fail "HARNESS_*_CMD is legacy; prefer HARNESS_*_SCRIPT or set HARNESS_ALLOW_LEGACY_BASH_LC=1"
+
   if [[ "${HARNESS_ORG_STANDARD:-0}" == "1" ]]; then
     [[ "${HARNESS_ACK_TRUSTED_PROJECT_CMDS:-0}" == "1" ]] || fail "HARNESS_*_CMD in organization mode requires HARNESS_ACK_TRUSTED_PROJECT_CMDS=1"
-    [[ "${HARNESS_ALLOW_LEGACY_BASH_LC:-0}" == "1" ]] || fail "HARNESS_*_CMD is legacy in organization mode; prefer HARNESS_*_SCRIPT or set HARNESS_ALLOW_LEGACY_BASH_LC=1"
-  else
-    echo "[WARN] $name uses legacy HARNESS_*_CMD through bash -lc; prefer HARNESS_*_SCRIPT"
   fi
 
+  echo "[WARN] $name uses legacy HARNESS_*_CMD through bash -lc; prefer HARNESS_*_SCRIPT"
   echo "[RUN] $name legacy command: $cmd"
   if ! bash -lc "$cmd"; then
     fail "$name legacy command failed"
