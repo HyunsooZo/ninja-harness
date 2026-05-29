@@ -150,6 +150,28 @@ claude_frontmatters = {}
 yaml_text_for_model = (root/'docs/harness/harness.yaml').read_text(encoding='utf-8')
 model_match = re.search(r'^  codex_agent_model:\s*(\S+)\s*$', yaml_text_for_model, flags=re.M)
 expected_model = os.environ.get('HARNESS_EXPECTED_CODEX_MODEL') or (model_match.group(1) if model_match else 'gpt-5.5')
+runtime_match = re.search(
+    r'^runtime:\n(?P<body>(?:  [A-Za-z0-9_]+: .+\n?)+)',
+    yaml_text_for_model,
+    flags=re.M,
+)
+check(runtime_match, 'missing runtime manifest')
+runtime_refs = {}
+for line in runtime_match.group('body').splitlines():
+    key, value = line.strip().split(': ', 1)
+    runtime_refs[key] = value.strip()
+required_runtime_refs = {
+    'codex_agent_model': model_match.group(1) if model_match else '',
+    'codex_model_override_env': 'HARNESS_EXPECTED_CODEX_MODEL',
+    'note': '조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.',
+}
+missing_runtime_keys = set(required_runtime_refs) - set(runtime_refs)
+check(not missing_runtime_keys, f'missing runtime manifest keys: {sorted(missing_runtime_keys)}')
+for key, expected in required_runtime_refs.items():
+    check(runtime_refs.get(key) == expected, f'runtime.{key} must be {expected}: {runtime_refs.get(key)}')
+check(runtime_refs['codex_agent_model'], 'runtime.codex_agent_model must not be empty')
+check(runtime_refs['codex_model_override_env'] == 'HARNESS_EXPECTED_CODEX_MODEL', 'runtime override env mismatch')
+check((root/'scripts/set-codex-agent-model.sh').exists(), 'missing runtime model management script')
 
 for p in agents:
     data = tomllib.loads(p.read_text(encoding='utf-8'))
@@ -239,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')

@@ -153,6 +153,10 @@ expect_fail "owned API manifest rejects missing router skill" \
   with_harness_yaml_without_line "router_skill: integration-contract" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "runtime manifest rejects missing override env" \
+  with_harness_yaml_without_line "codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
