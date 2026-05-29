@@ -239,7 +239,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -519,12 +519,13 @@ for bad_value, label in invalid_gate_cases:
     check(result.returncode != 0, f'invalid project gate should fail ({label}): {bad_value}')
 
 ci_text = ci_example_path.read_text(encoding='utf-8')
+check('make integrity' in ci_text, 'CI example must run make integrity before organization gates')
 check('HARNESS_ACK_TRUSTED_PROJECT_CMDS=1' in ci_text, 'CI example must include trusted gate ACK')
 check('HARNESS_BACKEND_TEST_SCRIPT' in ci_text, 'CI example must prefer script-based backend gate')
 check('HARNESS_BACKEND_TEST_CMD' not in ci_text, 'CI example should not use legacy command gate')
 
 ci_examples_text = (root/'docs/harness/CI_EXAMPLES.md').read_text(encoding='utf-8')
-for token in ['HARNESS_*_SCRIPT', 'HARNESS_ALLOW_LEGACY_BASH_LC', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1']:
+for token in ['make integrity', 'HARNESS_*_SCRIPT', 'HARNESS_ALLOW_LEGACY_BASH_LC', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1']:
     check(token in ci_examples_text, f'CI examples missing {token}')
 
 metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8')

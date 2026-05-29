@@ -5,7 +5,7 @@
 CI와 같은 스크립트를 로컬에서 점검할 때는 `Makefile`을 사용할 수 있다.
 
 ```bash
-make verify
+make integrity
 HARNESS_INTEGRATION_TEST_SCRIPT='scripts/ci/integration-test.sh' make verify-org
 make eval
 ```
@@ -35,10 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify harness structure
+      - name: Verify harness integrity
         run: |
-          HARNESS_VERIFY_MODE=project \
-          bash scripts/verify-harness-structure.sh
+          make integrity
 
       - name: Verify organization gates
         run: |

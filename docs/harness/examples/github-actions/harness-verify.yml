@@ -11,10 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify harness structure
+      - name: Verify harness integrity
         run: |
-          HARNESS_VERIFY_MODE=project \
-          bash scripts/verify-harness-structure.sh
+          make integrity
 
       - name: Verify organization gates
         run: |

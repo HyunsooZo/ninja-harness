@@ -50,7 +50,8 @@ bash scripts/verify-harness-structure.sh
 - [ ] 실제 build/test/lint/security/a11y 명령 중 최소 하나 이상을 `scripts/ci/**` script로 연결했다.
 - [ ] reviewer agent는 read-only tool set을 유지한다.
 - [ ] skill 수정 후 `bash scripts/sync-skills.sh`를 실행했다.
-- [ ] `HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh`를 통과했다.
+- [ ] `make integrity`를 통과했다.
+- [ ] 실제 프로젝트 값 적용 전후로 필요 시 `make project-ready`를 실행했다.
 - [ ] 조직 표준 적용 시 `HARNESS_ORG_STANDARD=1` 검증을 통과했다.
 
 ## 예외 승인

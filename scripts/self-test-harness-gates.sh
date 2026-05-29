@@ -9,7 +9,15 @@ import tempfile
 print(tempfile.mkdtemp(prefix='harness-gate-self-test-'))
 PY
 )"
-trap 'rm -rf "$tmp_dir"' EXIT
+created_ci_dir=0
+cleanup() {
+  rm -rf "$tmp_dir"
+  rm -f scripts/ci/.harness-self-test-ok.sh
+  if [[ "$created_ci_dir" == "1" ]]; then
+    rmdir scripts/ci 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT
 output_file="$tmp_dir/output.log"
 
 pass_count=0
@@ -66,6 +74,29 @@ expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
       HARNESS_BACKEND_TEST_SCRIPT=/tmp/not-allowed.sh \
+      bash scripts/verify-project-gates.sh
+
+if [[ ! -d scripts/ci ]]; then
+  mkdir -p scripts/ci
+  created_ci_dir=1
+fi
+printf '#!/usr/bin/env bash\nset -euo pipefail\necho "[OK] self-test project gate"\n' > scripts/ci/.harness-self-test-ok.sh
+chmod +x scripts/ci/.harness-self-test-ok.sh
+
+expect_pass "project gate accepts allowlisted executable script" \
+  env HARNESS_RUN_PROJECT_CHECKS=1 \
+      HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-ok.sh \
+      bash scripts/verify-project-gates.sh
+
+expect_fail "required project gates reject empty configuration" \
+  env HARNESS_RUN_PROJECT_CHECKS=1 \
+      HARNESS_REQUIRE_PROJECT_CHECKS=1 \
+      bash scripts/verify-project-gates.sh
+
+expect_fail "organization mode blocks legacy command without explicit opt-in" \
+  env HARNESS_ORG_STANDARD=1 \
+      HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
+      HARNESS_BACKEND_TEST_CMD='echo legacy' \
       bash scripts/verify-project-gates.sh
 
 echo "[OK] harness gate self-tests passed: $pass_count"
