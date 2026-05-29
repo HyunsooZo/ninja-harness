@@ -308,19 +308,20 @@ check(actual_commands == expected_commands, f'claude command mismatch: expected=
 
 # No root generated 전체 스캔.
 check(not (root/'PROJECT_CONTEXT_SCAN.md').exists(), 'PROJECT_CONTEXT_SCAN.md must not be stored at root')
-tracked_completed = subprocess.run(
-    ['git', 'ls-files', 'docs/harness/plans/completed/*.md'],
-    cwd=root,
-    text=True,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.DEVNULL,
-)
-if tracked_completed.returncode == 0:
-    tracked_completed_plans = [line for line in tracked_completed.stdout.splitlines() if line.strip()]
-    check(not tracked_completed_plans, (
-        'tracked completed plan markdown must not be distributed: '
-        f'{tracked_completed_plans}'
-    ))
+if mode == 'template':
+    tracked_completed = subprocess.run(
+        ['git', 'ls-files', 'docs/harness/plans/completed/*.md'],
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    if tracked_completed.returncode == 0:
+        tracked_completed_plans = [line for line in tracked_completed.stdout.splitlines() if line.strip()]
+        check(not tracked_completed_plans, (
+            'tracked completed plan markdown must not be distributed: '
+            f'{tracked_completed_plans}'
+        ))
 
 manifest_text = (root/'MANIFEST.md').read_text(encoding='utf-8')
 for token in [
@@ -1118,6 +1119,9 @@ for token in ['make integrity', 'make project-ready', '최종 무결성']:
     check(token in scorecard_text, f'ADOPTION_SCORECARD missing integrity score token: {token}')
 for token in ['make integrity', '범용 template package', '완료 기록을 누적']:
     check(token in plans_readme_text, f'plans README missing lifecycle integrity token: {token}')
+check('project mode' in plans_readme_text, 'plans README must distinguish project mode completed plan accumulation')
+verifier_text = (root/'scripts/verify-harness-structure.sh').read_text(encoding='utf-8')
+check("if mode == 'template':\n    tracked_completed = subprocess.run" in verifier_text, 'tracked completed plan guard must be template-mode only')
 
 project_gate_text = (root/'scripts/verify-project-gates.sh').read_text(encoding='utf-8')
 check('HARNESS_*_SCRIPT' in project_gate_text, 'project gate must support script-based gates')
