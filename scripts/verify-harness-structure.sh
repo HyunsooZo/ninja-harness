@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'source_of_truth rejects missing backend rubric', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -549,11 +549,27 @@ required_harness_refs = {
     'docs/harness/GOVERNANCE.md',
     'docs/harness/SECURITY_POLICY.md',
     'docs/harness/ADOPTION_SCORECARD.md',
+    'docs/harness/rubrics/backend.md',
+    'docs/harness/rubrics/frontend.md',
+    'docs/harness/rubrics/integration.md',
+    'docs/harness/rubrics/secondary-app.md',
     'docs/harness/profiles/project-profile.md',
     'docs/harness/profiles/design-system-profile.md',
 }
 missing_harness_refs = required_harness_refs - set(harness_refs)
 check(not missing_harness_refs, f'missing required source_of_truth.harness refs: {sorted(missing_harness_refs)}')
+required_rubric_tokens = {
+    'backend.md': ['백엔드 리뷰 기준', 'DDD', '트랜잭션', '권한'],
+    'frontend.md': ['주요 프론트엔드 리뷰 기준', 'i18n', '인라인 스타일', '반응형'],
+    'integration.md': ['통합 리뷰 기준', '요청/응답', '인증', '페이지네이션'],
+    'secondary-app.md': ['보조 앱 리뷰 기준', 'API 계약', 'UX와 접근성', '런타임'],
+}
+for filename, required_tokens in required_rubric_tokens.items():
+    rubric_path = root/'docs/harness/rubrics'/filename
+    check(str(rubric_path.relative_to(root)) in harness_refs, f'missing rubric source_of_truth ref: {rubric_path}')
+    rubric_text = rubric_path.read_text(encoding='utf-8')
+    for required in required_tokens:
+        check(required in rubric_text, f'rubric {filename} missing review token: {required}')
 
 workflow_match = re.search(r'^workflow:\n(?P<body>.*?)(?:\n\nrules:)', yaml_text, flags=re.S | re.M)
 check(workflow_match, 'missing workflow manifest')

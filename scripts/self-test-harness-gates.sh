@@ -141,6 +141,10 @@ expect_fail "source_of_truth rejects missing required state" \
   with_harness_yaml_without_line "decisions: docs/harness/context/DECISIONS.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "source_of_truth rejects missing backend rubric" \
+  with_harness_yaml_without_line "- docs/harness/rubrics/backend.md" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "organization manifest rejects missing governance" \
   with_harness_yaml_without_line "governance: docs/harness/GOVERNANCE.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh

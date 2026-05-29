@@ -42,6 +42,10 @@ source_of_truth:
     - docs/harness/GOVERNANCE.md
     - docs/harness/SECURITY_POLICY.md
     - docs/harness/ADOPTION_SCORECARD.md
+    - docs/harness/rubrics/backend.md
+    - docs/harness/rubrics/frontend.md
+    - docs/harness/rubrics/integration.md
+    - docs/harness/rubrics/secondary-app.md
     - docs/harness/profiles/project-profile.md
     - docs/harness/profiles/design-system-profile.md
   skills:
