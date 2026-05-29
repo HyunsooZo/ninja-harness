@@ -261,7 +261,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -475,6 +475,55 @@ required_harness_refs = {
 }
 missing_harness_refs = required_harness_refs - set(harness_refs)
 check(not missing_harness_refs, f'missing required source_of_truth.harness refs: {sorted(missing_harness_refs)}')
+
+workflow_match = re.search(r'^workflow:\n(?P<body>.*?)(?:\n\nrules:)', yaml_text, flags=re.S | re.M)
+check(workflow_match, 'missing workflow manifest')
+workflow_body = workflow_match.group('body')
+workflow_steps = []
+workflow_scalars = {}
+in_default_steps = False
+for raw_line in workflow_body.splitlines():
+    stripped = raw_line.strip()
+    if not stripped:
+        continue
+    if raw_line == '  default:':
+        in_default_steps = True
+        continue
+    if in_default_steps and raw_line.startswith('    - '):
+        workflow_steps.append(stripped[2:].strip())
+        continue
+    if in_default_steps and stripped and not raw_line.startswith('    '):
+        in_default_steps = False
+    if stripped.endswith(':'):
+        continue
+    key, value = stripped.split(': ', 1)
+    workflow_scalars[key] = value.strip()
+expected_workflow_steps = ['triage', 'plan', 'spec', 'red', 'green', 'refactor', 'verify', 'review', 'complete']
+check(workflow_steps == expected_workflow_steps, (
+    f'workflow.default mismatch: expected={expected_workflow_steps}, actual={workflow_steps}'
+))
+expected_workflow_scalars = {
+    'trivial_allowed_without_plan': 'true',
+    'non_trivial_requires_active_plan': 'true',
+    'optional_project_gates': 'true',
+    'project_readiness_gate': 'scripts/check-profile-readiness.sh',
+    'final_integrity_target': 'make integrity',
+    'gate_self_test': 'scripts/self-test-harness-gates.sh',
+    'orchestration_default_mode': 'SINGLE_AGENT',
+    'orchestration_requires_active_plan_when_split': 'true',
+}
+for key, expected in expected_workflow_scalars.items():
+    check(workflow_scalars.get(key) == expected, f'workflow.{key} must be {expected}: {workflow_scalars.get(key)}')
+for script_key in ['project_readiness_gate', 'gate_self_test']:
+    script_ref = workflow_scalars[script_key]
+    check((root/script_ref).exists(), f'missing workflow script path: {script_key} -> {script_ref}')
+    check(os.access(root/script_ref, os.X_OK), f'workflow script must be executable: {script_key} -> {script_ref}')
+final_target = workflow_scalars['final_integrity_target']
+check(final_target.startswith('make '), f'workflow.final_integrity_target must be a make target: {final_target}')
+final_target_name = final_target.split(' ', 1)[1]
+check(re.search(rf'^{re.escape(final_target_name)}:', make_text, re.M), (
+    f'workflow.final_integrity_target references missing Makefile target: {final_target}'
+))
 
 skill_policy = re.search(r'  skills:\n(?P<body>(?:    .+\n)+)', yaml_text)
 check(skill_policy, 'missing source_of_truth.skills')
