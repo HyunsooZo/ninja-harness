@@ -475,6 +475,7 @@ __MACOSX
 .claude/settings.local.json
 .codex/skills
 __tmp-*.sh
+docs/harness/plans/completed/*.md
 .env*
 *.pem
 *.p12

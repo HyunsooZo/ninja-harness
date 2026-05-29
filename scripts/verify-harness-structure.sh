@@ -50,6 +50,7 @@ VERIFY_MODE="$VERIFY_MODE" python3 - <<'PY'
 from pathlib import Path
 import os
 import re
+import subprocess
 import sys
 
 try:
@@ -307,6 +308,19 @@ check(actual_commands == expected_commands, f'claude command mismatch: expected=
 
 # No root generated 전체 스캔.
 check(not (root/'PROJECT_CONTEXT_SCAN.md').exists(), 'PROJECT_CONTEXT_SCAN.md must not be stored at root')
+tracked_completed = subprocess.run(
+    ['git', 'ls-files', 'docs/harness/plans/completed/*.md'],
+    cwd=root,
+    text=True,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.DEVNULL,
+)
+if tracked_completed.returncode == 0:
+    tracked_completed_plans = [line for line in tracked_completed.stdout.splitlines() if line.strip()]
+    check(not tracked_completed_plans, (
+        'tracked completed plan markdown must not be distributed: '
+        f'{tracked_completed_plans}'
+    ))
 
 manifest_text = (root/'MANIFEST.md').read_text(encoding='utf-8')
 for token in [
@@ -328,6 +342,7 @@ root_readme_text = (root/'README.md').read_text(encoding='utf-8')
 for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make integrity', 'make eval', 'make verify-org']:
     check(token in root_readme_text, f'root README release checklist missing token: {token}')
 for token in [
+    'docs/harness/plans/completed/*.md',
     '.env*', '*.pem', '*.p12', '*.key', '*.keystore', 'token-policy.md',
     '*secret*.json', '*secret*.yml', '*secret*.yaml', '*secret*.txt',
     '*secret*.conf', '*secret*.config', '*secret*.ini', '*secret*.properties', '*secret*.toml',
@@ -1114,7 +1129,6 @@ check('reject()' in project_gate_text, 'project gate must return explicit valida
 check('bash -lc "$cmd"' in project_gate_text, 'legacy command path should be explicit and auditable')
 
 # Negative policy tests: invalid script gates must return non-zero so CI can enforce policy.
-import subprocess
 invalid_gate_cases = [
     ('/tmp/nope.sh', 'absolute path'),
     ('../hack.sh', 'parent traversal'),
