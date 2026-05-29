@@ -149,6 +149,10 @@ expect_fail "review_gates reject missing agent" \
   with_harness_yaml_insert_after_line "  final_quality:" "    - missing-reviewer" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "owned API manifest rejects missing router skill" \
+  with_harness_yaml_without_line "router_skill: integration-contract" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate rejects absolute script path" \
   env HARNESS_ORG_STANDARD=1 \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \

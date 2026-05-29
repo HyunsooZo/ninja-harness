@@ -239,7 +239,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -538,9 +538,42 @@ for doc in ['docs/harness/01_BACKEND.md', 'docs/harness/02_PRIMARY_FRONTEND.md',
     text = (root/doc).read_text(encoding='utf-8')
     check('Owned API' in text or 'API 계약 영향도' in text, f'{doc} missing owned API contract impact routing')
 
-check('owned_api_contract_impact:' in yaml_text, 'harness.yaml missing owned_api_contract_impact section')
-for required in ['frontend_to_backend_check: true', 'backend_to_frontend_search: true']:
-    check(required in yaml_text, f'harness.yaml missing owned API policy: {required}')
+owned_api_match = re.search(
+    r'^owned_api_contract_impact:\n(?P<body>(?:  [A-Za-z0-9_]+: .+\n?)+)',
+    yaml_text,
+    flags=re.M,
+)
+check(owned_api_match, 'missing owned_api_contract_impact manifest')
+owned_api_refs = {}
+for line in owned_api_match.group('body').splitlines():
+    key, value = line.strip().split(': ', 1)
+    owned_api_refs[key] = value.strip()
+required_owned_api_refs = {
+    'policy_doc': 'docs/harness/04_INTEGRATION.md',
+    'required_plan_block': 'API 계약 영향도',
+    'router_agent': 'task-orchestrator',
+    'router_skill': 'integration-contract',
+    'frontend_to_backend_check': 'true',
+    'backend_to_frontend_search': 'true',
+}
+missing_owned_api_keys = set(required_owned_api_refs) - set(owned_api_refs)
+check(not missing_owned_api_keys, f'missing owned_api_contract_impact keys: {sorted(missing_owned_api_keys)}')
+for key, expected in required_owned_api_refs.items():
+    check(owned_api_refs.get(key) == expected, (
+        f'owned_api_contract_impact.{key} must be {expected}: {owned_api_refs.get(key)}'
+    ))
+policy_doc = root/owned_api_refs['policy_doc']
+check(policy_doc.exists(), f'missing owned_api_contract_impact policy_doc: {owned_api_refs["policy_doc"]}')
+check(f'## {owned_api_refs["required_plan_block"]}' in plan_text, (
+    f'plan template missing owned API block: {owned_api_refs["required_plan_block"]}'
+))
+check_agent_ref(owned_api_refs['router_agent'], 'owned_api_contract_impact.router_agent')
+check(owned_api_refs['router_skill'] in skill_names, (
+    f'owned_api_contract_impact.router_skill references missing skill: {owned_api_refs["router_skill"]}'
+))
+check(owned_api_refs['router_skill'] in claude_skill_dirs, (
+    f'owned_api_contract_impact.router_skill references missing Claude skill mirror: {owned_api_refs["router_skill"]}'
+))
 
 print('[OK] agent orchestration policy verified')
 print('[OK] owned API contract impact policy verified')
