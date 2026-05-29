@@ -13,11 +13,12 @@ docs/harness/plans/completed/<YYYY-MM-DD-slug>.md
 
 `docs/harness/plans/active`가 활성 증거 저장소다.
 
-## 게이트 상태
+## Plan State
 
-활성 계획의 `Metadata > Status`는 아래 값 중 정확히 하나만 쓴다.
+활성 계획의 `Metadata > Plan State`는 아래 값 중 정확히 하나만 쓴다.
+`Status`는 에이전트 종료 보고 enum(`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`)에 남겨 plan lifecycle과 혼동하지 않는다.
 
-| Status | 의미 |
+| Plan State | 의미 |
 |---|---|
 | `draft` | 요구사항이나 계획을 정리 중 |
 | `red` | 실패 테스트 또는 회귀 재현 증거를 확보함 |
@@ -80,7 +81,7 @@ docs/harness/plans/completed/<YYYY-MM-DD-slug>.md
 완료 전 아래를 수행한다.
 
 1. `Completion Report`를 채운다.
-2. status를 `completed`로 바꾼다.
+2. `Plan State`를 `completed`로 바꾼다.
 3. plan을 `docs/harness/plans/completed/`로 이동한다.
 4. 적용 저장소의 장기 사실이 바뀌었을 때만 `docs/harness/context/**` 또는 `docs/harness/profiles/**`를 갱신한다.
 5. 긴 로그는 컨텍스트 문서에 넣지 말고 완료 계획에 실행 요약으로 남긴다.

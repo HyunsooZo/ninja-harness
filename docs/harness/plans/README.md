@@ -46,9 +46,10 @@
 
 전체 스캔 산출물은 완료 계획에 복사하지 않는다. 장기적으로 필요한 사실만 `docs/harness/context/BASELINE.md`, `DECISIONS.md`, 관련 세부 컨텍스트 문서에 반영한다.
 
-## 게이트 상태
+## Plan State
 
-`Metadata > Status`는 가능하면 아래 값 중 하나를 쓴다.
+`Metadata > Plan State`는 가능하면 아래 값 중 하나를 쓴다.
+`Status`는 에이전트 종료 보고 enum(`DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`)에 사용한다.
 
 - `draft`
 - `red`

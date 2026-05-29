@@ -271,6 +271,12 @@ if [[ -d docs/harness/context/generated/.harness-clean-test/__MACOSX ]]; then
 fi
 rm -rf docs/harness/context/generated/.harness-clean-test
 
+expect_fail "plan template rejects lifecycle Status" \
+  with_file_replacing_line "docs/harness/plans/TEMPLATE.md" \
+    '- Plan State: `draft`' \
+    '- Status: `draft`' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "makefile rejects hardcoded bash path" \
   with_file_replacing_line "Makefile" \
     "SHELL := bash" \

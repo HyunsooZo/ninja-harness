@@ -7,7 +7,7 @@
 - 범위: `AGENTS.md`, `CLAUDE.md`, `docs/harness/**`, `.agents/skills/**`, `.codex/agents/**`, `.claude/agents/**`, `.claude/commands/**`, `scripts/verify-harness-structure.sh`
 - 위험 수준: medium
 - 기본 실행자: `executor`
-- Status: `completed`
+- Plan State: `completed`
 
 ## 목표
 

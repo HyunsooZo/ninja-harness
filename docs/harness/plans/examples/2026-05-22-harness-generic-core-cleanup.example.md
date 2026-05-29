@@ -2,7 +2,7 @@
 
 ## 메타데이터
 
-- Status: completed
+- Plan State: completed
 - 날짜: 2026-05-22
 - 담당자: Codex
 - 범위: `AGENTS.md`, `docs/harness/**`, `.agents/skills/**`, `.codex/agents/**`, `.claude/agents/**`, `.claude/commands/**`, `scripts/verify-harness-structure.sh`
@@ -57,7 +57,7 @@
 
 ## 완료 보고
 
-- Status: completed.
+- Plan State: completed.
 - 변경 파일: 루트 지침, 하네스 문서, 프로필/컨텍스트 템플릿, rubric, 라우팅, 계획 템플릿, Codex/Claude 에이전트, Codex 스킬, Claude 명령, 검증 스크립트.
 - 검증: 구조 검증 통과, 직접 누수 스캔 통과, `.DS_Store` 스캔 통과.
 - 남은 위험: 완료 계획은 이력 문서이므로 범용 누수 검사에서 제외한다.

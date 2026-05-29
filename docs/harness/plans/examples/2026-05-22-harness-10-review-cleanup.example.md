@@ -7,7 +7,7 @@
 - Scope: harness docs, Codex/Claude agent mirror validation, structure verification
 - Risk level: medium
 - Preferred executor: `executor`
-- Status: `completed`
+- Plan State: `completed`
 - Related context: `AGENTS.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`, `docs/harness/README.md`
 
 ## Repo rules summary

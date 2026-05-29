@@ -7,7 +7,7 @@
 - 범위: `AGENTS.md`, `CLAUDE.md`, `docs/harness/**`, `.agents/skills/**`, `.codex/agents/**`, `.claude/agents/**`, `.claude/commands/**`
 - 위험 수준: low
 - 기본 실행자: `executor`
-- Status: `completed`
+- Plan State: `completed`
 
 ## 사양
 

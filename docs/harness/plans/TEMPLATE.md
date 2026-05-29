@@ -7,7 +7,7 @@
 - 범위:
 - 위험 수준:
 - 기본 실행자: `executor`
-- Status: `draft`
+- Plan State: `draft`
 - 관련 컨텍스트:
 
 ## 저장소 규칙 요약
