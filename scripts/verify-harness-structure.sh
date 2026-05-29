@@ -174,7 +174,13 @@ for key, expected in required_runtime_refs.items():
     check(runtime_refs.get(key) == expected, f'runtime.{key} must be {expected}: {runtime_refs.get(key)}')
 check(runtime_refs['codex_agent_model'], 'runtime.codex_agent_model must not be empty')
 check(runtime_refs['codex_model_override_env'] == 'HARNESS_EXPECTED_CODEX_MODEL', 'runtime override env mismatch')
-check((root/'scripts/set-codex-agent-model.sh').exists(), 'missing runtime model management script')
+set_model_script = root/'scripts/set-codex-agent-model.sh'
+check(set_model_script.exists(), 'missing runtime model management script')
+set_model_text = set_model_script.read_text(encoding='utf-8')
+for key, expected in required_runtime_refs.items():
+    if key == 'codex_agent_model':
+        continue
+    check(f'  {key}: {expected}' in set_model_text, f'set-model fallback missing runtime field: {key}')
 for token in ['Darwin|Linux', 'CYGWIN*|MINGW*|MSYS*', 'prefer WSL for CI parity', 'unsupported OS']:
     check(token in make_text, f'Makefile doctor missing OS support token: {token}')
 for tool in runtime_refs['required_tools'].split():

@@ -31,7 +31,15 @@ text = harness.read_text(encoding='utf-8')
 if re.search(r'^  codex_agent_model:', text, flags=re.M):
     text = re.sub(r'^  codex_agent_model:\s*.*$', f'  codex_agent_model: {model}', text, count=1, flags=re.M)
 else:
-    text += f'\n\nruntime:\n  codex_agent_model: {model}\n  codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL\n'
+    text += (
+        f'\n\nruntime:\n'
+        f'  codex_agent_model: {model}\n'
+        f'  codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL\n'
+        f'  supported_os: macos_linux_wsl_posix_shell\n'
+        f'  unsupported_windows_native: true\n'
+        f'  required_tools: bash make python3\n'
+        f'  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.\n'
+    )
 harness.write_text(text, encoding='utf-8')
 PYMODEL
 
