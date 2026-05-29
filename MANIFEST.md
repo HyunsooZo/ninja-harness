@@ -18,6 +18,7 @@ repositories:
 source_of_truth:
   entry:
     - AGENTS.md
+    - CLAUDE.md
     - docs/harness/context/BASELINE.md
     - docs/harness/context/INDEX.md
     - docs/harness/README.md
@@ -36,6 +37,15 @@ source_of_truth:
     - docs/harness/11_PARALLEL_AGENT_GATE.md
     - docs/harness/12_FIELD_VALIDATION.md
     - docs/harness/13_AGENT_ORCHESTRATION.md
+    - docs/harness/ORG_ROLLOUT.md
+    - docs/harness/CI_EXAMPLES.md
+    - docs/harness/GOVERNANCE.md
+    - docs/harness/SECURITY_POLICY.md
+    - docs/harness/ADOPTION_SCORECARD.md
+    - docs/harness/rubrics/backend.md
+    - docs/harness/rubrics/frontend.md
+    - docs/harness/rubrics/integration.md
+    - docs/harness/rubrics/secondary-app.md
     - docs/harness/profiles/project-profile.md
     - docs/harness/profiles/design-system-profile.md
   skills:
@@ -65,6 +75,12 @@ workflow:
     - complete
   trivial_allowed_without_plan: true
   non_trivial_requires_active_plan: true
+  optional_project_gates: true
+  project_readiness_gate: scripts/check-profile-readiness.sh
+  final_integrity_target: make integrity
+  gate_self_test: scripts/self-test-harness-gates.sh
+  orchestration_default_mode: SINGLE_AGENT
+  orchestration_requires_active_plan_when_split: true
 
 rules:
   tdd:
@@ -93,6 +109,27 @@ rules:
     review_api_auth_resource_pagination_changes: true
   commits:
     require_explicit_user_request: true
+  project_gates:
+    enabled_by_env: HARNESS_RUN_PROJECT_CHECKS
+    profile_readiness_enabled_by_env: HARNESS_REQUIRE_FILLED_PROFILE
+    profile_readiness_script: scripts/check-profile-readiness.sh
+    script: scripts/verify-project-gates.sh
+    preferred_scripts:
+      backend: HARNESS_BACKEND_TEST_SCRIPT
+      primary_frontend: HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT
+      secondary_app: HARNESS_SECONDARY_APP_TEST_SCRIPT
+      integration: HARNESS_INTEGRATION_TEST_SCRIPT
+      security: HARNESS_SECURITY_SCAN_SCRIPT
+      accessibility: HARNESS_A11Y_CHECK_SCRIPT
+    legacy_commands:
+      backend: HARNESS_BACKEND_TEST_CMD
+      primary_frontend: HARNESS_PRIMARY_FRONTEND_TEST_CMD
+      secondary_app: HARNESS_SECONDARY_APP_TEST_CMD
+      integration: HARNESS_INTEGRATION_TEST_CMD
+      security: HARNESS_SECURITY_SCAN_CMD
+      accessibility: HARNESS_A11Y_CHECK_CMD
+    org_standard_requires_ack: HARNESS_ACK_TRUSTED_PROJECT_CMDS
+    legacy_bash_lc_opt_in: HARNESS_ALLOW_LEGACY_BASH_LC
 
   context:
     default_load_full_scan: false
@@ -115,11 +152,40 @@ review_gates:
   secondary_app:
     - secondary-app-runtime-ux-reviewer
     - integration-reviewer
+  orchestration:
+    - task-orchestrator
   backend_domain_persistence_split:
+    - task-orchestrator
     - backend-domain-modeler
     - backend-persistence-implementer
     - backend-application-implementer
   final_quality:
+    - quality-reviewer
+
+agent_orchestration:
+  default_mode: SINGLE_AGENT
+  orchestrator_agent: task-orchestrator
+  orchestration_skill: orchestration-planning
+  allow_single_agent_for_small_changes: true
+  require_active_plan_for_split_delegation: true
+  require_common_decisions_when_split: true
+  require_single_integrator: true
+  modes:
+    - SINGLE_AGENT
+    - SINGLE_AGENT_WITH_REVIEW
+    - SEQUENTIAL_LAYERED
+    - PARALLEL_INVESTIGATION
+    - PARALLEL_REVIEW
+    - PARALLEL_IMPLEMENT
+  backend_layer_order:
+    - task-orchestrator
+    - backend-domain-modeler
+    - backend-application-implementer
+    - backend-persistence-implementer
+    - backend-db-migration-implementer
+    - backend-api-implementer
+    - test-automation-reviewer
+    - integration-reviewer
     - quality-reviewer
 
 parallel_agents:
@@ -133,6 +199,33 @@ parallel_agents:
   forbid_shared_migration_schema_edits: true
   require_verify_after_fan_in: true
   allow_backend_domain_persistence_parallelism: conditional
+
+organization:
+  rollout_guide: docs/harness/ORG_ROLLOUT.md
+  ci_examples: docs/harness/CI_EXAMPLES.md
+  governance: docs/harness/GOVERNANCE.md
+  security_policy: docs/harness/SECURITY_POLICY.md
+  adoption_scorecard: docs/harness/ADOPTION_SCORECARD.md
+  org_standard_flag: HARNESS_ORG_STANDARD
+  eval_scripts:
+    - scripts/collect-eval-metrics.sh
+    - scripts/check-completed-plan-quality.sh
+
+runtime:
+  codex_agent_model: gpt-5.5
+  codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL
+  supported_os: macos_linux_wsl_posix_shell
+  unsupported_windows_native: true
+  required_tools: bash make python3
+  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.
+
+owned_api_contract_impact:
+  policy_doc: docs/harness/04_INTEGRATION.md
+  required_plan_block: API 계약 영향도
+  router_agent: task-orchestrator
+  router_skill: integration-contract
+  frontend_to_backend_check: true
+  backend_to_frontend_search: true
 
 
 ## v3.5.3 보정

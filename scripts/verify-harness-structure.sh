@@ -292,6 +292,22 @@ check(actual_commands == expected_commands, f'claude command mismatch: expected=
 # No root generated 전체 스캔.
 check(not (root/'PROJECT_CONTEXT_SCAN.md').exists(), 'PROJECT_CONTEXT_SCAN.md must not be stored at root')
 
+manifest_text = (root/'MANIFEST.md').read_text(encoding='utf-8')
+for token in [
+    'CLAUDE.md',
+    'docs/harness/ORG_ROLLOUT.md',
+    'docs/harness/rubrics/backend.md',
+    'optional_project_gates: true',
+    'project_gates:',
+    'agent_orchestration:',
+    'orchestration:',
+    'organization:',
+    'owned_api_contract_impact:',
+    'supported_os: macos_linux_wsl_posix_shell',
+    'required_tools: bash make python3',
+]:
+    check(token in manifest_text, f'MANIFEST.md missing current manifest token: {token}')
+
 # PROJECT_CONTEXT_SCAN references must call it 생성 산출물 or basic context exclusion.
 for p in root.rglob('*'):
     if p.is_file() and p.suffix in text_file_suffixes:
