@@ -248,6 +248,16 @@ expect_fail "manifest parity rejects missing policy line" \
     "allow_parallel_implementation: conditional" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "gitignore rejects missing completed plan ignore" \
+  with_file_without_line ".gitignore" \
+    "docs/harness/plans/completed/*.md" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "gitignore rejects missing secret config ignore" \
+  with_file_without_line ".gitignore" \
+    "*secret*.json" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "makefile rejects hardcoded bash path" \
   with_file_replacing_line "Makefile" \
     "SHELL := bash" \

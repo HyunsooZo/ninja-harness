@@ -342,7 +342,7 @@ for script_name in ['check-profile-readiness.sh', 'self-test-harness-gates.sh', 
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -428,6 +428,19 @@ for token in [
     '*token*.conf', '*token*.config', '*token*.ini', '*token*.properties', '*token*.toml',
 ]:
     check(token in root_readme_text, f'root README distribution exclusion missing sensitive token: {token}')
+gitignore_text = (root/'.gitignore').read_text(encoding='utf-8')
+for token in [
+    'docs/harness/plans/completed/*.md',
+    '.codex/skills/',
+    '__tmp-*.sh',
+    '**/__tmp-*.sh',
+    '.env*', '*.pem', '*.p12', '*.key', '*.keystore',
+    '*secret*.json', '*secret*.yml', '*secret*.yaml', '*secret*.txt',
+    '*secret*.conf', '*secret*.config', '*secret*.ini', '*secret*.properties', '*secret*.toml',
+    '*token*.json', '*token*.yml', '*token*.yaml', '*token*.txt',
+    '*token*.conf', '*token*.config', '*token*.ini', '*token*.properties', '*token*.toml',
+]:
+    check(token in gitignore_text, f'.gitignore missing distribution exclusion token: {token}')
 
 # PROJECT_CONTEXT_SCAN references must call it 생성 산출물 or basic context exclusion.
 for p in root.rglob('*'):

@@ -10,3 +10,36 @@ docs/harness/context/generated/*.md
 __MACOSX/
 .idea/
 .claude/settings.local.json
+
+# Harness local evidence and retired mirrors
+docs/harness/plans/completed/*.md
+.codex/skills/
+
+# Temporary scripts
+__tmp-*.sh
+**/__tmp-*.sh
+
+# Local secrets and credentials
+.env*
+*.pem
+*.p12
+*.key
+*.keystore
+*secret*.json
+*secret*.yml
+*secret*.yaml
+*secret*.txt
+*secret*.conf
+*secret*.config
+*secret*.ini
+*secret*.properties
+*secret*.toml
+*token*.json
+*token*.yml
+*token*.yaml
+*token*.txt
+*token*.conf
+*token*.config
+*token*.ini
+*token*.properties
+*token*.toml
