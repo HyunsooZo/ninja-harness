@@ -12,6 +12,7 @@ __MACOSX/
 .claude/settings.local.json
 
 # Harness local evidence and retired mirrors
+docs/harness/plans/active/*.md
 docs/harness/plans/completed/*.md
 .codex/skills/
 

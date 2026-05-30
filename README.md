@@ -322,6 +322,9 @@ active plan에는 다음을 남깁니다.
 - RED / GREEN / REFACTOR / VERIFY evidence
 - 완료 후 completed plan 이동 여부
 
+범용 template package 배포본에는 active plan markdown을 포함하지 않습니다.
+실제 적용 저장소의 project mode에서는 해당 프로젝트의 진행 기록으로 누적할 수 있습니다.
+
 ---
 
 ## Completed Plan
@@ -343,6 +346,8 @@ completed plan 품질은 다음 명령으로 확인합니다.
 ```bash
 make check-plans
 ```
+
+범용 template package 배포본에는 completed plan markdown을 포함하지 않습니다.
 
 ---
 
@@ -481,6 +486,7 @@ __MACOSX
 .claude/settings.local.json
 .codex/skills
 __tmp-*.sh
+docs/harness/plans/active/*.md
 docs/harness/plans/completed/*.md
 .env*
 *.pem

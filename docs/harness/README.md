@@ -78,8 +78,8 @@
 ## 컨텍스트 문서와의 관계
 
 - `docs/harness/**`: 범용 작업 기준과 검증 기준
-- `docs/harness/plans/active/**`: 진행 중인 작업 상태와 RED/GREEN/VERIFY 증거
-- `docs/harness/plans/completed/**`: 완료된 작업의 실행 요약, 검증 결과, 남은 위험
+- `docs/harness/plans/active/**`: 진행 중인 작업 상태와 RED/GREEN/VERIFY 증거. 범용 template package에는 tracked active plan markdown을 포함하지 않는다.
+- `docs/harness/plans/completed/**`: 완료된 작업의 실행 요약, 검증 결과, 남은 위험. 범용 template package에는 tracked completed plan markdown을 포함하지 않는다.
 - `docs/harness/context/**`: 현재 시스템 사실과 도메인/화면/API별 상세 맥락
 - `docs/harness/profiles/**`: 행위자/API prefix/토큰/패키지처럼 프로젝트별로 바뀌는 프로필
 - `docs/harness/context/BASELINE.md`: 반복적으로 필요한 프로젝트 고정 기준

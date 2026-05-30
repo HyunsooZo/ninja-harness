@@ -97,6 +97,7 @@ cp docs/harness/plans/TEMPLATE.md docs/harness/plans/active/YYYY-MM-DD-task-name
 - 남은 위험
 
 완료 후에는 `docs/harness/plans/completed/`로 이동한다.
+범용 template package 배포본에는 active/completed plan markdown을 포함하지 않는다. 실제 적용 저장소의 project mode에서는 해당 프로젝트의 작업 이력으로 누적할 수 있다.
 
 ## 6. 완료 기준
 

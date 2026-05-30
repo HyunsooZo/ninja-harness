@@ -24,6 +24,7 @@ cleanup() {
   rm -f api-secret.properties
   rm -f docs/harness/context/generated/token-policy.md
   rm -f scripts/.harness-self-test-outside.sh
+  rm -f docs/harness/plans/active/.harness-self-test-tracked.md
   rm -f docs/harness/plans/completed/.harness-self-test-tracked.md
   if [[ "$created_ci_dir" == "1" ]]; then
     rmdir scripts/ci 2>/dev/null || true
@@ -223,6 +224,15 @@ expect_pass "token policy markdown remains allowed" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 rm -f docs/harness/context/generated/token-policy.md
 
+printf '# Harness self-test tracked active plan\n\nRED GREEN REFACTOR VERIFY\n잔여 위험: self-test only\n' > docs/harness/plans/active/.harness-self-test-tracked.md
+GIT_INDEX_FILE="$tmp_dir/git-index" git read-tree HEAD
+GIT_INDEX_FILE="$tmp_dir/git-index" git update-index --add docs/harness/plans/active/.harness-self-test-tracked.md
+
+expect_fail "template rejects tracked active plan" \
+  env GIT_INDEX_FILE="$tmp_dir/git-index" HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+rm -f docs/harness/plans/active/.harness-self-test-tracked.md
+
 printf '# Harness self-test tracked completed plan\n\nRED GREEN REFACTOR VERIFY\n잔여 위험: self-test only\n' > docs/harness/plans/completed/.harness-self-test-tracked.md
 GIT_INDEX_FILE="$tmp_dir/git-index" git read-tree HEAD
 GIT_INDEX_FILE="$tmp_dir/git-index" git update-index --add docs/harness/plans/completed/.harness-self-test-tracked.md
@@ -251,6 +261,11 @@ expect_fail "manifest parity rejects missing policy line" \
 expect_fail "gitignore rejects missing completed plan ignore" \
   with_file_without_line ".gitignore" \
     "docs/harness/plans/completed/*.md" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "gitignore rejects missing active plan ignore" \
+  with_file_without_line ".gitignore" \
+    "docs/harness/plans/active/*.md" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "gitignore rejects missing secret config ignore" \

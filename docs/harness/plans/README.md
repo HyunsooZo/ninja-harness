@@ -4,8 +4,8 @@
 
 ## 디렉터리
 
-- `active/`: 진행 중인 단순하지 않은 작업 계획과 단계별 증거를 둔다.
-- `completed/`: 현재 프로젝트에서 완료된 작업의 최종 실행 기록을 둔다. 범용 template package 배포본은 tracked completed plan markdown을 포함하지 않는다. 하네스 자체 변경 증거 계획은 로컬 untracked 파일로 둘 수 있고, 실제 적용 저장소의 project mode는 자기 프로젝트의 완료 기록을 누적한다.
+- `active/`: 진행 중인 단순하지 않은 작업 계획과 단계별 증거를 둔다. 범용 template package 배포본은 tracked active plan markdown을 포함하지 않는다.
+- `completed/`: 현재 프로젝트에서 완료된 작업의 최종 실행 기록을 둔다. 범용 template package 배포본은 tracked completed plan markdown을 포함하지 않는다. 하네스 자체 변경 증거 계획은 로컬 untracked 파일로 둘 수 있고, 실제 적용 저장소의 project mode는 자기 프로젝트의 진행/완료 기록을 누적한다.
 - `examples/`: 하네스 작성/정리 예시 plan을 둔다. 실제 프로젝트 컨텍스트로 기본 로딩하지 않는다.
 - `TEMPLATE.md`: 새 plan의 기본 형식이다.
 
