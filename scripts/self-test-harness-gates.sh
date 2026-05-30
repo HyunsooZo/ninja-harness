@@ -197,6 +197,24 @@ expect_pass "profile readiness accepts filled profile" \
 expect_fail "profile readiness rejects placeholder" \
   bash scripts/check-profile-readiness.sh "$bad_profile"
 
+completed_quality_dir="$tmp_dir/completed-plans"
+mkdir -p "$completed_quality_dir"
+
+expect_pass "completed plan quality accepts empty directory" \
+  env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
+      bash scripts/check-completed-plan-quality.sh
+
+printf '# Good completed plan\n\nRED GREEN REFACTOR VERIFY\n잔여 위험: none\n' > "$completed_quality_dir/good.md"
+expect_pass "completed plan quality accepts required evidence markers" \
+  env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
+      bash scripts/check-completed-plan-quality.sh
+
+printf '# Bad completed plan\n\nVERIFY only\n' > "$completed_quality_dir/bad.md"
+expect_fail "completed plan quality rejects missing evidence markers" \
+  env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
+      bash scripts/check-completed-plan-quality.sh
+rm -f "$completed_quality_dir/bad.md"
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 

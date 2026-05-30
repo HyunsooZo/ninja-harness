@@ -4,11 +4,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-completed_dir="docs/harness/plans/completed"
+completed_dir="${HARNESS_COMPLETED_PLAN_DIR:-docs/harness/plans/completed}"
+
+shopt -s nullglob
 plans=("$completed_dir"/*.md)
 
-if [[ ! -e "${plans[0]}" ]]; then
-  echo "[OK] completed plan quality: no completed plans in template/package"
+if (( ${#plans[@]} == 0 )); then
+  echo "[OK] completed plan quality: no completed plans in $completed_dir"
   exit 0
 fi
 

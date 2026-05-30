@@ -46,6 +46,20 @@
 
 전체 스캔 산출물은 완료 계획에 복사하지 않는다. 장기적으로 필요한 사실만 `docs/harness/context/BASELINE.md`, `DECISIONS.md`, 관련 세부 컨텍스트 문서에 반영한다.
 
+## 품질 검사
+
+completed plan 품질 검사는 기본적으로 `docs/harness/plans/completed/*.md`를 본다.
+
+```bash
+make check-plans
+```
+
+격리된 fixture나 외부 plan 디렉터리를 검사할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다.
+
+```bash
+HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/check-completed-plan-quality.sh
+```
+
 ## Plan State
 
 `Metadata > Plan State`는 가능하면 아래 값 중 하나를 쓴다.
