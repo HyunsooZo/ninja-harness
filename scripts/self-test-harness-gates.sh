@@ -215,6 +215,38 @@ expect_fail "completed plan quality rejects missing evidence markers" \
       bash scripts/check-completed-plan-quality.sh
 rm -f "$completed_quality_dir/bad.md"
 
+eval_fixture_dir="$tmp_dir/eval-completed-plans"
+mkdir -p "$eval_fixture_dir"
+cat > "$eval_fixture_dir/narrative-failure-pass.md" <<'EOF'
+# Eval fixture
+
+- 날짜: 2026-05-31
+- 작업 유형: docs
+- 기본 실행자: executor
+- 모드: SINGLE_AGENT
+- Verdict: PASS
+
+## Notes
+
+- RED Evidence mentions an expected 자동 검증 실패 before the fix.
+EOF
+cat > "$eval_fixture_dir/backtick-status-done.md" <<'EOF'
+# Eval fixture
+
+- 날짜: 2026-05-31
+- 작업 유형: docs
+- 기본 실행자: executor
+- 모드: SINGLE_AGENT
+- Status: `DONE`
+EOF
+expect_pass "eval ignores narrative failure wording" \
+  env HARNESS_COMPLETED_PLAN_DIR="$eval_fixture_dir" \
+      bash scripts/collect-eval-metrics.sh
+env HARNESS_COMPLETED_PLAN_DIR="$eval_fixture_dir" bash scripts/collect-eval-metrics.sh > "$output_file"
+grep -q '^fail_markers=0$' "$output_file" || fail "eval should not count narrative failure wording as fail marker"
+grep -q $'docs\t2/2\t100.0%' "$output_file" || fail "eval should count PASS verdict and backtick DONE status as successful docs tasks"
+pass "eval fixture metrics verified"
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 
@@ -314,6 +346,11 @@ expect_fail "makefile rejects hardcoded bash path" \
   with_file_replacing_line "Makefile" \
     "SHELL := bash" \
     "SHELL := /bin/bash" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "root README rejects missing integrity table row" \
+  with_file_without_line "README.md" \
+    '| `make integrity` | 최종 로컬 하네스 무결성 검증을 실행합니다. |' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "source_of_truth rejects missing backend rubric" \

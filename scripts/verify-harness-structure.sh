@@ -432,6 +432,7 @@ harness_readme_text = (root/'docs/harness/README.md').read_text(encoding='utf-8'
 for doc_name, doc_text in [('README.md', root_readme_text), ('docs/harness/README.md', harness_readme_text)]:
     missing_doc_targets = [target for target in public_make_targets if f'make {target}' not in doc_text]
     check(not missing_doc_targets, f'{doc_name} missing public Makefile target docs: {missing_doc_targets}')
+check('| `make integrity` |' in root_readme_text, 'root README Makefile command table must document make integrity')
 for token in [
     'docs/harness/plans/active/*.md',
     'docs/harness/plans/completed/*.md',
@@ -1326,7 +1327,7 @@ for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer�
     check(token in metrics_text, f'eval metrics missing {token}')
 
 collect_eval_text = (root/'scripts/collect-eval-metrics.sh').read_text(encoding='utf-8')
-for token in ['Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration']:
     check(token in collect_eval_text, f'eval collector missing {token}')
 
 print('[OK] governance and project gate policy verified')

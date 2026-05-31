@@ -33,6 +33,14 @@
 - orchestration mode별 성공률/실패율/평균 소요 시간
 - 기존 marker count: FAIL, SKIP, BLOCKED, rework, regression
 
+격리된 fixture나 외부 completed plan 디렉터리를 집계할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다.
+
+```bash
+HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/collect-eval-metrics.sh
+```
+
+실패 지표는 RED 증거의 의도된 실패나 서술형 "실패" 표현이 아니라 `Verdict`, `Status`, `Review`, `Verify`, 리뷰/검증 표의 최종 결과가 `FAIL`인 경우를 중심으로 집계한다.
+
 ## 운영 기준
 
 - `Verify=SKIP`은 반드시 사유를 completed plan에 남긴다.

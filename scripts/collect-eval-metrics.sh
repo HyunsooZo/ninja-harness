@@ -6,12 +6,13 @@ cd "$ROOT"
 
 python3 - <<'PY'
 from pathlib import Path
+import os
 import re
 from collections import Counter, defaultdict
 from statistics import mean
 
 root = Path('.')
-completed_dir = root/'docs/harness/plans/completed'
+completed_dir = Path(os.environ.get('HARNESS_COMPLETED_PLAN_DIR', 'docs/harness/plans/completed'))
 plans = sorted(completed_dir.glob('*.md')) if completed_dir.exists() else []
 
 modes = ['SINGLE_AGENT','SINGLE_AGENT_WITH_REVIEW','SEQUENTIAL_LAYERED','PARALLEL_INVESTIGATION','PARALLEL_REVIEW','PARALLEL_IMPLEMENT']
@@ -61,8 +62,12 @@ for plan in plans:
     date = first_match([r'-\s*날짜:\s*([^\n]+)', r'Date:\s*([^\n]+)', r'##\s*Date\s*\n\s*([^\n]+)'], text, plan.stem[:10])
     ttype = first_match([r'-\s*작업 유형:\s*([^\n]+)', r'Task Type:\s*([^\n]+)'], text, 'unknown')
     verdict = first_match([r'Verdict:\s*([A-Z_]+)', r'리뷰 판정:\s*([A-Z_가-힣]+)', r'최종 판정:\s*([A-Z_가-힣]+)'], text, 'unknown').upper()
-    success = bool(re.search(r'Verdict:\s*PASS\b|Review:\s*PASS\b|리뷰 판정:\s*PASS\b|검증:\s*PASS\b', text, re.I)) and 'FAIL' not in verdict
-    failish = bool(re.search(r'\bFAIL\b|검증 실패|리뷰 실패', text, re.I))
+    final_success = bool(re.search(r'^\s*(?:-\s*)?(?:Verdict|Status|Review|Verify|검증|리뷰 판정|최종 판정)\s*:\s*`?(?:PASS(?:_WITH_CONCERNS)?|DONE(?:_WITH_CONCERNS)?)\b`?', text, re.I | re.M))
+    table_success = bool(re.search(r'^\|[^|\n]*(?:리뷰|Review|검증|Verify|최종 품질)[^|\n]*\|[^|\n]*\|\s*(?:PASS(?:_WITH_CONCERNS)?|DONE(?:_WITH_CONCERNS)?)\s*\|', text, re.I | re.M))
+    failure_outcome = bool(re.search(r'^\s*(?:-\s*)?(?:Verdict|Status|Review|Verify|검증|리뷰 판정|최종 판정)\s*:\s*`?(?:FAIL|검증 실패|리뷰 실패)\b`?', text, re.I | re.M))
+    failure_outcome = failure_outcome or bool(re.search(r'^\|[^|\n]*(?:리뷰|Review|검증|Verify|최종 품질)[^|\n]*\|[^|\n]*\|\s*(?:FAIL|검증 실패|리뷰 실패)\s*\|', text, re.I | re.M))
+    success = (final_success or table_success) and 'FAIL' not in verdict
+    failish = failure_outcome
     concernish = bool(re.search(r'PASS_WITH_CONCERNS|DONE_WITH_CONCERNS', text, re.I))
 
     if failish: summary['fail_markers'] += 1
