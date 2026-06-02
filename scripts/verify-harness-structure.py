@@ -453,6 +453,7 @@ for token in [
     'harness upgrade checker rejects ownership placeholders in org standard',
     'harness upgrade checker rejects dirty downstream changed path',
     'harness upgrade checker rejects project-owned downstream overwrite',
+    'harness upgrade checker rejects missing downstream managed file',
     'verify-org rejects ownership placeholders',
 ]:
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
@@ -1121,7 +1122,7 @@ for required in ['breaking change', 'major', 'minor', 'patch', 'make integrity']
 for required in ['VERSION', 'harness_version', 'make harness-upgrade', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'HARNESS_ORG_STANDARD=1 make harness-upgrade', 'HARNESS_REQUIRE_DOWNSTREAM_AUDIT', 'HARNESS_REQUIRE_CLEAN_DOWNSTREAM', '--downstream-root', '--changed-paths-file', '--from-ref', '--require-filled-ownership', '--require-downstream-audit', '--require-clean-downstream']:
     check(required in upgrade_text, f'UPGRADE missing downstream upgrade token: {required}')
 upgrade_checker_text = (root/'scripts/check-harness-upgrade.py').read_text(encoding='utf-8')
-for required in ['changelog_versions', 'require_filled_ownership', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'HARNESS_ORG_STANDARD', 'ownership_placeholder_errors', 'CHANGELOG.md missing upgrade delta entries', 'require_downstream_audit', 'require_clean_downstream', 'downstream_audit_errors', 'PROJECT_OWNED_PREFIXES', 'HARNESS_REQUIRE_CLEAN_DOWNSTREAM']:
+for required in ['changelog_versions', 'require_filled_ownership', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'HARNESS_ORG_STANDARD', 'ownership_placeholder_errors', 'CHANGELOG.md missing upgrade delta entries', 'require_downstream_audit', 'require_clean_downstream', 'downstream_audit_errors', 'PROJECT_OWNED_PREFIXES', 'HARNESS_REQUIRE_CLEAN_DOWNSTREAM', 'missing downstream file']:
     check(required in upgrade_checker_text, f'upgrade checker missing readiness token: {required}')
 readme_text_for_version = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for required in ['CHANGELOG.md', 'UPGRADE.md', 'VERSION']:

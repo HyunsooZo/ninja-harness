@@ -153,8 +153,13 @@ def downstream_audit_errors(
             continue
         template_path = root / rel_path
         downstream_path = downstream_root / rel_path
-        if template_path.is_file() and downstream_path.is_file() and read_text(template_path) != read_text(downstream_path):
-            manual_review.append(rel_path)
+        if template_path.is_file():
+            if not downstream_path.exists():
+                manual_review.append(f'{rel_path} (missing downstream file)')
+            elif not downstream_path.is_file():
+                manual_review.append(f'{rel_path} (downstream path is not a file)')
+            elif read_text(template_path) != read_text(downstream_path):
+                manual_review.append(rel_path)
 
     if require_clean_downstream and manual_review:
         errors.append('downstream manual merge required for changed harness paths: ' + ', '.join(manual_review))

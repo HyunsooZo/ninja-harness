@@ -466,6 +466,18 @@ expect_fail "harness upgrade checker rejects project-owned downstream overwrite"
     --require-downstream-audit \
     --require-clean-downstream
 
+mkdir -p "$tmp_dir/upgrade-template/scripts"
+cp -R VERSION MANIFEST.md LICENSE .github docs scripts "$tmp_dir/upgrade-template/"
+printf 'new upstream file\n' > "$tmp_dir/upgrade-template/scripts/new-upstream-tool.py"
+printf 'scripts/new-upstream-tool.py\n' > "$tmp_dir/changed-new-managed-paths.txt"
+expect_fail "harness upgrade checker rejects missing downstream managed file" \
+  python3 scripts/check-harness-upgrade.py \
+    --root "$tmp_dir/upgrade-template" \
+    --downstream-root "$upgrade_downstream" \
+    --changed-paths-file "$tmp_dir/changed-new-managed-paths.txt" \
+    --require-downstream-audit \
+    --require-clean-downstream
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 

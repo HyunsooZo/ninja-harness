@@ -88,6 +88,22 @@ class UpgradeCheckerTest(unittest.TestCase):
             ['downstream manual merge required for changed harness paths: docs/harness/context/BASELINE.md (project-owned path)'],
         )
 
+    def test_clean_downstream_audit_detects_missing_new_managed_file(self) -> None:
+        changed_paths = Path(self.tmp.name) / 'changed-paths.txt'
+        changed_paths.write_text('scripts/new-upstream-tool.py\n', encoding='utf-8')
+        self.write(self.root, 'scripts/new-upstream-tool.py', 'new upstream file\n')
+        errors = self.mod.run_checks(
+            self.root,
+            downstream_root=self.downstream,
+            changed_paths_file=changed_paths,
+            require_downstream_audit=True,
+            require_clean_downstream=True,
+        )
+        self.assertEqual(
+            errors,
+            ['downstream manual merge required for changed harness paths: scripts/new-upstream-tool.py (missing downstream file)'],
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
