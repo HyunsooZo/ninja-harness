@@ -34,6 +34,7 @@
 - 전체 스캔은 최근 완료 문서를 대체하지 않고, 최근 완료 문서도 전체 스캔을 대체하지 않는다.
 - 최근 완료 문서는 최근 변경분과 남은 리스크를 확인하는 용도다.
 - 전체 스캔이 필요하면 `docs/harness/context/generated/`에 임시 산출물로 두고, 장기적으로 필요한 내용만 `BASELINE.md`, `DECISIONS.md`, 세부 컨텍스트 문서에 반영한다.
+- 작업이 아주 작으면 `docs/harness/context/INDEX.md`의 `T0_MINIMAL`/`T1_STANDARD` context tier를 따른다. 교차 레이어, 보안/계약/런타임, 하네스 정책 변경은 `T2_EXPANDED`로 올리고, 전체 스캔은 `T3_FULL_SCAN` 조건에서만 수행한다.
 
 ## 작업 원칙
 

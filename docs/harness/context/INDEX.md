@@ -10,6 +10,19 @@
 4. `docs/harness/plans/completed/` 중 최근 완료 문서
 5. 필요한 경우에만 관련 코드와 관련 completed 문서를 추가 탐색한다.
 
+## Context Tier
+
+작업 크기에 따라 고정 컨텍스트를 다르게 잡는다. 전체 스캔은 어떤 tier에서도 기본값이 아니다.
+
+| Tier | 사용 조건 | 먼저 읽을 것 | 추가 읽기 |
+|---|---|---|---|
+| `T0_MINIMAL` | 오타, 단일 문구, 명확한 단일 파일 수정 | `AGENTS.md` 또는 `CLAUDE.md`, `BASELINE.md` | 대상 파일과 직접 의존 파일 |
+| `T1_STANDARD` | 일반 구현/수정/리뷰 | `AGENTS.md` 또는 `CLAUDE.md`, `BASELINE.md`, 이 `INDEX.md`, active plan | 작업별 추가 문서 1~2개 |
+| `T2_EXPANDED` | 교차 레이어, 보안/계약/런타임, 하네스 정책 변경 | T1 + 관련 핵심 gate 문서 | 관련 completed plan, profile/context |
+| `T3_FULL_SCAN` | 신규 적용, 경계 불명확, 대규모 마이그레이션, 사용자가 전체 스캔 요청 | T2 | `context/generated/`에 생성한 전체 스캔 요약 |
+
+작은 작업에서 T2/T3를 열었다면 이유를 active plan 또는 최종 보고에 짧게 남긴다.
+
 ## 작업별 추가 문서
 
 | 작업 | 추가 문서 |

@@ -32,7 +32,7 @@
 
 ## 권장 흐름
 
-1. `AGENTS.md` 또는 `CLAUDE.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`를 읽는다. 신규 사용자는 `QUICKSTART_5_MIN.md`도 읽는다.
+1. `AGENTS.md` 또는 `CLAUDE.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`를 읽는다. 작은 작업은 `INDEX.md`의 `T0_MINIMAL`/`T1_STANDARD` context tier로 고정 컨텍스트를 줄인다. 신규 사용자는 `QUICKSTART_5_MIN.md`도 읽는다.
 2. 이 문서에서 작업 범위에 맞는 레이어/게이트 문서로 이동한다. 여러 에이전트가 필요한지 애매하면 `13_AGENT_ORCHESTRATION.md`를 먼저 확인한다.
 3. 대상 도메인/화면/API의 `docs/harness/context/**`와 필요한 `docs/harness/profiles/**` 문서를 추가로 읽는다.
 4. 단순하지 않은 작업은 `docs/harness/plans/active/`에 계획을 만들거나 기존 활성 계획을 갱신한다.

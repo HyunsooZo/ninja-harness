@@ -14,6 +14,8 @@
 
 전체 스캔 파일(`PROJECT_CONTEXT_SCAN.md` 등)은 기본 컨텍스트로 읽지 않는다. 전체 스캔은 `docs/harness/context/generated/`의 임시 산출물로만 둔다.
 
+작업이 아주 작으면 `docs/harness/context/INDEX.md`의 `T0_MINIMAL`/`T1_STANDARD` context tier를 따른다. 교차 레이어, 보안/계약/런타임, 하네스 정책 변경은 `T2_EXPANDED`로 올리고, 전체 스캔은 `T3_FULL_SCAN` 조건에서만 수행한다.
+
 ## 프로젝트 프로파일
 
 - 실제 repo 경로, 행위자/리소스 용어, API prefix, package 예시는 `docs/harness/profiles/project-profile.md`에 둔다.

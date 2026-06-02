@@ -976,7 +976,7 @@ for key in ['generated_scan_dir', 'baseline', 'decisions']:
     check((root/ref).exists(), f'missing rules.context path: {key} -> {ref}')
 
 context_index_text = (root/'docs/harness/context/INDEX.md').read_text(encoding='utf-8')
-for required in ['전체 스캔', '기본 컨텍스트', 'generated/']:
+for required in ['전체 스캔', '기본 컨텍스트', 'generated/', 'Context Tier', 'T0_MINIMAL', 'T1_STANDARD', 'T2_EXPANDED', 'T3_FULL_SCAN']:
     check(required in context_index_text, f'context INDEX missing context policy token: {required}')
 context_readme_text = (root/'docs/harness/context/README.md').read_text(encoding='utf-8')
 for required in ['전체 스캔', '기본 컨텍스트', 'generated/PROJECT_CONTEXT_SCAN.generated.md']:
