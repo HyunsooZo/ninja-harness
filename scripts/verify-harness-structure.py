@@ -1232,6 +1232,8 @@ ci_example_path = root/'docs/harness/examples/github-actions/harness-verify.yml'
 check(ci_example_path.exists(), f'missing GitHub Actions example: {ci_example_path}')
 ci_example = ci_example_path.read_text(encoding='utf-8')
 check('HARNESS_VERIFY_MODE=project \\' in ci_example, 'CI example should use readable multiline env assignment')
+for token in ['powershell-structure:', 'runs-on: windows-latest', 'shell: pwsh', 'pwsh -File scripts/doctor.ps1', 'pwsh -File scripts/verify-harness-structure.ps1', '$env:HARNESS_VERIFY_MODE = "template"', '$env:HARNESS_VERIFY_MODE = "project"']:
+    check(token in ci_example, f'CI example missing PowerShell structure verification token: {token}')
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
 for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
@@ -1341,7 +1343,7 @@ check('HARNESS_BACKEND_TEST_SCRIPT' in ci_text, 'CI example must prefer script-b
 check('HARNESS_BACKEND_TEST_CMD' not in ci_text, 'CI example should not use legacy command gate')
 
 ci_examples_text = (root/'docs/harness/CI_EXAMPLES.md').read_text(encoding='utf-8')
-for token in ['make integrity', 'HARNESS_*_SCRIPT', 'HARNESS_ALLOW_LEGACY_BASH_LC', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1']:
+for token in ['make integrity', 'HARNESS_*_SCRIPT', 'HARNESS_ALLOW_LEGACY_BASH_LC', 'HARNESS_ACK_TRUSTED_PROJECT_CMDS=1', 'powershell-structure', 'Windows native PowerShell', 'pwsh -File scripts/verify-harness-structure.ps1']:
     check(token in ci_examples_text, f'CI examples missing {token}')
 for doc in [root/'README.md', root/'docs/harness/SECURITY_POLICY.md', root/'docs/harness/CI_EXAMPLES.md']:
     check('symlink' in doc.read_text(encoding='utf-8'), f'{doc} missing project gate symlink policy')

@@ -48,7 +48,25 @@ jobs:
           HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT='scripts/ci/primary-frontend-test.sh' \
           HARNESS_SECURITY_SCAN_SCRIPT='scripts/ci/security-scan.sh' \
           bash scripts/verify-harness-structure.sh
+
+  powershell-structure:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify PowerShell structure entrypoints
+        shell: pwsh
+        run: |
+          python --version
+          git --version
+          pwsh -File scripts/doctor.ps1
+          $env:HARNESS_VERIFY_MODE = "template"
+          pwsh -File scripts/verify-harness-structure.ps1
+          $env:HARNESS_VERIFY_MODE = "project"
+          pwsh -File scripts/verify-harness-structure.ps1
 ```
+
+`powershell-structure` job은 Windows native PowerShell에서 template/project 구조 검증 entrypoint가 실행되는지 확인한다. 실제 project gate는 allowlist된 shell script를 `bash`로 실행하므로 Linux/WSL/Git Bash 계열 job에서 검증한다.
 
 ## 권장 repository script 예시
 
@@ -74,6 +92,7 @@ npm audit --audit-level=high
 - Gate script 파일과 경로 구성 요소는 symlink이면 안 된다.
 - 조직 표준 CI에서는 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`을 설정해 gate 설정이 maintainer-controlled임을 명시한다.
 - workflow와 `scripts/ci/**` 변경은 code-owner/branch protection으로 리뷰 필수 처리한다.
+- Windows runner에서는 PowerShell 구조 검증 job을 추가해 `scripts/doctor.ps1`과 `scripts/verify-harness-structure.ps1`를 실행한다.
 
 Legacy:
 

@@ -23,3 +23,19 @@ jobs:
           HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' \
           HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT='scripts/ci/primary-frontend-test.sh' \
           bash scripts/verify-harness-structure.sh
+
+  powershell-structure:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify PowerShell structure entrypoints
+        shell: pwsh
+        run: |
+          python --version
+          git --version
+          pwsh -File scripts/doctor.ps1
+          $env:HARNESS_VERIFY_MODE = "template"
+          pwsh -File scripts/verify-harness-structure.ps1
+          $env:HARNESS_VERIFY_MODE = "project"
+          pwsh -File scripts/verify-harness-structure.ps1
