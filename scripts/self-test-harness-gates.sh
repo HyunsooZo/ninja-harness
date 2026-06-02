@@ -23,6 +23,8 @@ cleanup() {
   rm -f .env.harness-self-test
   rm -f session-token.json
   rm -f api-secret.properties
+  rm -f .DS_Store
+  rm -f .claude/settings.local.json
   rm -f docs/harness/context/generated/token-policy.md
   rm -f scripts/.harness-self-test-outside.sh
   rm -f docs/harness/plans/active/.harness-self-test-tracked.md
@@ -255,19 +257,34 @@ expect_fail "filled-profile gate requires project mode" \
   env HARNESS_REQUIRE_FILLED_PROFILE=1 HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 printf 'PLACEHOLDER_ONLY=1\n' > .env.harness-self-test
-expect_fail "sensitive artifact rejects local env file" \
+expect_pass "verify ignores ignored untracked env file" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 rm -f .env.harness-self-test
 
 printf '{"placeholder": true}\n' > session-token.json
-expect_fail "sensitive artifact rejects token config file" \
+expect_pass "verify ignores ignored untracked token config file" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 rm -f session-token.json
 
 printf 'placeholder=true\n' > api-secret.properties
-expect_fail "sensitive artifact rejects secret properties file" \
+expect_pass "verify ignores ignored untracked secret properties file" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 rm -f api-secret.properties
+
+printf 'metadata\n' > .DS_Store
+mkdir -p .claude
+printf '{"local": true}\n' > .claude/settings.local.json
+expect_pass "verify ignores ignored untracked local artifacts" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+rm -f .DS_Store .claude/settings.local.json
+
+printf 'PLACEHOLDER_ONLY=1\n' > .env.harness-self-test
+GIT_INDEX_FILE="$tmp_dir/git-index-sensitive" git read-tree HEAD
+sensitive_blob="$(git hash-object -w .env.harness-self-test)"
+GIT_INDEX_FILE="$tmp_dir/git-index-sensitive" git update-index --add --cacheinfo 100644 "$sensitive_blob" .env.harness-self-test
+expect_fail "tracked sensitive env file is rejected" \
+  env GIT_INDEX_FILE="$tmp_dir/git-index-sensitive" HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+rm -f .env.harness-self-test
 
 mkdir -p docs/harness/context/generated
 printf '# Token policy placeholder\n' > docs/harness/context/generated/token-policy.md

@@ -25,6 +25,17 @@ def check(condition: bool, message: str) -> None:
     if not condition:
         fail(message)
 
+def git_tracked_files() -> list[Path]:
+    result = subprocess.run(
+        ['git', 'ls-files'],
+        cwd=root,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    check(result.returncode == 0, f'git ls-files failed: {result.stderr.strip()}')
+    return [root/line for line in result.stdout.splitlines() if line.strip()]
+
 check(not sys.flags.optimize, 'Python optimization mode is not supported for harness verification; unset PYTHONOPTIMIZE and do not run python with -O')
 
 required = [
@@ -114,31 +125,29 @@ check('HARNESS_*_SCRIPT' in make_text, 'Makefile help must mention script-based 
 check('legacy HARNESS_*_CMD strings' in make_text, 'Makefile must frame legacy command gates as non-primary')
 check('HARNESS_*_CMD strings' in make_text and 'Makefile 진입점에서 안내하지 않는다' not in make_text, 'Makefile policy should be explicit in Makefile, not only docs')
 
-# No local OS/editor artifacts in package.
-ds_store = sorted(str(p) for p in root.rglob('.DS_Store'))
-check(not ds_store, f'.DS_Store files must be removed: {ds_store}')
-apple_double = sorted(str(p) for p in root.rglob('._*'))
-check(not apple_double, f'AppleDouble files must be removed: {apple_double}')
-macosx_dirs = sorted(str(p) for p in root.rglob('__MACOSX') if p.is_dir())
-check(not macosx_dirs, f'__MACOSX directories must be removed: {macosx_dirs}')
-check(not (root/'.claude/settings.local.json').exists(), '.claude/settings.local.json must not be distributed')
+tracked_files = git_tracked_files()
+
+# No local OS/editor artifacts in tracked package contents.
+ds_store = sorted(str(p) for p in tracked_files if p.name == '.DS_Store')
+check(not ds_store, f'tracked .DS_Store files must be removed: {ds_store}')
+apple_double = sorted(str(p) for p in tracked_files if p.name.startswith('._'))
+check(not apple_double, f'tracked AppleDouble files must be removed: {apple_double}')
+macosx_entries = sorted(str(p) for p in tracked_files if '__MACOSX' in p.parts)
+check(not macosx_entries, f'tracked __MACOSX entries must be removed: {macosx_entries}')
+check(root/'.claude/settings.local.json' not in tracked_files, '.claude/settings.local.json must not be distributed')
 check(not (root/'.codex/skills').exists(), '.codex/skills is retired; use .agents/skills as skill source of truth')
 workflow_dir = root/'.github/workflows'
 active_example_workflows = sorted(str(p) for p in workflow_dir.glob('*.example.y*ml')) if workflow_dir.exists() else []
 check(not active_example_workflows, f'GitHub Actions example workflows must live outside .github/workflows: {active_example_workflows}')
 # Distribution packages must not include always-success temporary gate scripts.
 for forbidden_gate in [root/'scripts/ci/__tmp-ok.sh']:
-    check(not forbidden_gate.exists(), f'temporary/dummy project gate script must not be distributed: {forbidden_gate}')
-for p in root.rglob('*'):
-    if p.is_file() and p.name.startswith('__tmp-') and p.suffix == '.sh':
+    check(forbidden_gate not in tracked_files, f'temporary/dummy project gate script must not be distributed: {forbidden_gate}')
+for p in tracked_files:
+    if p.name.startswith('__tmp-') and p.suffix == '.sh':
         fail(f'temporary shell script must not be distributed: {p}')
 sensitive_artifacts = []
 sensitive_config_suffixes = {'', '.json', '.yaml', '.yml', '.txt', '.conf', '.config', '.ini', '.properties', '.toml'}
-for p in root.rglob('*'):
-    if not p.is_file():
-        continue
-    if any(part == '.git' for part in p.parts):
-        continue
+for p in tracked_files:
     lower_name = p.name.lower()
     lower_suffix = p.suffix.lower()
     if (
@@ -365,7 +374,7 @@ for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'chec
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
