@@ -190,14 +190,32 @@ PY
   return "$status"
 }
 
-with_clone_file_without_line() {
+make_mutation_fixture() {
+  local fixture="$tmp_dir/mutation-fixture-$pass_count"
+  mkdir -p "$fixture"
+  (
+    cd "$ROOT"
+    git ls-files -z | while IFS= read -r -d '' rel_path; do
+      mkdir -p "$fixture/$(dirname "$rel_path")"
+      cp "$rel_path" "$fixture/$rel_path"
+    done
+  )
+  (
+    cd "$fixture"
+    git init --quiet
+    git add -A
+  )
+  printf '%s\n' "$fixture"
+}
+
+with_fixture_file_without_line() {
   local path="$1"
   local needle="$2"
   shift 2
-  local clone="$tmp_dir/mutation-clone-$pass_count"
-  git clone --quiet "$ROOT" "$clone"
+  local fixture
+  fixture="$(make_mutation_fixture)"
   (
-    cd "$clone"
+    cd "$fixture"
     python3 - "$path" "$needle" <<'PY'
 from pathlib import Path
 import sys
@@ -214,15 +232,15 @@ PY
   )
 }
 
-with_clone_file_replacing_line() {
+with_fixture_file_replacing_line() {
   local path="$1"
   local needle="$2"
   local replacement="$3"
   shift 3
-  local clone="$tmp_dir/mutation-clone-$pass_count"
-  git clone --quiet "$ROOT" "$clone"
+  local fixture
+  fixture="$(make_mutation_fixture)"
   (
-    cd "$clone"
+    cd "$fixture"
     python3 - "$path" "$needle" "$replacement" <<'PY'
 from pathlib import Path
 import sys
@@ -733,30 +751,30 @@ expect_fail "runtime rejects missing Python TOML parser manifest" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "agent metadata rejects missing Codex skills preload" \
-  with_clone_file_without_line ".codex/agents/backend-api-implementer.toml" \
+  with_fixture_file_without_line ".codex/agents/backend-api-implementer.toml" \
     'skills = ["backend-api", "backend-application", "integration-contract", "testing-strategy"]' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "agent metadata rejects invalid sandbox mode" \
-  with_clone_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
+  with_fixture_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
     'sandbox_mode = "workspace-write"' \
     'sandbox_mode = "full-access"' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "agent metadata rejects invalid reasoning effort" \
-  with_clone_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
+  with_fixture_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
     'model_reasoning_effort = "high"' \
     'model_reasoning_effort = "extreme"' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "agent metadata rejects non-list skills preload" \
-  with_clone_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
+  with_fixture_file_replacing_line ".codex/agents/backend-api-implementer.toml" \
     'skills = ["backend-api", "backend-application", "integration-contract", "testing-strategy"]' \
     'skills = "backend-api"' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "agent preload rejects missing local skill coverage" \
-  with_clone_file_replacing_line ".codex/agents/task-orchestrator.toml" \
+  with_fixture_file_replacing_line ".codex/agents/task-orchestrator.toml" \
     'skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy", "harness-maintenance"]' \
     'skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy"]' \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
