@@ -5,6 +5,11 @@ import re
 import subprocess
 import sys
 
+from harness_lib.stdio import configure_utf8_stdio
+
+
+configure_utf8_stdio()
+
 try:
     import tomllib  # Python 3.11+
 except ModuleNotFoundError:
@@ -84,6 +89,7 @@ required = [
     'scripts/harness_lib/__init__.py',
     'scripts/harness_lib/project_gates.py',
     'scripts/harness_lib/completed_plans.py',
+    'scripts/harness_lib/stdio.py',
     'scripts/collect-eval-metrics.sh',
     'scripts/collect-eval-metrics.py',
     'scripts/collect-eval-metrics.ps1',
@@ -283,10 +289,19 @@ for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser'
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for token in ['최소 공통 도구', 'macOS, Linux/WSL', 'Git Bash/MSYS/Cygwin/PowerShell', 'Windows native PowerShell', 'template/project 구조 검증', 'shell project gate 실행', 'scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'cat', 'dirname', 'pwd', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
+for token in ['configure_utf8_stdio()', 'PYTHONUTF8=1', 'PYTHONIOENCODING=utf-8', '[Console]::OutputEncoding', '한글 경로']:
+    check(token in readme_text_for_runtime, f'README runtime section missing UTF-8 token: {token}')
 for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'scripts/verify-project-gates.ps1', 'scripts/check-completed-plan-quality.ps1', 'scripts/sync-skills.ps1', 'scripts/check-profile-readiness.ps1', 'scripts/collect-eval-metrics.ps1', 'scripts/set-codex-agent-model.ps1', 'scripts/check-evidence-gate-hook.ps1']:
     ps_text = (root/ps_script).read_text(encoding='utf-8')
     check('Set-StrictMode -Version Latest' in ps_text, f'{ps_script} must enable strict mode')
     check('$ErrorActionPreference = "Stop"' in ps_text, f'{ps_script} must stop on errors')
+    check('$env:PYTHONUTF8 = "1"' in ps_text, f'{ps_script} must force Python UTF-8 mode')
+    check('$env:PYTHONIOENCODING = "utf-8"' in ps_text, f'{ps_script} must force Python IO encoding')
+    check('[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)' in ps_text, f'{ps_script} must force console UTF-8 output')
+    check('$OutputEncoding = [Console]::OutputEncoding' in ps_text, f'{ps_script} must align PowerShell pipeline encoding')
+stdio_text = (root/'scripts/harness_lib/stdio.py').read_text(encoding='utf-8')
+for token in ['configure_utf8_stdio', 'PYTHONUTF8', 'reconfigure', 'errors=']:
+    check(token in stdio_text, f'stdio helper missing UTF-8 token: {token}')
 check('scripts/verify-harness-structure.py' in (root/'scripts/verify-harness-structure.ps1').read_text(encoding='utf-8'), 'PowerShell verifier must call Python verifier')
 check('python3' in (root/'scripts/verify-harness-structure.sh').read_text(encoding='utf-8'), 'Bash verifier wrapper must call Python')
 check('scripts/verify-harness-structure.py' in (root/'scripts/verify-harness-structure.sh').read_text(encoding='utf-8'), 'Bash verifier wrapper must call Python verifier')

@@ -1,6 +1,10 @@
 #!/usr/bin/env pwsh
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$env:PYTHONUTF8 = "1"
+$env:PYTHONIOENCODING = "utf-8"
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [Console]::OutputEncoding
 
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 Set-Location $Root

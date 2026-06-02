@@ -6,6 +6,10 @@ import os
 import re
 import sys
 
+from harness_lib.stdio import configure_utf8_stdio
+
+
+configure_utf8_stdio()
 
 ROOT = Path(os.environ.get('CLAUDE_PROJECT_DIR', '.')).resolve()
 ACTIVE_PLAN_DIR = ROOT / 'docs/harness/plans/active'

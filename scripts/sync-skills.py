@@ -5,6 +5,10 @@ from pathlib import Path
 import shutil
 import sys
 
+from harness_lib.stdio import configure_utf8_stdio
+
+
+configure_utf8_stdio()
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / '.agents/skills'

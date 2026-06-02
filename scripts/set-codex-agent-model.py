@@ -5,6 +5,10 @@ from pathlib import Path
 import re
 import sys
 
+from harness_lib.stdio import configure_utf8_stdio
+
+
+configure_utf8_stdio()
 
 RUNTIME_FALLBACK = """\
 runtime:

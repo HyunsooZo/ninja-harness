@@ -6,6 +6,11 @@ import sys
 from collections import Counter, defaultdict
 from statistics import mean
 
+from harness_lib.stdio import configure_utf8_stdio
+
+
+configure_utf8_stdio()
+
 root = Path('.')
 completed_dir = Path(os.environ.get('HARNESS_COMPLETED_PLAN_DIR', 'docs/harness/plans/completed'))
 plans = sorted(completed_dir.glob('*.md')) if completed_dir.exists() else []
