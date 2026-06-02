@@ -37,6 +37,7 @@ source_of_truth:
     - docs/harness/11_PARALLEL_AGENT_GATE.md
     - docs/harness/12_FIELD_VALIDATION.md
     - docs/harness/13_AGENT_ORCHESTRATION.md
+    - docs/harness/14_SPEC_REQUIREMENTS.md
     - docs/harness/ORG_ROLLOUT.md
     - docs/harness/CI_EXAMPLES.md
     - docs/harness/GOVERNANCE.md

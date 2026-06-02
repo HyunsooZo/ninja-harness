@@ -46,6 +46,7 @@ required = [
     'docs/harness/QUICKSTART_5_MIN.md',
     'docs/harness/09_EVIDENCE_GATE.md',
     'docs/harness/12_FIELD_VALIDATION.md',
+    'docs/harness/14_SPEC_REQUIREMENTS.md',
     'docs/harness/harness.yaml',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/ORG_ROLLOUT.md',
@@ -814,6 +815,7 @@ required_harness_refs = {
     'docs/harness/11_PARALLEL_AGENT_GATE.md',
     'docs/harness/12_FIELD_VALIDATION.md',
     'docs/harness/13_AGENT_ORCHESTRATION.md',
+    'docs/harness/14_SPEC_REQUIREMENTS.md',
     'docs/harness/ORG_ROLLOUT.md',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/GOVERNANCE.md',
@@ -1126,6 +1128,12 @@ plan_template_text = (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding=
 check('## 에이전트 오케스트레이션' in plan_template_text, 'plan template must include agent orchestration block')
 for required in ['Orchestration', 'task-orchestrator', '수정 범위 이탈 확인', '비용 / 지연 가드', '예상 fanout', '시간/토큰 예산', '축소 기준']:
     check(required in plan_template_text, f'plan template missing orchestration field: {required}')
+for required in ['스펙 수준', 'SPEC_LIGHT', 'SPEC_STANDARD', 'SPEC_DEEP', 'EARS 요구사항', 'Story Slice', '옵션 비교']:
+    check(required in plan_template_text, f'plan template missing spec field: {required}')
+
+spec_doc_text = (root/'docs/harness/14_SPEC_REQUIREMENTS.md').read_text(encoding='utf-8')
+for required in ['SPEC_LIGHT', 'SPEC_STANDARD', 'SPEC_DEEP', 'EARS 요구사항', '옵션 탐색', 'Story Slice']:
+    check(required in spec_doc_text, f'spec requirements doc missing token: {required}')
 
 plan_cmd_text = (root/'.claude/commands/plan.md').read_text(encoding='utf-8')
 for required in ['오케스트레이션 모드', 'task-orchestrator', '레이어 영향도', '통합 담당자']:

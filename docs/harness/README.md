@@ -20,6 +20,7 @@
 | `10_BACKEND_QUALITY_GATE.md` | 백엔드 구조 품질 | DDD, 트랜잭션, OOP, SOLID, Clean Code 리뷰 기준 |
 | `11_PARALLEL_AGENT_GATE.md` | 병렬 실행 | 병렬 에이전트 가능 조건, 금지 조건, 수렴 기준 |
 | `13_AGENT_ORCHESTRATION.md` | 에이전트 위임 | task-orchestrator, 단일/순차/병렬 위임 판단, 레이어별 협업 기준, fan-in 수렴 기준 |
+| `14_SPEC_REQUIREMENTS.md` | 스펙/요구사항 | EARS 요구사항, 옵션 비교, story slice |
 | `harness.yaml` | 정책 설정 | 하네스 라우팅, 검증 게이트, 런타임별 공통 정책 |
 | `skill-routing.md` | 라우팅 | 요청 유형별 기본 skill/agent |
 | `rubrics/` | 호환 체크리스트 | 기존 참조를 위한 얇은 리뷰 기준 |
@@ -33,7 +34,7 @@
 ## 권장 흐름
 
 1. `AGENTS.md` 또는 `CLAUDE.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`를 읽는다. 작은 작업은 `INDEX.md`의 `T0_MINIMAL`/`T1_STANDARD` context tier로 고정 컨텍스트를 줄인다. 신규 사용자는 `QUICKSTART_5_MIN.md`도 읽는다.
-2. 이 문서에서 작업 범위에 맞는 레이어/게이트 문서로 이동한다. 여러 에이전트가 필요한지 애매하면 `13_AGENT_ORCHESTRATION.md`를 먼저 확인한다.
+2. 이 문서에서 작업 범위에 맞는 레이어/게이트 문서로 이동한다. 신규 기능이나 모호한 요구는 `14_SPEC_REQUIREMENTS.md`로 스펙 수준을 먼저 정한다. 여러 에이전트가 필요한지 애매하면 `13_AGENT_ORCHESTRATION.md`를 먼저 확인한다.
 3. 대상 도메인/화면/API의 `docs/harness/context/**`와 필요한 `docs/harness/profiles/**` 문서를 추가로 읽는다.
 4. 단순하지 않은 작업은 `docs/harness/plans/active/`에 계획을 만들거나 기존 활성 계획을 갱신한다.
 5. 작업 계획을 `1. [Step] 구현 -> verify: [검증 방법]` 형식으로 짧게 고정한다.
@@ -50,6 +51,7 @@
 - `12_CONTEXT_LOADING_RULE.md`는 `context/INDEX.md`, `context/README.md`, `CLAUDE.md`로 흡수했으므로 다시 만들지 않는다.
 - 현재 `12_FIELD_VALIDATION.md`는 실전 검증/eval 루프 기준 문서다.
 - `13_AGENT_ORCHESTRATION.md`는 레이어별 에이전트가 항상 자동 협업한다는 오해를 막고, 단일/순차/병렬 위임 기준을 정의한다.
+- `14_SPEC_REQUIREMENTS.md`는 실행 전 요구사항/EARS/옵션/story slice를 정의한다.
 - 핵심 문서는 프로젝트별 값을 직접 담지 않는다. 그런 값은 프로필/컨텍스트로 이동한다.
 
 ## 라우팅 요약
@@ -64,6 +66,7 @@
 - 검증 계획: `05_TESTING.md`
 - 하네스 유지보수: `08_HARNESS_AUDIT.md`, `.agents/skills/harness-maintenance/SKILL.md`
 - 에이전트 위임 판단: `task-orchestrator`, `orchestration-planning`, `13_AGENT_ORCHESTRATION.md`
+- 스펙/요구사항 정리: `14_SPEC_REQUIREMENTS.md`
 
 세부 매트릭스는 `skill-routing.md`를 따른다.
 
