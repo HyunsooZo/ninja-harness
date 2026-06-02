@@ -255,6 +255,26 @@ expect_fail "evidence hook rejects unrelated stale plan scope" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 
+cat > "$evidence_hook_root/docs/harness/plans/active/notes-only.md" <<'EOF'
+# Notes only scope
+
+Notes mention `src/**` as historical context only.
+
+## RED Evidence
+
+- 예외 사유: notes-only fixture
+- 대체 검증: fixture
+- Risk left: none
+
+## Scope
+
+- `docs/only/**`
+EOF
+
+expect_fail "evidence hook ignores paths outside explicit scope section" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
 printf '{"tool_name":"Edit","tool_input":{"file_path":"docs/harness/plans/completed/old.md"}}\n' > "$tmp_dir/hook-completed-edit.json"
 expect_fail "evidence hook blocks completed plan direct edit without scope" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \

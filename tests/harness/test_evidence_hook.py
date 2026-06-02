@@ -45,6 +45,17 @@ class EvidenceHookScopeTest(unittest.TestCase):
         self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n\n## Scope\n\n- `src/**`\n')
         self.assertTrue(self.hook.evidence_ready_for_target('src/app.py'))
 
+    def test_paths_outside_explicit_scope_do_not_allow_target(self) -> None:
+        self.write_plan(
+            '# Plan\n\n'
+            'Notes mention `src/**` as historical context only.\n\n'
+            '## RED Evidence\n\n'
+            '- 예외 사유: fixture\n\n'
+            '## Scope\n\n'
+            '- `docs/**`\n'
+        )
+        self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -14,6 +14,14 @@ configure_utf8_stdio()
 ROOT = Path(os.environ.get('CLAUDE_PROJECT_DIR', '.')).resolve()
 ACTIVE_PLAN_DIR = ROOT / 'docs/harness/plans/active'
 ACTIVE_PLAN_PREFIX = 'docs/harness/plans/active/'
+SCOPE_HEADINGS = (
+    'Editable Scope',
+    '수정 가능 범위',
+    'Edit Scope',
+    'Scope',
+    'Files',
+    '대상 범위',
+)
 
 
 def fail(message: str) -> None:
@@ -90,17 +98,24 @@ def has_red_evidence(path: Path) -> bool:
     return bool(re.search(r'(?i)\bexpect_fail\b|\bFAIL\b|실패|재현', red))
 
 
-def scoped_patterns(text: str) -> set[str]:
+def scoped_patterns(scope_text: str) -> set[str]:
     patterns: set[str] = set()
-    for match in re.findall(r'`([^`\n]+)`', text):
+    for match in re.findall(r'`([^`\n]+)`', scope_text):
         value = match.strip()
         if '/' in value or value.startswith('.'):
             patterns.add(value)
 
-    for match in re.findall(r'(?<![\w./-])(?:[A-Za-z0-9_.-]+/[\w./*\-]+|\.[\w./*\-]+)(?![\w./-])', text):
+    for match in re.findall(r'(?<![\w./-])(?:[A-Za-z0-9_.-]+/[\w./*\-]+|\.[\w./*\-]+)(?![\w./-])', scope_text):
         patterns.add(match.strip())
 
     return patterns
+
+
+def explicit_scope_patterns(text: str) -> set[str]:
+    scope_text = section(text, SCOPE_HEADINGS)
+    if not scope_text:
+        return set()
+    return scoped_patterns(scope_text)
 
 
 def pattern_allows(pattern: str, target: str) -> bool:
@@ -122,7 +137,7 @@ def plan_allows_target(plan: Path, target: str) -> bool:
     text = plan.read_text(encoding='utf-8', errors='ignore')
     if not has_red_evidence(plan):
         return False
-    return any(pattern_allows(pattern, target) for pattern in scoped_patterns(text))
+    return any(pattern_allows(pattern, target) for pattern in explicit_scope_patterns(text))
 
 
 def evidence_ready_for_target(target: str) -> bool:
@@ -157,6 +172,7 @@ def main() -> int:
         '[evidence-gate] blocked direct file edit before RED evidence. '
         f'target={path}. Create/update docs/harness/plans/active/*.md first, '
         'then record RED Evidence or a documented RED exception and include the target file or glob scope '
+        'inside an explicit Editable Scope/Scope section '
         'before editing non-plan files. '
         'Set HARNESS_EVIDENCE_HOOK_MODE=off only for an approved emergency bypass.'
     )

@@ -471,10 +471,10 @@ check(any('$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh' in command f
     '.claude/settings.json PreToolUse hook must call $CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh'
 ))
 evidence_hook_text = (root/'scripts/check-evidence-gate-hook.py').read_text(encoding='utf-8')
-for token in ['HARNESS_EVIDENCE_HOOK_MODE', 'Edit', 'MultiEdit', 'Write', 'NotebookEdit', 'ACTIVE_PLAN_PREFIX', 'RED Evidence', 'RED 증거', 'scoped_patterns', 'plan_allows_target', 'evidence_ready_for_target', 'sys.exit(2)']:
+for token in ['HARNESS_EVIDENCE_HOOK_MODE', 'Edit', 'MultiEdit', 'Write', 'NotebookEdit', 'ACTIVE_PLAN_PREFIX', 'RED Evidence', 'RED 증거', 'SCOPE_HEADINGS', 'explicit_scope_patterns', 'scoped_patterns', 'plan_allows_target', 'evidence_ready_for_target', 'sys.exit(2)']:
     check(token in evidence_hook_text, f'evidence gate hook missing token: {token}')
 check('Plan State:' not in evidence_hook_text, 'evidence gate hook must not accept lifecycle Plan State as RED evidence')
-for token in ['PreToolUse', '$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh', '대상 파일 또는 glob 범위', 'completed plan 직접 편집', 'HARNESS_EVIDENCE_HOOK_MODE=off', 'Bash 도구로 파일을 수정하는 우회']:
+for token in ['PreToolUse', '$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh', 'Editable Scope', '대상 파일 또는 glob 범위', 'completed plan 직접 편집', 'HARNESS_EVIDENCE_HOOK_MODE=off', 'Bash 도구로 파일을 수정하는 우회']:
     check(token in evidence_gate_text, f'evidence gate doc missing hook token: {token}')
 
 # No root generated 전체 스캔.
