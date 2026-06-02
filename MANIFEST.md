@@ -76,7 +76,7 @@ workflow:
   trivial_allowed_without_plan: true
   non_trivial_requires_active_plan: true
   optional_project_gates: true
-  project_readiness_gate: scripts/check-profile-readiness.sh
+  project_readiness_gate: scripts/check-profile-readiness.py
   final_integrity_target: make integrity
   gate_self_test: scripts/self-test-harness-gates.sh
   orchestration_default_mode: SINGLE_AGENT
@@ -112,7 +112,7 @@ rules:
   project_gates:
     enabled_by_env: HARNESS_RUN_PROJECT_CHECKS
     profile_readiness_enabled_by_env: HARNESS_REQUIRE_FILLED_PROFILE
-    profile_readiness_script: scripts/check-profile-readiness.sh
+    profile_readiness_script: scripts/check-profile-readiness.py
     script: scripts/verify-project-gates.py
     preferred_scripts:
       backend: HARNESS_BACKEND_TEST_SCRIPT
@@ -208,7 +208,7 @@ organization:
   adoption_scorecard: docs/harness/ADOPTION_SCORECARD.md
   org_standard_flag: HARNESS_ORG_STANDARD
   eval_scripts:
-    - scripts/collect-eval-metrics.sh
+    - scripts/collect-eval-metrics.py
     - scripts/check-completed-plan-quality.py
 
 runtime:
@@ -219,14 +219,14 @@ runtime:
   unsupported_windows_native: false
   required_tools: python3 git
   posix_required_tools: bash make
-  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1
+  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1
   powershell_required_tool: pwsh_or_windows_powershell
   powershell_structure_verification: true
   project_gate_runner: python_cross_platform
   python_verifier: scripts/verify-harness-structure.py
   posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd
   toml_parser: tomllib_or_tomli
-  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.
+  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.py로 일괄 변경한다.
 
 owned_api_contract_impact:
   policy_doc: docs/harness/04_INTEGRATION.md
@@ -267,7 +267,7 @@ owned_api_contract_impact:
 
 ## Codex agent 모델 관리
 
-Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_agent_model`을 기준으로 검증한다. 조직 표준 모델이 바뀌면 `bash scripts/set-codex-agent-model.sh <model-name>`로 일괄 변경한다.
+Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_agent_model`을 기준으로 검증한다. 조직 표준 모델이 바뀌면 `scripts/set-codex-agent-model.sh <model-name>`, `python3 scripts/set-codex-agent-model.py <model-name>`, 또는 `pwsh -File scripts/set-codex-agent-model.ps1 <model-name>`로 일괄 변경한다.
 
 
 ## v3.6.1 보정
@@ -352,3 +352,5 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - `.ps1`/`.py` gate는 Windows native PowerShell에서 실행할 수 있고, `.sh` gate는 Bash가 있는 환경에서 실행한다.
 - Completed plan 품질 검사는 `scripts/check-completed-plan-quality.py`와 `scripts/harness_lib/completed_plans.py`로 수렴하고 PowerShell wrapper를 추가했다.
 - Skill sync는 `scripts/sync-skills.py`로 수렴하고 PowerShell wrapper `scripts/sync-skills.ps1`을 추가했다.
+- Profile readiness, eval metrics, Codex model 관리도 Python source와 PowerShell wrapper를 추가했다.
+- `self-test-harness-gates.sh`는 POSIX 통합 회귀 테스트로 유지한다.

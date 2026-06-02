@@ -1,58 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 || -z "${1// }" ]]; then
-  echo "Usage: bash scripts/set-codex-agent-model.sh <model-name>"
-  exit 1
-fi
-
-MODEL="$1"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-python3 - "$MODEL" <<'PYMODEL'
-from pathlib import Path
-import re
-import sys
-
-model = sys.argv[1]
-root = Path('.')
-
-for path in sorted((root/'.codex/agents').glob('*.toml')):
-    text = path.read_text(encoding='utf-8')
-    if re.search(r'^model\s*=', text, flags=re.M):
-        text = re.sub(r'^model\s*=\s*"[^"]*"', f'model = "{model}"', text, count=1, flags=re.M)
-    else:
-        text = text.replace('\n', f'\nmodel = "{model}"\n', 1)
-    path.write_text(text, encoding='utf-8')
-
-def sync_runtime_model(path: Path) -> None:
-    text = path.read_text(encoding='utf-8')
-    if re.search(r'^  codex_agent_model:', text, flags=re.M):
-        text = re.sub(r'^  codex_agent_model:\s*.*$', f'  codex_agent_model: {model}', text, count=1, flags=re.M)
-    else:
-        text += (
-            f'\n\nruntime:\n'
-            f'  codex_agent_model: {model}\n'
-            f'  codex_model_override_env: HARNESS_EXPECTED_CODEX_MODEL\n'
-            f'  supported_os: macos_linux_windows\n'
-            f'  shell_entrypoints: bash_make_powershell\n'
-            f'  unsupported_windows_native: false\n'
-            f'  required_tools: python3 git\n'
-            f'  posix_required_tools: bash make\n'
-            f'  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1\n'
-            f'  powershell_required_tool: pwsh_or_windows_powershell\n'
-            f'  powershell_structure_verification: true\n'
-            f'  project_gate_runner: python_cross_platform\n'
-            f'  python_verifier: scripts/verify-harness-structure.py\n'
-            f'  posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd\n'
-            f'  toml_parser: tomllib_or_tomli\n'
-            f'  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.\n'
-        )
-    path.write_text(text, encoding='utf-8')
-
-sync_runtime_model(root/'docs/harness/harness.yaml')
-sync_runtime_model(root/'MANIFEST.md')
-PYMODEL
-
-echo "[OK] set Codex agent model -> $MODEL"
+python3 scripts/set-codex-agent-model.py "$@"

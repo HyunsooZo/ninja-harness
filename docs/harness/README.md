@@ -137,6 +137,8 @@ pwsh -File scripts/verify-project-gates.ps1
 
 `make doctor`는 필수 스크립트 실행 권한, bash 문법, `bash`/`python3`/`make`/`git` 존재 여부, POSIX 유틸리티, Python TOML 파서 준비 상태, 지원 OS 범위를 확인한다. `scripts/doctor.ps1`은 PowerShell 진입점에서 Python/Git과 Bash/Make 준비 상태를 확인한다. 이 검증은 프로젝트 build/test를 실행하지 않는다.
 
+`scripts/self-test-harness-gates.sh`는 하네스의 POSIX 통합 회귀 테스트다. Windows native 일상 흐름에서는 구조 검증, project gate, skill sync, profile readiness, eval metrics, model 관리 wrapper를 PowerShell로 실행할 수 있고, 전체 self-test는 Git Bash/WSL/Linux runner에서 실행한다.
+
 ## 프로젝트 적용 준비도
 
 `make verify`는 template/project 구조 검증이며, 실제 프로젝트 값이 모두 채워졌다는 뜻은 아니다. 새 저장소에 하네스를 적용한 뒤에는 placeholder를 실제 값 또는 angle bracket 없는 `N/A`로 바꾸고 readiness gate를 실행한다.
@@ -202,7 +204,7 @@ make integrity
 
 ## Codex agent 모델 관리
 
-Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_agent_model`을 기준으로 검증한다. 조직 표준 모델이 바뀌면 `bash scripts/set-codex-agent-model.sh <model-name>`로 일괄 변경한다.
+Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_agent_model`을 기준으로 검증한다. 조직 표준 모델이 바뀌면 `scripts/set-codex-agent-model.sh <model-name>`, `python3 scripts/set-codex-agent-model.py <model-name>`, 또는 `pwsh -File scripts/set-codex-agent-model.ps1 <model-name>`로 일괄 변경한다.
 
 
 ## 조직 거버넌스

@@ -70,6 +70,8 @@ required = [
     'scripts/sync-skills.py',
     'scripts/sync-skills.ps1',
     'scripts/check-profile-readiness.sh',
+    'scripts/check-profile-readiness.py',
+    'scripts/check-profile-readiness.ps1',
     'scripts/self-test-harness-gates.sh',
     'scripts/verify-project-gates.sh',
     'scripts/verify-project-gates.py',
@@ -78,9 +80,13 @@ required = [
     'scripts/harness_lib/project_gates.py',
     'scripts/harness_lib/completed_plans.py',
     'scripts/collect-eval-metrics.sh',
+    'scripts/collect-eval-metrics.py',
+    'scripts/collect-eval-metrics.ps1',
     'scripts/check-completed-plan-quality.sh',
     'scripts/check-completed-plan-quality.py',
     'scripts/check-completed-plan-quality.ps1',
+    'scripts/set-codex-agent-model.py',
+    'scripts/set-codex-agent-model.ps1',
 ]
 missing_required = [path for path in required if not (root/path).exists()]
 check(not missing_required, f'missing required paths: {missing_required}')
@@ -211,14 +217,14 @@ required_runtime_refs = {
     'unsupported_windows_native': 'false',
     'required_tools': 'python3 git',
     'posix_required_tools': 'bash make',
-    'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1',
+    'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1',
     'powershell_required_tool': 'pwsh_or_windows_powershell',
     'powershell_structure_verification': 'true',
     'project_gate_runner': 'python_cross_platform',
     'python_verifier': 'scripts/verify-harness-structure.py',
     'posix_utilities': 'find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
     'toml_parser': 'tomllib_or_tomli',
-    'note': '조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.',
+    'note': '조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.py로 일괄 변경한다.',
 }
 missing_runtime_keys = set(required_runtime_refs) - set(runtime_refs)
 check(not missing_runtime_keys, f'missing runtime manifest keys: {sorted(missing_runtime_keys)}')
@@ -226,10 +232,10 @@ for key, expected in required_runtime_refs.items():
     check(runtime_refs.get(key) == expected, f'runtime.{key} must be {expected}: {runtime_refs.get(key)}')
 check(runtime_refs['codex_agent_model'], 'runtime.codex_agent_model must not be empty')
 check(runtime_refs['codex_model_override_env'] == 'HARNESS_EXPECTED_CODEX_MODEL', 'runtime override env mismatch')
-set_model_script = root/'scripts/set-codex-agent-model.sh'
+set_model_script = root/'scripts/set-codex-agent-model.py'
 check(set_model_script.exists(), 'missing runtime model management script')
 set_model_text = set_model_script.read_text(encoding='utf-8')
-check("sync_runtime_model(root/'MANIFEST.md')" in set_model_text, 'set-model script must update MANIFEST.md runtime model')
+check("sync_runtime_model(root/'MANIFEST.md', model)" in set_model_text, 'set-model script must update MANIFEST.md runtime model')
 for key, expected in required_runtime_refs.items():
     if key == 'codex_agent_model':
         continue
@@ -254,7 +260,7 @@ for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser'
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for token in ['최소 공통 도구', 'macOS, Linux/WSL', 'Git Bash/MSYS/Cygwin/PowerShell', 'Windows native PowerShell', 'template/project 구조 검증', 'shell project gate 실행', 'scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'cat', 'dirname', 'pwd', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
-for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'scripts/verify-project-gates.ps1', 'scripts/check-completed-plan-quality.ps1', 'scripts/sync-skills.ps1']:
+for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'scripts/verify-project-gates.ps1', 'scripts/check-completed-plan-quality.ps1', 'scripts/sync-skills.ps1', 'scripts/check-profile-readiness.ps1', 'scripts/collect-eval-metrics.ps1', 'scripts/set-codex-agent-model.ps1']:
     ps_text = (root/ps_script).read_text(encoding='utf-8')
     check('Set-StrictMode -Version Latest' in ps_text, f'{ps_script} must enable strict mode')
     check('$ErrorActionPreference = "Stop"' in ps_text, f'{ps_script} must stop on errors')
@@ -371,7 +377,7 @@ sync_script = root/'scripts/sync-skills.sh'
 check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
 check(os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable')
-for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync-skills.py', 'sync-skills.ps1', 'check-profile-readiness.sh', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'check-completed-plan-quality.py', 'check-completed-plan-quality.ps1', 'set-codex-agent-model.sh']:
+for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync-skills.py', 'sync-skills.ps1', 'check-profile-readiness.sh', 'check-profile-readiness.py', 'check-profile-readiness.ps1', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'collect-eval-metrics.py', 'collect-eval-metrics.ps1', 'check-completed-plan-quality.sh', 'check-completed-plan-quality.py', 'check-completed-plan-quality.ps1', 'set-codex-agent-model.sh', 'set-codex-agent-model.py', 'set-codex-agent-model.ps1']:
     script_path = root/'scripts'/script_name
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
@@ -445,7 +451,7 @@ for token in [
     'owned_api_contract_impact:',
     'supported_os: macos_linux_windows',
     'shell_entrypoints: bash_make_powershell',
-    'powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1',
+    'powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1',
     'powershell_structure_verification: true',
     'project_gate_runner: python_cross_platform',
     'python_verifier: scripts/verify-harness-structure.py',
@@ -865,7 +871,7 @@ expected_workflow_scalars = {
     'trivial_allowed_without_plan': 'true',
     'non_trivial_requires_active_plan': 'true',
     'optional_project_gates': 'true',
-    'project_readiness_gate': 'scripts/check-profile-readiness.sh',
+    'project_readiness_gate': 'scripts/check-profile-readiness.py',
     'final_integrity_target': 'make integrity',
     'gate_self_test': 'scripts/self-test-harness-gates.sh',
     'orchestration_default_mode': 'SINGLE_AGENT',
@@ -1060,7 +1066,7 @@ expected_legacy_commands = {
 expected_project_gate_scalars = {
     'enabled_by_env': 'HARNESS_RUN_PROJECT_CHECKS',
     'profile_readiness_enabled_by_env': 'HARNESS_REQUIRE_FILLED_PROFILE',
-    'profile_readiness_script': 'scripts/check-profile-readiness.sh',
+    'profile_readiness_script': 'scripts/check-profile-readiness.py',
     'script': 'scripts/verify-project-gates.py',
     'org_standard_requires_ack': 'HARNESS_ACK_TRUSTED_PROJECT_CMDS',
     'legacy_bash_lc_opt_in': 'HARNESS_ALLOW_LEGACY_BASH_LC',
@@ -1235,7 +1241,7 @@ check(organization_refs.get('org_standard_flag') == 'HARNESS_ORG_STANDARD', (
     f"organization.org_standard_flag must be HARNESS_ORG_STANDARD: {organization_refs.get('org_standard_flag')}"
 ))
 required_eval_scripts = {
-    'scripts/collect-eval-metrics.sh',
+    'scripts/collect-eval-metrics.py',
     'scripts/check-completed-plan-quality.py',
 }
 check(set(organization_eval_scripts) == required_eval_scripts, (
@@ -1370,7 +1376,7 @@ metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8'
 for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간']:
     check(token in metrics_text, f'eval metrics missing {token}')
 
-collect_eval_text = (root/'scripts/collect-eval-metrics.sh').read_text(encoding='utf-8')
+collect_eval_text = (root/'scripts/collect-eval-metrics.py').read_text(encoding='utf-8')
 for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration']:
     check(token in collect_eval_text, f'eval collector missing {token}')
 

@@ -42,6 +42,8 @@ required=(
   "scripts/sync-skills.py"
   "scripts/sync-skills.ps1"
   "scripts/check-profile-readiness.sh"
+  "scripts/check-profile-readiness.py"
+  "scripts/check-profile-readiness.ps1"
   "scripts/self-test-harness-gates.sh"
   "scripts/verify-project-gates.sh"
   "scripts/verify-project-gates.py"
@@ -50,6 +52,10 @@ required=(
   "scripts/check-completed-plan-quality.py"
   "scripts/check-completed-plan-quality.ps1"
   "scripts/collect-eval-metrics.sh"
+  "scripts/collect-eval-metrics.py"
+  "scripts/collect-eval-metrics.ps1"
+  "scripts/set-codex-agent-model.py"
+  "scripts/set-codex-agent-model.ps1"
 )
 
 for path in "${required[@]}"; do

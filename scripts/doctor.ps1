@@ -34,12 +34,18 @@ $RequiredFiles = @(
   "scripts/sync-skills.py",
   "scripts/sync-skills.ps1",
   "scripts/check-profile-readiness.sh",
+  "scripts/check-profile-readiness.py",
+  "scripts/check-profile-readiness.ps1",
   "scripts/self-test-harness-gates.sh",
   "scripts/collect-eval-metrics.sh",
+  "scripts/collect-eval-metrics.py",
+  "scripts/collect-eval-metrics.ps1",
   "scripts/check-completed-plan-quality.sh",
   "scripts/check-completed-plan-quality.ps1",
   "scripts/check-completed-plan-quality.py",
-  "scripts/set-codex-agent-model.sh"
+  "scripts/set-codex-agent-model.sh",
+  "scripts/set-codex-agent-model.py",
+  "scripts/set-codex-agent-model.ps1"
 )
 
 foreach ($Path in $RequiredFiles) {

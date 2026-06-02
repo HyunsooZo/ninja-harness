@@ -101,11 +101,18 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
     ├── sync-skills.sh
     ├── sync-skills.py
     ├── sync-skills.ps1
+    ├── check-profile-readiness.sh
+    ├── check-profile-readiness.py
+    ├── check-profile-readiness.ps1
     ├── collect-eval-metrics.sh
+    ├── collect-eval-metrics.py
+    ├── collect-eval-metrics.ps1
     ├── check-completed-plan-quality.sh
     ├── check-completed-plan-quality.py
     ├── check-completed-plan-quality.ps1
-    └── set-codex-agent-model.sh
+    ├── set-codex-agent-model.sh
+    ├── set-codex-agent-model.py
+    └── set-codex-agent-model.ps1
 ```
 
 ---
