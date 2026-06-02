@@ -5,6 +5,8 @@ description: use for database schema migration, indexes, seeds, ORM mapping, que
 
 # 백엔드 DB / Migration 스킬
 
+공통 운영 기준: `docs/harness/SKILL_AUTHORING.md#공통-운영-블록`
+
 ## 먼저 읽을 문서
 
 - `AGENTS.md`

@@ -5,6 +5,8 @@ description: use for backend controller, DTO, validation, request/response mappi
 
 # 백엔드 API / Presentation 스킬
 
+공통 운영 기준: `docs/harness/SKILL_AUTHORING.md#공통-운영-블록`
+
 ## 먼저 읽을 문서
 
 - `AGENTS.md`

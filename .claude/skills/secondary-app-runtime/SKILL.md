@@ -5,6 +5,8 @@ description: use for secondary app, mobile webview, PWA/hybrid runtime, native b
 
 # 보조 앱 모바일
 
+공통 운영 기준: `docs/harness/SKILL_AUTHORING.md#공통-운영-블록`
+
 ## 먼저 읽을 문서
 
 - `AGENTS.md`
@@ -18,16 +20,3 @@ description: use for secondary app, mobile webview, PWA/hybrid runtime, native b
 - 주요 프론트엔드의 축소판으로 만들지 않는다.
 - target runtime, touch flow, 한 손 조작 가능성을 고려한다.
 - native/PWA/browser back, safe area, keyboard, 권한/세션 흐름을 확인한다.
-
-## 증거 게이트
-
-- 단순하지 않은 작업은 `docs/harness/plans/active/`에 활성 계획을 만든다.
-- 동작 변경은 RED/GREEN/REFACTOR/VERIFY 증거를 남긴다.
-- 자동화 테스트가 부적합하면 예외 사유, 대체 검증, 잔여 위험을 기록한다.
-
-## 출력
-
-- 적용한 기준
-- 변경/리뷰 범위
-- 검증 또는 검토 결과
-- 남은 위험

@@ -5,6 +5,8 @@ description: use for scoped implementation, file changes, RED/GREEN/REFACTOR/VER
 
 # 실행 오케스트레이터
 
+공통 운영 기준: `docs/harness/SKILL_AUTHORING.md#공통-운영-블록`
+
 ## 먼저 읽을 문서
 
 - `AGENTS.md`
@@ -22,8 +24,6 @@ description: use for scoped implementation, file changes, RED/GREEN/REFACTOR/VER
 - 동작 변경은 RED -> GREEN -> REFACTOR를 따른다.
 - 검증과 문서 갱신까지 완료 기준에 포함한다.
 
-
-
 ## 오케스트레이션 기준
 
 - 단순하지 않은 작업은 구현 전에 `SINGLE_AGENT`, `SINGLE_AGENT_WITH_REVIEW`, `SEQUENTIAL_LAYERED`, `PARALLEL_INVESTIGATION`, `PARALLEL_REVIEW`, `PARALLEL_IMPLEMENT` 중 하나를 선택한다.
@@ -34,16 +34,3 @@ description: use for scoped implementation, file changes, RED/GREEN/REFACTOR/VER
 ## Owned API 계약 변경 주의
 
 API DTO/request/response/status/error/pagination/auth/resource scope를 수정하는 작업은 구현 전 `docs/harness/04_INTEGRATION.md`의 Owned API Contract Impact Rule을 확인한다. 프론트발 API 변경이면 백엔드 API 의도를 확인하고, 백엔드발 API 변경이면 해당 API를 호출하는 프론트 코드가 있는지 검색한다. 양쪽 수정이 필요하면 `task-orchestrator`로 분리 위임한다.
-
-## 증거 게이트
-
-- 단순하지 않은 작업은 `docs/harness/plans/active/`에 활성 계획을 만든다.
-- 동작 변경은 RED/GREEN/REFACTOR/VERIFY 증거를 남긴다.
-- 자동화 테스트가 부적합하면 예외 사유, 대체 검증, 잔여 위험을 기록한다.
-
-## 출력
-
-- 적용한 기준
-- 변경/리뷰 범위
-- 검증 또는 검토 결과
-- 남은 위험

@@ -58,6 +58,7 @@ required = [
     'docs/harness/14_SPEC_REQUIREMENTS.md',
     'docs/harness/CHANGELOG.md',
     'docs/harness/UPGRADE.md',
+    'docs/harness/SKILL_AUTHORING.md',
     'docs/harness/harness.yaml',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/ORG_ROLLOUT.md',
@@ -404,8 +405,35 @@ for name, codex_dir in sorted(codex_skill_dirs.items()):
         check(file_bytes(codex_dir/rel) == file_bytes(claude_dir/rel), f'skill mirror content drift: {name}/{rel}')
 
 # Skill frontmatter descriptions should be trigger-oriented, not generic.
+skill_authoring_text = (root/'docs/harness/SKILL_AUTHORING.md').read_text(encoding='utf-8')
+skill_common_pointer = 'docs/harness/SKILL_AUTHORING.md#공통-운영-블록'
+for token in ['## 공통 운영 블록', '### 기본 읽기', '### 증거 게이트', '### 기본 보고', skill_common_pointer]:
+    check(token in skill_authoring_text, f'SKILL_AUTHORING.md missing common skill operating block token: {token}')
+
+forbidden_skill_boilerplate_blocks = {
+    'generic evidence gate': '''## 증거 게이트
+
+- 단순하지 않은 작업은 `docs/harness/plans/active/`에 활성 계획을 만든다.
+- 동작 변경은 RED/GREEN/REFACTOR/VERIFY 증거를 남긴다.
+- 자동화 테스트가 부적합하면 예외 사유, 대체 검증, 잔여 위험을 기록한다.''',
+    'generic output report': '''## 출력
+
+- 적용한 기준
+- 변경/리뷰 범위
+- 검증 또는 검토 결과
+- 남은 위험''',
+    'generic backend quality checklist': '''## 백엔드 구조 품질
+
+- DDD: 도메인 규칙을 domain model/domain service/policy로 모으고 Controller/DTO/Repository에 흩어두지 않는다.
+- Transaction: `@Transactional` 위치, readOnly, propagation, rollback, self-invocation, 커밋 후 실행/outbox 필요성을 확인한다.
+- OOP: 데이터와 행위를 과도하게 분리하지 않고 invariant를 객체가 보호하게 한다.
+- SOLID: SRP/OCP/LSP/ISP/DIP 위반이 실제 변경 비용과 버그 위험을 키우는지 본다.''',
+}
 for name, skill_dir in sorted(codex_skill_dirs.items()):
     skill_text = (skill_dir/'SKILL.md').read_text(encoding='utf-8')
+    check(skill_common_pointer in skill_text, f'skill must point to common operating block: {skill_dir}/SKILL.md')
+    for block_name, block_text in forbidden_skill_boilerplate_blocks.items():
+        check(block_text not in skill_text, f'skill repeats forbidden {block_name} boilerplate; point to SKILL_AUTHORING.md instead: {skill_dir}/SKILL.md')
     m = re.search(r'^description:\s*(.+)$', skill_text, flags=re.M)
     check(m, f'missing skill description: {skill_dir}/SKILL.md')
     desc = m.group(1).strip()
@@ -438,7 +466,7 @@ for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'harness upgrade checker accepts current metadata', 'harness upgrade checker rejects newer from-version', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'harness upgrade checker accepts current metadata', 'harness upgrade checker rejects newer from-version', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'skill boilerplate rejects duplicated common block', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 for token in [
     'evidence hook settings command works outside repo cwd',

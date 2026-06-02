@@ -5,6 +5,8 @@ description: use for owned API DTO/request/response impact, API auth, resource s
 
 # 통합 계약
 
+공통 운영 기준: `docs/harness/SKILL_AUTHORING.md#공통-운영-블록`
+
 ## 먼저 읽을 문서
 
 - `AGENTS.md`
@@ -28,20 +30,6 @@ description: use for owned API DTO/request/response impact, API auth, resource s
 - 검색 범위는 endpoint path, generated client, API service/fetcher, query key, hook/composable, store/cache, validation schema, 화면 컴포넌트, 테스트를 포함한다.
 - 호출 화면이 있으면 필요한 프론트 타입, 매핑, UI state, 테스트를 함께 수정한다.
 - 수정하지 않는 경우에도 확인한 파일/검색어/근거를 active plan에 남긴다.
-
-## 증거 게이트
-
-- 단순하지 않은 작업은 `docs/harness/plans/active/`에 활성 계획을 만든다.
-- 동작 변경은 RED/GREEN/REFACTOR/VERIFY 증거를 남긴다.
-- 자동화 테스트가 부적합하면 예외 사유, 대체 검증, 잔여 위험을 기록한다.
-
-## 출력
-
-- 적용한 기준
-- 변경/리뷰 범위
-- 검증 또는 검토 결과
-- 남은 위험
-
 
 ## 필수 계약 점검 항목
 

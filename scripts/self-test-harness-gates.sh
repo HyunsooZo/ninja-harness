@@ -266,6 +266,25 @@ PY
   )
 }
 
+with_fixture_duplicate_skill_boilerplate() {
+  local fixture
+  fixture="$(make_mutation_fixture)"
+  (
+    cd "$fixture"
+    python3 - <<'PY'
+from pathlib import Path
+
+block = """\n## 증거 게이트\n\n- 단순하지 않은 작업은 `docs/harness/plans/active/`에 활성 계획을 만든다.\n- 동작 변경은 RED/GREEN/REFACTOR/VERIFY 증거를 남긴다.\n- 자동화 테스트가 부적합하면 예외 사유, 대체 검증, 잔여 위험을 기록한다.\n"""
+for path in [
+    Path('.agents/skills/content-i18n-ux/SKILL.md'),
+    Path('.claude/skills/content-i18n-ux/SKILL.md'),
+]:
+    path.write_text(path.read_text(encoding='utf-8').rstrip() + block, encoding='utf-8')
+PY
+    "$@"
+  )
+}
+
 good_profile="$tmp_dir/good-profile.md"
 bad_profile="$tmp_dir/bad-profile.md"
 printf 'project: N/A\nruntime: N/A\n' > "$good_profile"
@@ -789,6 +808,10 @@ expect_fail "agent preload rejects missing local skill coverage" \
   with_fixture_file_replacing_line ".codex/agents/task-orchestrator.toml" \
     'skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy", "harness-maintenance"]' \
     'skills = ["orchestration-planning", "executor", "review-rubric", "testing-strategy"]' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "skill boilerplate rejects duplicated common block" \
+  with_fixture_duplicate_skill_boilerplate \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "project gate manifest rejects missing preferred script" \
