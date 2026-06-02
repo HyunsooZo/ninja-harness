@@ -13,12 +13,14 @@
 ```bash
 make harness-upgrade
 FROM_VERSION=0.1.0 make harness-upgrade
+HARNESS_REQUIRE_FILLED_OWNERSHIP=1 make harness-upgrade
 ```
 
 Windows native PowerShell에서는 아래처럼 실행한다.
 
 ```powershell
 pwsh -File scripts/check-harness-upgrade.ps1 --from-version 0.1.0
+pwsh -File scripts/check-harness-upgrade.ps1 --require-filled-ownership
 ```
 
 ## 업그레이드 적용
@@ -47,3 +49,4 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 - 업그레이드 결과는 completed plan에 남긴다.
 - verifier 실패가 template 변경 때문이면 `CHANGELOG.md`와 이 문서를 함께 갱신한다.
 - 다운스트림에서 임시 예외를 둔 경우 승인자, 만료 일정, 제거 계획을 completed plan에 남긴다.
+- 조직 배포 전에는 `HARNESS_REQUIRE_FILLED_OWNERSHIP=1 make harness-upgrade`로 `LICENSE`, `.github/CODEOWNERS`, `OWNERSHIP`, `SECURITY_POLICY` placeholder 제거를 확인한다.

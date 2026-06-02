@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import argparse
+import os
 import re
 import sys
 
@@ -16,6 +17,10 @@ REQUIRED_UPGRADE_PATHS = [
     'MANIFEST.md',
     'docs/harness/CHANGELOG.md',
     'docs/harness/UPGRADE.md',
+    'docs/harness/OWNERSHIP.md',
+    'docs/harness/SECURITY_POLICY.md',
+    '.github/CODEOWNERS',
+    'LICENSE',
     'scripts/check-harness-upgrade.py',
     'scripts/check-harness-upgrade.ps1',
 ]
@@ -26,6 +31,12 @@ REQUIRED_UPGRADE_TOKENS = [
     'make integrity',
     'make project-ready',
     'completed plan',
+]
+OWNERSHIP_PLACEHOLDER_PATHS = [
+    'LICENSE',
+    '.github/CODEOWNERS',
+    'docs/harness/OWNERSHIP.md',
+    'docs/harness/SECURITY_POLICY.md',
 ]
 
 
@@ -49,7 +60,27 @@ def find_top_level_value(text: str, key: str) -> str:
     return match.group(1) if match else ''
 
 
-def run_checks(root: Path, from_version: str | None = None) -> list[str]:
+def changelog_versions(text: str) -> list[str]:
+    return re.findall(r'^##\s+(\d+\.\d+\.\d+)\s*$', text, flags=re.M)
+
+
+def has_placeholder(text: str) -> bool:
+    return bool(re.search(r'<[^>\n]+>|@your-org/', text))
+
+
+def ownership_placeholder_errors(root: Path) -> list[str]:
+    errors: list[str] = []
+    for rel_path in OWNERSHIP_PLACEHOLDER_PATHS:
+        if has_placeholder(read_text(root / rel_path)):
+            errors.append(f'ownership placeholder must be replaced before organization release: {rel_path}')
+    return errors
+
+
+def run_checks(
+    root: Path,
+    from_version: str | None = None,
+    require_filled_ownership: bool = False,
+) -> list[str]:
     errors: list[str] = []
 
     for rel_path in REQUIRED_UPGRADE_PATHS:
@@ -87,6 +118,10 @@ def run_checks(root: Path, from_version: str | None = None) -> list[str]:
         if token not in upgrade:
             errors.append(f'UPGRADE.md missing upgrade token: {token}')
 
+    parsed_changelog_versions = changelog_versions(changelog)
+    if version not in parsed_changelog_versions:
+        errors.append(f'CHANGELOG.md missing parseable current version heading: {version}')
+
     if from_version:
         try:
             current_tuple = version_tuple(version)
@@ -96,6 +131,16 @@ def run_checks(root: Path, from_version: str | None = None) -> list[str]:
         else:
             if previous_tuple > current_tuple:
                 errors.append(f'from-version must not be newer than VERSION: {from_version} > {version}')
+            if previous_tuple < current_tuple:
+                delta_versions = [
+                    item for item in parsed_changelog_versions
+                    if previous_tuple < version_tuple(item) <= current_tuple
+                ]
+                if not delta_versions:
+                    errors.append(f'CHANGELOG.md missing upgrade delta entries from {from_version} to {version}')
+
+    if require_filled_ownership:
+        errors.extend(ownership_placeholder_errors(root))
 
     return errors
 
@@ -108,10 +153,16 @@ def main() -> int:
         default=None,
         help='Optional downstream version before upgrade; must be semver and not newer than VERSION.',
     )
+    parser.add_argument(
+        '--require-filled-ownership',
+        action='store_true',
+        default=os.environ.get('HARNESS_REQUIRE_FILLED_OWNERSHIP', '').strip().lower() in {'1', 'true', 'yes'},
+        help='Fail when ownership, license, security, or CODEOWNERS files still contain template placeholders.',
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    errors = run_checks(root, args.from_version)
+    errors = run_checks(root, args.from_version, args.require_filled_ownership)
     if errors:
         for error in errors:
             fail(error)

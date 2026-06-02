@@ -438,6 +438,15 @@ for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
 for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'harness upgrade checker accepts current metadata', 'harness upgrade checker rejects newer from-version', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
+for token in [
+    'evidence hook settings command works outside repo cwd',
+    'evidence hook settings command preserves block exit code',
+    'evidence hook rejects generic Files section as scope',
+    'evidence hook rejects risk-left-only RED evidence',
+    'harness upgrade checker accepts changelog delta from previous version',
+    'harness upgrade checker rejects ownership placeholders when required',
+]:
+    check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
 
 completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
 for token in ['HARNESS_COMPLETED_PLAN_DIR', 'completed plan quality: no completed plans', 'plan_missing_markers']:
@@ -1085,8 +1094,11 @@ upgrade_text = (root/'docs/harness/UPGRADE.md').read_text(encoding='utf-8')
 check(f'## {version_text}' in changelog_text, f'CHANGELOG missing current version entry: {version_text}')
 for required in ['breaking change', 'major', 'minor', 'patch', 'make integrity']:
     check(required in changelog_text, f'CHANGELOG missing version policy token: {required}')
-for required in ['VERSION', 'harness_version', 'make harness-upgrade', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan']:
+for required in ['VERSION', 'harness_version', 'make harness-upgrade', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', '--require-filled-ownership']:
     check(required in upgrade_text, f'UPGRADE missing downstream upgrade token: {required}')
+upgrade_checker_text = (root/'scripts/check-harness-upgrade.py').read_text(encoding='utf-8')
+for required in ['changelog_versions', 'require_filled_ownership', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'ownership_placeholder_errors', 'CHANGELOG.md missing upgrade delta entries']:
+    check(required in upgrade_checker_text, f'upgrade checker missing readiness token: {required}')
 readme_text_for_version = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for required in ['CHANGELOG.md', 'UPGRADE.md', 'VERSION']:
     check(required in readme_text_for_version, f'README missing version lifecycle token: {required}')
@@ -1404,6 +1416,9 @@ for required in ['HARNESS_ACK_TRUSTED_PROJECT_CMDS', 'bash -lc', 'ALLOWED_ROOTS'
     check(required in vpg_text, f'verify-project-gates missing trust policy: {required}')
 for required in ['orchestration mode별 성공률', 'reviewer FAIL 사유 TOP 5', 'project gate 실패율']:
     check(required in (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8'), f'eval metrics missing: {required}')
+regression_cases_text = (root/'docs/harness/evals/regression-cases.md').read_text(encoding='utf-8')
+for required in ['REG-HOOK-CWD-2026-06-03', 'REG-HOOK-EXIT-2026-06-03', 'REG-HOOK-SCOPE-2026-06-03', 'REG-UPGRADE-2026-06-03']:
+    check(required in regression_cases_text, f'regression cases missing finding regression: {required}')
 for example in ['spring-boot-rest.md', 'node-nestjs.md']:
     check((root/'docs/harness/profiles/examples'/example).exists(), f'missing backend profile example: {example}')
 for example in ['react-next.md', 'vue-vite.md', 'frontend-testing.md']:

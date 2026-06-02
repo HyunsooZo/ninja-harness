@@ -5,6 +5,10 @@
 | ID | Date | Area | Symptom | Root Cause | Captured As | Linked Change | Status |
 |---|---|---|---|---|---|---|---|
 | REG-001 | YYYY-MM-DD | `<area>` | `<what failed>` | `<why>` | test / doc / skill / agent / gate | `<path-or-command>` | open/closed |
+| REG-HOOK-CWD-2026-06-03 | 2026-06-03 | evidence hook | `.claude/settings.json` hook command failed outside repo cwd | active command used repo-relative script path | self-test / verifier | `evidence hook settings command works outside repo cwd` | closed |
+| REG-HOOK-EXIT-2026-06-03 | 2026-06-03 | evidence hook | block exit code was obscured by interpreter fallback | `python3 ... || python ...` retried after intentional block exit | self-test / verifier | `evidence hook settings command preserves block exit code` | closed |
+| REG-HOOK-SCOPE-2026-06-03 | 2026-06-03 | evidence hook | generic `Files` heading and weak RED evidence could over-authorize edits | scope headings and RED evidence fields were too broad | unit test / self-test / doc | `test_files_section_does_not_allow_target`, `test_risk_left_only_is_not_red_evidence` | closed |
+| REG-UPGRADE-2026-06-03 | 2026-06-03 | upgrade lifecycle | version/changelog and upgrade readiness could drift | new target and release metadata were not fully canonicalized | verifier / checker | `make harness-upgrade`, `CHANGELOG.md 0.2.0` | closed |
 
 ## 반영 규칙
 

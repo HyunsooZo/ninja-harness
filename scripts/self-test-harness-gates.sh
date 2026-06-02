@@ -402,8 +402,14 @@ pass "eval fixture metrics verified"
 expect_pass "harness upgrade checker accepts current metadata" \
   python3 scripts/check-harness-upgrade.py
 
+expect_pass "harness upgrade checker accepts changelog delta from previous version" \
+  python3 scripts/check-harness-upgrade.py --from-version 0.1.0
+
 expect_fail "harness upgrade checker rejects newer from-version" \
   python3 scripts/check-harness-upgrade.py --from-version 999.0.0
+
+expect_fail "harness upgrade checker rejects ownership placeholders when required" \
+  env HARNESS_REQUIRE_FILLED_OWNERSHIP=1 python3 scripts/check-harness-upgrade.py
 
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
