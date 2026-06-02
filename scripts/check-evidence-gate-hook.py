@@ -19,7 +19,6 @@ SCOPE_HEADINGS = (
     '수정 가능 범위',
     'Edit Scope',
     'Scope',
-    'Files',
     '대상 범위',
 )
 
@@ -89,10 +88,14 @@ def has_red_evidence(path: Path) -> bool:
     if not red:
         return False
 
-    if has_non_empty_field(red, ('예외 사유', 'RED가 부적합할 때의 예외 사유', '대체 검증', 'Risk left')):
+    has_exception_reason = has_non_empty_field(red, ('예외 사유', 'RED가 부적합할 때의 예외 사유'))
+    has_alternative_verification = has_non_empty_field(red, ('대체 검증',))
+    if has_exception_reason and has_alternative_verification:
         return True
 
-    if has_non_empty_field(red, ('명령', '실패 테스트 / 확인', '실패 이유', '이 실패가 예상되는 이유')):
+    has_failure_check = has_non_empty_field(red, ('명령', '실패 테스트 / 확인'))
+    has_failure_reason = has_non_empty_field(red, ('실패 이유', '이 실패가 예상되는 이유'))
+    if has_failure_check and has_failure_reason:
         return True
 
     return bool(re.search(r'(?i)\bexpect_fail\b|\bFAIL\b|실패|재현', red))

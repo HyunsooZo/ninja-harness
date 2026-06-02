@@ -312,6 +312,39 @@ expect_fail "evidence hook rejects state-only RED" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 
+cat > "$evidence_hook_root/docs/harness/plans/active/files-heading.md" <<'EOF'
+# Files heading is not editable scope
+
+## RED Evidence
+
+- 예외 사유: files heading fixture
+- 대체 검증: fixture
+
+## Files
+
+- `src/**`
+EOF
+
+expect_fail "evidence hook rejects generic Files section as scope" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
+cat > "$evidence_hook_root/docs/harness/plans/active/risk-only.md" <<'EOF'
+# Risk only
+
+## RED Evidence
+
+- Risk left: fixture
+
+## Scope
+
+- `src/**`
+EOF
+
+expect_fail "evidence hook rejects risk-left-only RED evidence" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
 cat > "$evidence_hook_root/docs/harness/plans/active/hook-test.md" <<'EOF'
 # Hook test
 

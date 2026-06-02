@@ -42,7 +42,7 @@ class EvidenceHookScopeTest(unittest.TestCase):
         self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
 
     def test_matching_scope_allows_target(self) -> None:
-        self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n\n## Scope\n\n- `src/**`\n')
+        self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n- 대체 검증: fixture\n\n## Scope\n\n- `src/**`\n')
         self.assertTrue(self.hook.evidence_ready_for_target('src/app.py'))
 
     def test_paths_outside_explicit_scope_do_not_allow_target(self) -> None:
@@ -54,6 +54,14 @@ class EvidenceHookScopeTest(unittest.TestCase):
             '## Scope\n\n'
             '- `docs/**`\n'
         )
+        self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
+
+    def test_files_section_does_not_allow_target(self) -> None:
+        self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n- 대체 검증: fixture\n\n## Files\n\n- `src/**`\n')
+        self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
+
+    def test_risk_left_only_is_not_red_evidence(self) -> None:
+        self.write_plan('# Plan\n\n## RED Evidence\n\n- Risk left: fixture\n\n## Scope\n\n- `src/**`\n')
         self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
 
 
