@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -50,8 +51,22 @@ def relative_label(path: Path) -> str:
         return str(path)
 
 
+def has_unresolved_evidence_placeholder(text: str) -> bool:
+    if re.search(r'<[^>\n]+>', text):
+        return True
+
+    placeholder_value = r'(?:pending|todo|tbd|대기 중)'
+    for line in text.splitlines():
+        stripped = line.strip()
+        if re.search(rf'(?i)(?:^|\||:)\s*`?{placeholder_value}`?\s*(?:\||$)', stripped):
+            return True
+    return False
+
+
 def plan_missing_markers(text: str) -> list[str]:
     missing: list[str] = []
+    if has_unresolved_evidence_placeholder(text):
+        missing.append('pending evidence placeholders')
     if 'RED' not in text and '사전 실패' not in text:
         missing.append('RED evidence')
     if 'GREEN' not in text and '구현' not in text:

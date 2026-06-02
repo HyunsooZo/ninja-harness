@@ -14,6 +14,21 @@ class CompletedPlanQualityTest(unittest.TestCase):
         text = 'RED\nGREEN\nREFACTOR\nVERIFY\n'
         self.assertIn('residual risk', plan_missing_markers(text))
 
+    def test_rejects_pending_evidence_placeholders(self) -> None:
+        text = (
+            'RED Evidence\n'
+            '- 명령: pending\n'
+            '- 실패 이유: pending\n'
+            'GREEN Evidence\n'
+            '- 통과 테스트 / 확인: pending\n'
+            'REFACTOR\n'
+            '- 변경: pending\n'
+            'VERIFY\n'
+            '- 결과: pending\n'
+            'Risk left: pending\n'
+        )
+        self.assertIn('pending evidence placeholders', plan_missing_markers(text))
+
     def test_layered_plan_requires_fan_in_evidence(self) -> None:
         missing = plan_missing_markers('SEQUENTIAL_LAYERED\nRED GREEN REFACTOR VERIFY\n잔여 위험: none\n')
         self.assertIn('integration owner', missing)
