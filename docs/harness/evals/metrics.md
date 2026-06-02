@@ -32,6 +32,7 @@
 - regression case 반영률
 - orchestration mode별 성공률/실패율/평균 소요 시간
 - 기존 marker count: FAIL, SKIP, BLOCKED, rework, regression
+- 운영 임계값: review fail, rework, project gate fail, fan-in conflict, regression capture 기준 초과 여부
 
 격리된 fixture나 외부 completed plan 디렉터리를 집계할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다.
 
@@ -40,6 +41,20 @@ HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/collect-eval-metric
 ```
 
 실패 지표는 RED 증거의 의도된 실패나 서술형 "실패" 표현이 아니라 `Verdict`, `Status`, `Review`, `Verify`, 리뷰/검증 표의 최종 결과가 `FAIL`인 경우를 중심으로 집계한다.
+
+## 운영 임계값
+
+collector는 기본적으로 임계값 초과 여부를 보고만 한다. 조직 표준에서 eval을 hard gate로 쓰려면 `HARNESS_EVAL_FAIL_ON_GUARDRAIL=1`을 설정한다.
+
+| 환경변수 | 기본값 | 의미 |
+|---|---:|---|
+| `HARNESS_MAX_REVIEW_FAIL_RATE` | 10 | completed plan 중 최종 리뷰/검증 FAIL 비율 상한 |
+| `HARNESS_MAX_REWORK_RATE` | 20 | 재작업이 발생한 completed plan 비율 상한 |
+| `HARNESS_MAX_GATE_FAIL_RATE` | 10 | project gate 실패가 발생한 completed plan 비율 상한 |
+| `HARNESS_MAX_FAN_IN_CONFLICT_RATE` | 10 | fan-in 충돌 발생률 상한 |
+| `HARNESS_MIN_REGRESSION_CAPTURE_RATE` | 80 | 회귀/실패 사례가 regression case로 반영된 비율 하한 |
+
+임계값을 넘으면 `action_required=yes`와 `guardrail_findings=...`를 출력한다. 같은 원인이 반복되면 `docs/harness/evals/regression-cases.md`에 등록하고 test, project gate, skill, agent, numbered core 문서 중 하나로 되돌린다.
 
 ## 운영 기준
 

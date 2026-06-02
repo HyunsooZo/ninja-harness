@@ -70,6 +70,20 @@
 | regression_capture_rate | 실패 사례가 테스트/문서/스킬로 반영된 비율 | 상승 |
 | context_drift_count | 오래된 context/profile 때문에 발생한 오류 수 | 하락 |
 
+## 운영 임계값과 되먹임
+
+`make eval` 또는 `scripts/collect-eval-metrics.py`는 completed plan 지표를 모아 운영 임계값을 계산한다. 기본 임계값은 보고용이고, 조직 표준 CI에서 hard gate로 쓰려면 `HARNESS_EVAL_FAIL_ON_GUARDRAIL=1`을 설정한다.
+
+| 신호 | 기본 임계값 | 되돌릴 위치 |
+|---|---:|---|
+| review fail rate | 10% 초과 | reviewer skill, numbered core doc, project gate |
+| rework rate | 20% 초과 | implementer skill, plan template, context/profile |
+| project gate fail rate | 10% 초과 | project gate script, testing doc, CI example |
+| fan-in conflict rate | 10% 초과 | `11_PARALLEL_AGENT_GATE.md`, `13_AGENT_ORCHESTRATION.md` |
+| regression capture rate | 80% 미만 | `evals/regression-cases.md`, tests/gates/skills |
+
+임계값을 넘긴 항목은 다음 completed plan에 `Regression Captured: yes` 또는 명시적 예외 사유를 남긴다. 반복 원인이 2회 이상 나오면 문서 설명만 추가하지 않고 테스트, project gate, skill/agent 지침, core 문서 중 하나가 재발 방지를 강제해야 한다.
+
 ## 90점대 진입 조건
 
 다음 조건이 충족되면 하네스를 조직 표준 후보로 평가할 수 있다.

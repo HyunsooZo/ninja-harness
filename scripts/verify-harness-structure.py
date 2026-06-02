@@ -1318,7 +1318,7 @@ scorecard_text = (root/'docs/harness/ADOPTION_SCORECARD.md').read_text(encoding=
 plans_readme_text = (root/'docs/harness/plans/README.md').read_text(encoding='utf-8')
 for token in ['make integrity', 'make project-ready', 'HARNESS_ORG_STANDARD=1']:
     check(token in governance_text, f'GOVERNANCE missing integrity rollout token: {token}')
-for token in ['make integrity', 'make project-ready', '최종 무결성']:
+for token in ['make integrity', 'make project-ready', '최종 무결성', 'Eval Guardrail', 'action_required=no']:
     check(token in scorecard_text, f'ADOPTION_SCORECARD missing integrity score token: {token}')
 for token in ['make integrity', '범용 template package', '완료 기록을 누적']:
     check(token in plans_readme_text, f'plans README missing lifecycle integrity token: {token}')
@@ -1386,11 +1386,11 @@ for doc in [root/'README.md', root/'docs/harness/SECURITY_POLICY.md', root/'docs
     check('symlink' in doc.read_text(encoding='utf-8'), f'{doc} missing project gate symlink policy')
 
 metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8')
-for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간']:
+for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간', '운영 임계값', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL']:
     check(token in metrics_text, f'eval metrics missing {token}')
 
 collect_eval_text = (root/'scripts/collect-eval-metrics.py').read_text(encoding='utf-8')
-for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration', 'Operational guardrails', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'HARNESS_MAX_REWORK_RATE']:
     check(token in collect_eval_text, f'eval collector missing {token}')
 
 print('[OK] governance and project gate policy verified')

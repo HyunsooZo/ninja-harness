@@ -15,14 +15,17 @@
 | Regression | 반복 실패를 regression case에 반영 | 0/2 |
 | Orchestration | 복합 작업에 task-orchestrator/fan-in 기록 | 0/2 |
 | Reviewer Safety | reviewer read-only 계약 유지 | 0/1 |
+| Eval Guardrail | `make eval`의 `action_required=no` 또는 초과 항목의 regression 반영 | 0/2 |
 
 ## 판정
 
-- 0~9: 파일럿 전 준비 부족
-- 10~14: 파일럿 가능
-- 15~17: 팀 표준 가능
-- 18 이상: 조직 표준 후보
+- 0~10: 파일럿 전 준비 부족
+- 11~15: 파일럿 가능
+- 16~19: 팀 표준 가능
+- 20 이상: 조직 표준 후보
 
 ## 운영 메모
 
 점수표는 품질 보증이 아니라 adoption readiness를 보는 도구다. 실제 표준 승격 전에는 실패 사례, 보안 예외, CI 비용, 팀 피드백을 함께 검토한다.
+
+`make eval`에서 `action_required=yes`가 나오면 점수만 깎지 말고 원인을 `docs/harness/evals/regression-cases.md`에 등록한 뒤 test, project gate, skill, agent, numbered core 문서 중 하나로 되돌린다. 임계값은 `docs/harness/evals/metrics.md`의 `HARNESS_MAX_*` / `HARNESS_MIN_*` 환경변수로 조직별 조정한다.
