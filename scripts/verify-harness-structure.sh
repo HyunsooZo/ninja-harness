@@ -39,6 +39,8 @@ required=(
   ".claude/agents"
   ".claude/commands"
   "scripts/sync-skills.sh"
+  "scripts/sync-skills.py"
+  "scripts/sync-skills.ps1"
   "scripts/check-profile-readiness.sh"
   "scripts/self-test-harness-gates.sh"
   "scripts/verify-project-gates.sh"

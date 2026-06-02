@@ -43,7 +43,7 @@
 
 - 스킬 원본은 `.agents/skills/**`다.
 - Claude native skill mirror는 `.claude/skills/**`다.
-- 스킬 수정 후 `bash scripts/sync-skills.sh`로 mirror를 갱신한다.
+- 스킬 수정 후 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 PowerShell의 `pwsh -File scripts/sync-skills.ps1`로 mirror를 갱신한다.
 - 구조 검증은 `.agents/skills`와 `.claude/skills`의 drift를 실패 처리한다.
 
 ## 라우팅

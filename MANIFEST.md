@@ -219,7 +219,7 @@ runtime:
   unsupported_windows_native: false
   required_tools: python3 git
   posix_required_tools: bash make
-  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1
+  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1
   powershell_required_tool: pwsh_or_windows_powershell
   powershell_structure_verification: true
   project_gate_runner: python_cross_platform
@@ -257,7 +257,7 @@ owned_api_contract_impact:
 ## v3.6.0 조직 표준 보강
 
 - OpenAI/Codex repo skill 원본을 `.agents/skills/**`로 이동하고 `.claude/skills/**`를 native mirror로 유지한다.
-- `scripts/sync-skills.sh`는 `.agents/skills -> .claude/skills` 단방향 동기화를 수행한다.
+- `scripts/sync-skills.py`가 `.agents/skills -> .claude/skills` 단방향 동기화를 수행하고, `scripts/sync-skills.sh`와 `scripts/sync-skills.ps1`은 호환 wrapper로 호출한다.
 - Claude subagent frontmatter에 `tools` allowlist와 `skills` preload를 추가했다.
 - reviewer 계열은 `tools: [Read, Grep, Glob]`만 허용하고 read-only 안전 계약을 유지한다.
 - `docs/harness/ORG_ROLLOUT.md`, `docs/harness/CI_EXAMPLES.md`, `docs/harness/examples/github-actions/harness-verify.yml`을 추가했다.
@@ -351,3 +351,4 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - Bash wrapper는 기존 Makefile 호환 진입점으로 유지하고 PowerShell wrapper `scripts/verify-project-gates.ps1`을 추가했다.
 - `.ps1`/`.py` gate는 Windows native PowerShell에서 실행할 수 있고, `.sh` gate는 Bash가 있는 환경에서 실행한다.
 - Completed plan 품질 검사는 `scripts/check-completed-plan-quality.py`와 `scripts/harness_lib/completed_plans.py`로 수렴하고 PowerShell wrapper를 추가했다.
+- Skill sync는 `scripts/sync-skills.py`로 수렴하고 PowerShell wrapper `scripts/sync-skills.ps1`을 추가했다.

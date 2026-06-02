@@ -31,6 +31,8 @@ $RequiredFiles = @(
   "scripts/verify-project-gates.ps1",
   "scripts/verify-project-gates.py",
   "scripts/sync-skills.sh",
+  "scripts/sync-skills.py",
+  "scripts/sync-skills.ps1",
   "scripts/check-profile-readiness.sh",
   "scripts/self-test-harness-gates.sh",
   "scripts/collect-eval-metrics.sh",

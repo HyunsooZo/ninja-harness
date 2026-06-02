@@ -71,7 +71,7 @@
 
 프로젝트 로컬 스킬의 원본은 `.agents/skills/` 아래에 두고, Claude native skill mirror는 `.claude/skills/` 아래에 둔다. 오케스트레이션/백엔드 도메인/백엔드 애플리케이션/보안/영속성, 프론트엔드 UI/접근성/타입스크립트, 디자인 시스템/반응형/UX 흐름/데이터 시각화/콘텐츠 i18n, 보조 앱 런타임, 통합 계약, 테스트 전략, 하네스 유지보수를 분리한다.
 
-스킬 수정 후에는 `bash scripts/sync-skills.sh`로 `.agents/skills`를 `.claude/skills`에 동기화한다. 구조 검증은 두 디렉터리의 drift를 실패 처리한다.
+스킬 수정 후에는 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 PowerShell의 `pwsh -File scripts/sync-skills.ps1`로 `.agents/skills`를 `.claude/skills`에 동기화한다. 구조 검증은 두 디렉터리의 drift를 실패 처리한다.
 
 역할별 에이전트는 `.codex/agents/`와 `.claude/agents/` 아래에 둔다. 구현 에이전트는 파일 소유 범위를 좁게 잡고, 보안/접근성/런타임/테스트/디자인 리뷰 계열은 읽기 전용 리뷰어로 운용한다.
 
@@ -94,7 +94,7 @@
 
 - Codex: `.codex/agents/*.toml`, `.agents/skills/*/SKILL.md`를 사용한다. Codex agent TOML은 `skills = [...]`로 역할별 스킬 preload metadata를 선언한다.
 - Claude Code: `.claude/agents/*.md`, `.claude/skills/*/SKILL.md`, `.claude/commands/*.md`, `CLAUDE.md`를 사용한다.
-- 스킬 원본은 `.agents/skills/**`이고, `.claude/skills/**`는 `scripts/sync-skills.sh`로 생성/갱신하는 native skill mirror다.
+- 스킬 원본은 `.agents/skills/**`이고, `.claude/skills/**`는 `scripts/sync-skills.py`와 shell/PowerShell wrapper로 생성/갱신하는 native skill mirror다.
 - 공통 기준은 `AGENTS.md`, `CLAUDE.md`, `docs/harness/**`다.
 - 런타임별 파일은 같은 역할, 범위, 안전 제약, skill preload metadata를 미러링한다.
 
@@ -123,6 +123,7 @@ make doctor
 
 ```powershell
 pwsh -File scripts/doctor.ps1
+pwsh -File scripts/sync-skills.ps1
 
 $env:HARNESS_VERIFY_MODE = "template"
 pwsh -File scripts/verify-harness-structure.ps1
@@ -162,7 +163,7 @@ bash scripts/verify-harness-structure.sh
 
 ## 구조 검증
 
-검증 전 스킬을 수정했다면 먼저 `bash scripts/sync-skills.sh`를 실행한다. 검증 스크립트는 Python 3.11+의 `tomllib`를 사용한다. Python 3.10 이하에서는 `tomli`를 설치하면 fallback으로 동작한다.
+검증 전 스킬을 수정했다면 먼저 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 `pwsh -File scripts/sync-skills.ps1`를 실행한다. 검증 스크립트는 Python 3.11+의 `tomllib`를 사용한다. Python 3.10 이하에서는 `tomli`를 설치하면 fallback으로 동작한다.
 
 ```bash
 # 배포/템플릿 검증: core, agents, skills, context/profile placeholder까지 범용성을 검사

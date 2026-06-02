@@ -24,7 +24,7 @@
 - 스킬 원본은 `.agents/skills/**`다.
 - Claude native skill mirror는 `.claude/skills/**`다.
 - 두 디렉터리의 `SKILL.md`와 보조 파일은 동일하게 유지한다.
-- 스킬을 수정한 뒤에는 `bash scripts/sync-skills.sh`를 실행하고 `bash scripts/verify-harness-structure.sh`로 drift를 확인한다.
+- 스킬을 수정한 뒤에는 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 PowerShell의 `pwsh -File scripts/sync-skills.ps1`로 mirror를 갱신하고 구조 검증으로 drift를 확인한다.
 - Claude에서 직접 호출할 때는 `/skill-name`, Codex에서 직접 호출할 때는 `$skill-name`을 사용한다.
 
 ## 컨텍스트 로딩 규칙

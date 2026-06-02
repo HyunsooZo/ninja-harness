@@ -99,6 +99,8 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
     ├── verify-project-gates.py
     ├── verify-project-gates.ps1
     ├── sync-skills.sh
+    ├── sync-skills.py
+    ├── sync-skills.ps1
     ├── collect-eval-metrics.sh
     ├── check-completed-plan-quality.sh
     ├── check-completed-plan-quality.py
@@ -122,6 +124,7 @@ PowerShell 환경에서는 아래 진입점을 사용할 수 있습니다.
 
 ```powershell
 pwsh -File scripts/doctor.ps1
+pwsh -File scripts/sync-skills.ps1
 ```
 
 ### 2. 전체 구조 검증

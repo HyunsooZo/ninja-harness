@@ -74,7 +74,11 @@ bash scripts/verify-harness-structure.sh
 make sync-skills
 # 또는
 bash scripts/sync-skills.sh
+# 또는
+python3 scripts/sync-skills.py
 ```
+
+PowerShell에서는 `pwsh -File scripts/sync-skills.ps1`를 사용한다.
 
 ## 4. 선택적으로 실제 프로젝트 게이트를 연결한다
 
@@ -132,7 +136,7 @@ make integrity
 
 - `.agents/skills/**`는 skill 원본이다.
 - `.claude/skills/**`는 Claude native mirror다.
-- skill 수정 후 `scripts/sync-skills.sh`를 실행한다.
+- skill 수정 후 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 `pwsh -File scripts/sync-skills.ps1`를 실행한다.
 - 레이어별 에이전트는 항상 자동 협업하지 않는다. 작은 작업은 단일 에이전트, 교차 레이어 작업은 `13_AGENT_ORCHESTRATION.md` 기준으로 분리한다.
 - `*-reviewer`는 읽기 전용이다.
 - commit/push는 사용자 요청이 있을 때만 한다.

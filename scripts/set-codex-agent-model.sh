@@ -40,7 +40,7 @@ def sync_runtime_model(path: Path) -> None:
             f'  unsupported_windows_native: false\n'
             f'  required_tools: python3 git\n'
             f'  posix_required_tools: bash make\n'
-            f'  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1\n'
+            f'  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1\n'
             f'  powershell_required_tool: pwsh_or_windows_powershell\n'
             f'  powershell_structure_verification: true\n'
             f'  project_gate_runner: python_cross_platform\n'

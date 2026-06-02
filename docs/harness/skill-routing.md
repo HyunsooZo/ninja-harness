@@ -36,7 +36,7 @@
 
 - Codex native skills: `.agents/skills/<skill-name>/SKILL.md`
 - Claude native skills: `.claude/skills/<skill-name>/SKILL.md`
-- 원본은 `.agents/skills/**`이고 Claude mirror는 `scripts/sync-skills.sh`로 갱신한다.
+- 원본은 `.agents/skills/**`이고 Claude mirror는 `scripts/sync-skills.py`와 shell/PowerShell wrapper로 갱신한다.
 - 직접 호출 시 Codex는 `$skill-name`, Claude는 `/skill-name`을 사용한다.
 
 ## 강한 기본값
@@ -46,7 +46,7 @@
 - 레이어별 에이전트는 항상 호출하지 않는다. 단일 레이어 작업은 `SINGLE_AGENT`, 보안/계약 위험이 있으면 `SINGLE_AGENT_WITH_REVIEW`, 교차 레이어 작업은 `SEQUENTIAL_LAYERED`를 기본값으로 본다.
 - 인증, 권한, 리소스 선택, 페이지네이션/목록 로딩, 요청/응답 계약, DTO/schema/status/error, 공개 토큰/다운로드 URL, i18n, 공유 UI 변경은 구현 전 관련 하네스 문서를 확인한다. 우리 소유 API 변경은 Owned API Contract Impact Rule에 따라 provider/consumer 양쪽 영향도를 확인한다.
 - 현재 런타임에 없는 도구 이름은 필수가 아니다. 사용 가능하면 쓰고, 없으면 현재 에이전트가 같은 게이트를 직접 적용한다.
-- 스킬은 `.agents/skills/**`와 `.claude/skills/**` 양쪽에 native path로 존재해야 한다. 없거나 drift가 있으면 `bash scripts/sync-skills.sh` 후 검증한다.
+- 스킬은 `.agents/skills/**`와 `.claude/skills/**` 양쪽에 native path로 존재해야 한다. 없거나 drift가 있으면 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 `pwsh -File scripts/sync-skills.ps1` 후 검증한다.
 
 ## 오케스트레이션 모드
 

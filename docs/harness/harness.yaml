@@ -221,7 +221,7 @@ runtime:
   unsupported_windows_native: false
   required_tools: python3 git
   posix_required_tools: bash make
-  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1
+  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1
   powershell_required_tool: pwsh_or_windows_powershell
   powershell_structure_verification: true
   project_gate_runner: python_cross_platform

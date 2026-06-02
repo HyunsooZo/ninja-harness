@@ -67,6 +67,8 @@ required = [
     '.claude/agents',
     '.claude/commands',
     'scripts/sync-skills.sh',
+    'scripts/sync-skills.py',
+    'scripts/sync-skills.ps1',
     'scripts/check-profile-readiness.sh',
     'scripts/self-test-harness-gates.sh',
     'scripts/verify-project-gates.sh',
@@ -209,7 +211,7 @@ required_runtime_refs = {
     'unsupported_windows_native': 'false',
     'required_tools': 'python3 git',
     'posix_required_tools': 'bash make',
-    'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1',
+    'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1',
     'powershell_required_tool': 'pwsh_or_windows_powershell',
     'powershell_structure_verification': 'true',
     'project_gate_runner': 'python_cross_platform',
@@ -252,7 +254,7 @@ for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser'
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for token in ['최소 공통 도구', 'macOS, Linux/WSL', 'Git Bash/MSYS/Cygwin/PowerShell', 'Windows native PowerShell', 'template/project 구조 검증', 'shell project gate 실행', 'scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'cat', 'dirname', 'pwd', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
-for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1']:
+for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'scripts/verify-project-gates.ps1', 'scripts/check-completed-plan-quality.ps1', 'scripts/sync-skills.ps1']:
     ps_text = (root/ps_script).read_text(encoding='utf-8')
     check('Set-StrictMode -Version Latest' in ps_text, f'{ps_script} must enable strict mode')
     check('$ErrorActionPreference = "Stop"' in ps_text, f'{ps_script} must stop on errors')
@@ -369,7 +371,7 @@ sync_script = root/'scripts/sync-skills.sh'
 check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
 check(os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable')
-for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'check-profile-readiness.sh', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'check-completed-plan-quality.py', 'check-completed-plan-quality.ps1', 'set-codex-agent-model.sh']:
+for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync-skills.py', 'sync-skills.ps1', 'check-profile-readiness.sh', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'check-completed-plan-quality.sh', 'check-completed-plan-quality.py', 'check-completed-plan-quality.ps1', 'set-codex-agent-model.sh']:
     script_path = root/'scripts'/script_name
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
@@ -443,7 +445,7 @@ for token in [
     'owned_api_contract_impact:',
     'supported_os: macos_linux_windows',
     'shell_entrypoints: bash_make_powershell',
-    'powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1',
+    'powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1',
     'powershell_structure_verification: true',
     'project_gate_runner: python_cross_platform',
     'python_verifier: scripts/verify-harness-structure.py',

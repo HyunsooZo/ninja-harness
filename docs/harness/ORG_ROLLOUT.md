@@ -51,7 +51,7 @@ Windows PowerShell에서는 같은 계약을 `pwsh -File scripts/verify-project-
 - [ ] `docs/harness/profiles/project-profile.md`에 런타임, API, 배포 범위를 작성했다.
 - [ ] 실제 build/test/lint/security/a11y 명령 중 최소 하나 이상을 `scripts/ci/**` script로 연결했다.
 - [ ] reviewer agent는 read-only tool set을 유지한다.
-- [ ] skill 수정 후 `bash scripts/sync-skills.sh`를 실행했다.
+- [ ] skill 수정 후 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 `pwsh -File scripts/sync-skills.ps1`를 실행했다.
 - [ ] `make integrity`를 통과했다.
 - [ ] 실제 프로젝트 값 적용 전후로 필요 시 `make project-ready`를 실행했다.
 - [ ] 조직 표준 적용 시 `HARNESS_ORG_STANDARD=1` 검증을 통과했다.
