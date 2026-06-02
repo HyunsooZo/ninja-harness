@@ -93,7 +93,13 @@ for plan in plans:
     if re.search(r'\bSKIP\b|검증 생략|자동화 테스트가 부적합', text, re.I): summary['skip_markers'] += 1
     if re.search(r'\bBLOCKED\b|NEEDS_CONTEXT', text, re.I): summary['blocked_or_needs_context_markers'] += 1
     if re.search(r'Rework Count|재작업', text, re.I): summary['rework_markers'] += 1
-    if re.search(r'Regression Captured|회귀', text, re.I): summary['regression_markers'] += 1
+    regression_marker = bool(re.search(
+        r'^\s*(?:-\s*)?(?:Regression Captured|Regression Case|회귀 사례|회귀 반영)\s*:',
+        text,
+        re.I | re.M,
+    ))
+    if regression_marker:
+        summary['regression_markers'] += 1
 
     task_type[ttype] += 1
     if success and not failish:
@@ -144,7 +150,7 @@ for plan in plans:
             fan_in_conflict += 1
             summary['fan_in_conflict_markers'] += 1
 
-    if re.search(r'Regression|회귀', text, re.I):
+    if regression_marker:
         regression_total += 1
         if re.search(r'Regression Captured:\s*(yes|true)|Regression Case:\s*(added|yes)|회귀.*(등록|반영|추가)', text, re.I):
             regression_captured += 1

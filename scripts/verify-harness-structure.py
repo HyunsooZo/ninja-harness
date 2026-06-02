@@ -1555,7 +1555,7 @@ for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer�
     check(token in metrics_text, f'eval metrics missing {token}')
 
 collect_eval_text = (root/'scripts/collect-eval-metrics.py').read_text(encoding='utf-8')
-for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration', 'Operational guardrails', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'HARNESS_MAX_REWORK_RATE']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration', 'Operational guardrails', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'HARNESS_MAX_REWORK_RATE', 'regression_marker']:
     check(token in collect_eval_text, f'eval collector missing {token}')
 
 print('[OK] governance and project gate policy verified')

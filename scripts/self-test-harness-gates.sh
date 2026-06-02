@@ -417,12 +417,17 @@ cat > "$eval_fixture_dir/backtick-status-done.md" <<'EOF'
 - 기본 실행자: executor
 - 모드: SINGLE_AGENT
 - Status: `DONE`
+
+## Notes
+
+- 회귀 검증이라는 일반 설명은 regression capture 지표 분모가 아니다.
 EOF
-expect_pass "eval ignores narrative failure wording" \
+expect_pass "eval ignores narrative failure and regression wording" \
   env HARNESS_COMPLETED_PLAN_DIR="$eval_fixture_dir" \
       bash scripts/collect-eval-metrics.sh
 env HARNESS_COMPLETED_PLAN_DIR="$eval_fixture_dir" bash scripts/collect-eval-metrics.sh > "$output_file"
 grep -q '^fail_markers=0$' "$output_file" || fail "eval should not count narrative failure wording as fail marker"
+grep -q '^regression_markers=0$' "$output_file" || fail "eval should not count narrative regression wording as regression marker"
 grep -q $'docs\t2/2\t100.0%' "$output_file" || fail "eval should count PASS verdict and backtick DONE status as successful docs tasks"
 pass "eval fixture metrics verified"
 

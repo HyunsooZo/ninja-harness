@@ -40,7 +40,7 @@
 HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/collect-eval-metrics.sh
 ```
 
-실패 지표는 RED 증거의 의도된 실패나 서술형 "실패" 표현이 아니라 `Verdict`, `Status`, `Review`, `Verify`, 리뷰/검증 표의 최종 결과가 `FAIL`인 경우를 중심으로 집계한다.
+실패 지표는 RED 증거의 의도된 실패나 서술형 "실패" 표현이 아니라 `Verdict`, `Status`, `Review`, `Verify`, 리뷰/검증 표의 최종 결과가 `FAIL`인 경우를 중심으로 집계한다. regression capture 지표도 서술형 "회귀" 표현이 아니라 `Regression Captured`, `Regression Case`, `회귀 사례`, `회귀 반영` 같은 명시 marker만 분모로 삼는다.
 
 ## 운영 임계값
 
