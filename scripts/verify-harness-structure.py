@@ -1442,6 +1442,8 @@ for required in ['orchestration mode별 성공률', 'reviewer FAIL 사유 TOP 5'
 regression_cases_text = (root/'docs/harness/evals/regression-cases.md').read_text(encoding='utf-8')
 for required in ['REG-HOOK-CWD-2026-06-03', 'REG-HOOK-EXIT-2026-06-03', 'REG-HOOK-SCOPE-2026-06-03', 'REG-UPGRADE-2026-06-03']:
     check(required in regression_cases_text, f'regression cases missing finding regression: {required}')
+for forbidden in ['REG-001 | YYYY-MM-DD', '<what failed>', '<path-or-command>']:
+    check(forbidden not in regression_cases_text, f'regression cases must not keep placeholder row token: {forbidden}')
 for example in ['spring-boot-rest.md', 'node-nestjs.md']:
     check((root/'docs/harness/profiles/examples'/example).exists(), f'missing backend profile example: {example}')
 for example in ['react-next.md', 'vue-vite.md', 'frontend-testing.md']:
