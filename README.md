@@ -6,6 +6,8 @@ Codex와 Claude Code를 함께 사용하는 프로젝트를 위한 **운영형 A
 
 현재 하네스 버전은 루트 `VERSION`과 `docs/harness/harness.yaml`의 `harness_version`이 source of truth입니다. 다운스트림 레포 업그레이드는 `docs/harness/CHANGELOG.md`와 `docs/harness/UPGRADE.md`를 따릅니다.
 
+소유권과 법무 메타데이터는 `LICENSE`, `.github/CODEOWNERS`, `docs/harness/OWNERSHIP.md`, `docs/harness/SECURITY_POLICY.md`에 둡니다. 새 조직에 적용할 때 placeholder를 승인된 팀/연락처/license로 교체합니다.
+
 ## 목적
 
 이 하네스의 목적은 다음과 같습니다.

@@ -1,0 +1,10 @@
+# Replace this placeholder owner when applying the harness to an organization.
+* @your-org/harness-maintainers
+
+# Workflow, project gate, and security policy changes require owner review.
+.github/workflows/** @your-org/harness-maintainers
+.github/scripts/** @your-org/harness-maintainers
+scripts/ci/** @your-org/harness-maintainers
+docs/harness/SECURITY_POLICY.md @your-org/harness-maintainers
+docs/harness/OWNERSHIP.md @your-org/harness-maintainers
+LICENSE @your-org/harness-maintainers

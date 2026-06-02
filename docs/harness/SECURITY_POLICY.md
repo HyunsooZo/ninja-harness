@@ -1,5 +1,13 @@
 # 보안 정책
 
+## 보안 연락과 소유자
+
+- Security Contact: `<security-contact>`
+- Harness Owner: `<harness-owner-team>`
+- Code Owners: `.github/CODEOWNERS`
+
+보안 취약점, secret 노출, project gate 실행 정책 예외는 Security Contact와 Harness Owner가 함께 승인한다. 외부 공개 전에는 `LICENSE`, `.github/CODEOWNERS`, `docs/harness/OWNERSHIP.md`를 조직 승인 값으로 교체한다.
+
 ## Project gate 실행 정책
 
 `HARNESS_*_SCRIPT`가 기본이다. 지정된 script는 repository 내부의 허용 경로에 있어야 한다.

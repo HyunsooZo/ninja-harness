@@ -46,6 +46,8 @@ check(not sys.flags.optimize, 'Python optimization mode is not supported for har
 
 required = [
     'VERSION',
+    'LICENSE',
+    '.github/CODEOWNERS',
     'Makefile',
     'AGENTS.md',
     'CLAUDE.md',
@@ -639,7 +641,7 @@ if mode == 'project':
     ])
 project_leak_patterns = [
     ('target-project marker', r'대상 프로젝트'),
-    ('domain actor term', r'직' + r'원|알' + r'바|em' + r'ployee|Em' + r'ployee|OW' + r'NER|EM' + r'PLOYEE'),
+    ('domain actor term', r'직' + r'원|알' + r'바|em' + r'ployee|Em' + r'ployee|\bOW' + r'NER\b|EM' + r'PLOYEE'),
     ('domain resource term', r'사업' + r'장|selected store|store selection|store scope|store-scoped|storeId|/stores\b'),
     ('domain API prefix', r'/api/app|/api/alba'),
     ('project package/name', r'il' + r'log|com/' + r'il' + r'log|eal' + r'ry|bzhs1992'),
@@ -867,6 +869,8 @@ for ref in entries:
     check((root/ref).exists(), f'missing source_of_truth.entry path: {ref}')
 required_entries = {
     'VERSION',
+    'LICENSE',
+    '.github/CODEOWNERS',
     'AGENTS.md',
     'CLAUDE.md',
     'docs/harness/context/BASELINE.md',
@@ -900,6 +904,8 @@ required_harness_refs = {
     'docs/harness/14_SPEC_REQUIREMENTS.md',
     'docs/harness/CHANGELOG.md',
     'docs/harness/UPGRADE.md',
+    'docs/harness/SKILL_AUTHORING.md',
+    'docs/harness/OWNERSHIP.md',
     'docs/harness/ORG_ROLLOUT.md',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/GOVERNANCE.md',
@@ -1078,6 +1084,24 @@ for required in ['VERSION', 'harness_version', 'make integrity', 'make project-r
 readme_text_for_version = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for required in ['CHANGELOG.md', 'UPGRADE.md', 'VERSION']:
     check(required in readme_text_for_version, f'README missing version lifecycle token: {required}')
+license_text = (root/'LICENSE').read_text(encoding='utf-8')
+codeowners_text = (root/'.github/CODEOWNERS').read_text(encoding='utf-8')
+ownership_text = (root/'docs/harness/OWNERSHIP.md').read_text(encoding='utf-8')
+skill_authoring_text = (root/'docs/harness/SKILL_AUTHORING.md').read_text(encoding='utf-8')
+for required in ['Internal Harness Template License', '<organization-or-owner>', 'No warranty']:
+    check(required in license_text, f'LICENSE missing ownership token: {required}')
+for required in ['@your-org/harness-maintainers', '.github/workflows/**', 'scripts/ci/**', 'LICENSE']:
+    check(required in codeowners_text, f'CODEOWNERS missing owner token: {required}')
+for required in ['Harness Owner', 'Security Contact', '.github/CODEOWNERS', 'LICENSE', '<security-contact>']:
+    check(required in ownership_text, f'OWNERSHIP missing owner token: {required}')
+for required in ['스킬은 독립 문서가 아니라 라우터', 'source-of-truth', '정책 본문을 스킬마다 반복하지 않는다', 'scripts/sync-skills.py']:
+    check(required in skill_authoring_text, f'SKILL_AUTHORING missing content economy token: {required}')
+security_policy_text = (root/'docs/harness/SECURITY_POLICY.md').read_text(encoding='utf-8')
+for required in ['Security Contact', '<security-contact>', 'Harness Owner', '.github/CODEOWNERS', 'LICENSE']:
+    check(required in security_policy_text, f'SECURITY_POLICY missing ownership token: {required}')
+skill_routing_text_for_authoring = (root/'docs/harness/skill-routing.md').read_text(encoding='utf-8')
+for required in ['얇은 라우터', 'docs/harness/SKILL_AUTHORING.md']:
+    check(required in skill_routing_text_for_authoring, f'skill-routing missing skill authoring token: {required}')
 
 testing_text = (root/'docs/harness/05_TESTING.md').read_text(encoding='utf-8')
 for required in ['RED -> GREEN -> REFACTOR -> VERIFY', 'RED', 'GREEN', 'VERIFY', '예외 사유']:

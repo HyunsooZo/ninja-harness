@@ -21,6 +21,8 @@ repositories:
 source_of_truth:
   entry:
     - VERSION
+    - LICENSE
+    - .github/CODEOWNERS
     - AGENTS.md
     - CLAUDE.md
     - docs/harness/context/BASELINE.md
@@ -44,6 +46,8 @@ source_of_truth:
     - docs/harness/14_SPEC_REQUIREMENTS.md
     - docs/harness/CHANGELOG.md
     - docs/harness/UPGRADE.md
+    - docs/harness/SKILL_AUTHORING.md
+    - docs/harness/OWNERSHIP.md
     - docs/harness/ORG_ROLLOUT.md
     - docs/harness/CI_EXAMPLES.md
     - docs/harness/GOVERNANCE.md

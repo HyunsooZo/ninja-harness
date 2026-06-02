@@ -1,0 +1,14 @@
+Internal Harness Template License
+
+Copyright (c) <organization-or-owner>
+
+This harness template is provided for internal organizational use unless a
+separate written license or open-source license is attached by the owning
+organization.
+
+Before external distribution, replace this file with the approved public or
+commercial license and update `.github/CODEOWNERS`,
+`docs/harness/OWNERSHIP.md`, and `docs/harness/SECURITY_POLICY.md`.
+
+No warranty is provided. Use, modification, redistribution, and support
+obligations are governed by the owning organization's policy.

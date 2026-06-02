@@ -23,6 +23,8 @@
 | `14_SPEC_REQUIREMENTS.md` | 스펙/요구사항 | EARS 요구사항, 옵션 비교, story slice |
 | `CHANGELOG.md` | 버전 변경 이력 | 하네스 버전별 변경과 verifier 영향 |
 | `UPGRADE.md` | 업그레이드 | 다운스트림 레포 업그레이드 절차 |
+| `SKILL_AUTHORING.md` | 스킬 작성 | 스킬을 얇은 라우터로 유지하는 정책 |
+| `OWNERSHIP.md` | 소유권 | owner, maintainer, security contact, code owner 기준 |
 | `harness.yaml` | 정책 설정 | 하네스 라우팅, 검증 게이트, 런타임별 공통 정책 |
 | `skill-routing.md` | 라우팅 | 요청 유형별 기본 skill/agent |
 | `rubrics/` | 호환 체크리스트 | 기존 참조를 위한 얇은 리뷰 기준 |

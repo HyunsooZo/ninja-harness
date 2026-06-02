@@ -39,6 +39,8 @@
 - 원본은 `.agents/skills/**`이고 Claude mirror는 `scripts/sync-skills.py`와 shell/PowerShell wrapper로 갱신한다.
 - 직접 호출 시 Codex는 `$skill-name`, Claude는 `/skill-name`을 사용한다.
 
+스킬 본문은 얇은 라우터로 유지한다. 긴 정책과 반복 규칙은 `docs/harness/SKILL_AUTHORING.md` 기준에 따라 numbered core 문서, context, profile에 둔다.
+
 ## 강한 기본값
 
 - 리뷰 성격이면 `review-pr`를 기본값으로 본다.
