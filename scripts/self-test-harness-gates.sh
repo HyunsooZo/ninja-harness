@@ -218,6 +218,33 @@ expect_fail "completed plan quality rejects missing evidence markers" \
       bash scripts/check-completed-plan-quality.sh
 rm -f "$completed_quality_dir/bad.md"
 
+evidence_hook_root="$tmp_dir/evidence-hook-root"
+mkdir -p "$evidence_hook_root/docs/harness/plans/active"
+printf '{"tool_name":"Edit","tool_input":{"file_path":"docs/harness/plans/active/hook-test.md"}}\n' > "$tmp_dir/hook-plan-edit.json"
+printf '{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}\n' > "$tmp_dir/hook-src-edit.json"
+
+expect_pass "evidence hook allows active plan edit" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-plan-edit.json"
+
+expect_fail "evidence hook blocks edit without RED" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
+cat > "$evidence_hook_root/docs/harness/plans/active/hook-test.md" <<'EOF'
+# Hook test
+
+## RED Evidence
+
+- 예외 사유: hook self-test
+- 대체 검증: fixture
+- Risk left: none
+EOF
+
+expect_pass "evidence hook accepts documented RED exception" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
 eval_fixture_dir="$tmp_dir/eval-completed-plans"
 mkdir -p "$eval_fixture_dir"
 cat > "$eval_fixture_dir/narrative-failure-pass.md" <<'EOF'
@@ -407,7 +434,7 @@ expect_fail "runtime rejects missing OS support manifest" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing PowerShell entrypoint manifest" \
-  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1" \
+  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing Python verifier manifest" \

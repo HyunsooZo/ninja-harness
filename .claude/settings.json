@@ -1,4 +1,17 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/check-evidence-gate-hook.py"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "deny": [
       "Write(.env*)",

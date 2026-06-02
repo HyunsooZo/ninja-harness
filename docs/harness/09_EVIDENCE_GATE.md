@@ -49,6 +49,21 @@ docs/harness/plans/completed/<YYYY-MM-DD-slug>.md
 - 필요한 review가 빠졌다면 최대로 보고해도 `DONE_WITH_CONCERNS`다.
 - 보안, 인증, 권한, 리소스 범위, 공개 링크/토큰, API 계약 변경은 활성 계획에 불필요 사유를 남기지 않는 한 관련 리뷰가 필요하다.
 
+## Claude Code Inline Hook
+
+Claude Code project settings는 `PreToolUse` hook으로 직접 파일 수정 도구를 실행 전에 차단한다.
+
+- 설정: `.claude/settings.json`
+- 본체: `scripts/check-evidence-gate-hook.py`
+- PowerShell wrapper: `scripts/check-evidence-gate-hook.ps1`
+- 대상 도구: `Edit`, `MultiEdit`, `Write`, `NotebookEdit`
+
+hook은 `docs/harness/plans/active/*.md`와 `docs/harness/plans/completed/*.md` 수정을 허용한다. 그 외 파일을 직접 수정하려면 활성 plan에 `RED Evidence` / `RED 증거`가 있거나 RED 예외 사유가 기록되어 있어야 한다. 증거가 없으면 exit code 2로 tool call을 차단한다.
+
+긴급 우회가 필요하면 승인 사유를 plan에 남기고 `HARNESS_EVIDENCE_HOOK_MODE=off`를 세션 환경변수로 설정한다. 경고만 받고 싶을 때는 `HARNESS_EVIDENCE_HOOK_MODE=warn`을 사용할 수 있다. 이 우회는 하네스 규칙의 예외이며 completed plan에 사유와 잔여 위험을 남긴다.
+
+Bash 도구로 파일을 수정하는 우회는 명령 파싱 오탐 위험 때문에 1차 hook의 선행 차단 범위에 넣지 않는다. Bash 기반 파일 변경은 기존 `make integrity`, `git diff --check`, completed plan 품질 검사, reviewer 검토로 보완한다.
+
 ## 되돌림 규칙
 
 검증이나 리뷰가 실패하면 작업을 loop로 되돌린다.
