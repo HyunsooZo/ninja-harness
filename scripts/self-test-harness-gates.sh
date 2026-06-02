@@ -808,6 +808,10 @@ expect_fail "organization mode blocks legacy command without explicit opt-in" \
       HARNESS_BACKEND_TEST_CMD='echo legacy' \
       bash scripts/verify-project-gates.sh
 
+expect_fail "organization structure rejects ownership placeholders" \
+  env HARNESS_ORG_STANDARD=1 \
+      bash scripts/verify-harness-structure.sh
+
 if [[ ! -d scripts/ci ]]; then
   mkdir -p scripts/ci
   created_ci_dir=1

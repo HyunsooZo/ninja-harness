@@ -456,6 +456,7 @@ for token in [
     'harness upgrade checker rejects dirty downstream changed path',
     'harness upgrade checker rejects project-owned downstream overwrite',
     'harness upgrade checker rejects missing downstream managed file',
+    'organization structure rejects ownership placeholders',
     'verify-org rejects ownership placeholders',
 ]:
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
@@ -1594,6 +1595,9 @@ if os.environ.get('HARNESS_REQUIRE_FILLED_PROFILE', '0') == '1':
 print(f'[OK] harness structure verified ({mode})')
 
 if os.environ.get('HARNESS_ORG_STANDARD', '0') == '1':
+    ownership_result = subprocess.run([sys.executable, 'scripts/check-harness-upgrade.py'], cwd=root, env=os.environ.copy())
+    check(ownership_result.returncode == 0, 'harness upgrade ownership check failed')
+    print('[OK] organization ownership checked')
     env = os.environ.copy()
     env['HARNESS_RUN_PROJECT_CHECKS'] = '1'
     env['HARNESS_REQUIRE_PROJECT_CHECKS'] = '1'
