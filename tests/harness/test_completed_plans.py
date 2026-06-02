@@ -29,6 +29,17 @@ class CompletedPlanQualityTest(unittest.TestCase):
         )
         self.assertIn('pending evidence placeholders', plan_missing_markers(text))
 
+    def test_accepts_documented_temporary_command_placeholders(self) -> None:
+        text = (
+            'RED\n'
+            '- 명령: `HARNESS_COMPLETED_PLAN_DIR=<tmp> bash scripts/check-completed-plan-quality.sh`\n'
+            'GREEN\n'
+            'REFACTOR\n'
+            'VERIFY\n'
+            '잔여 위험: none\n'
+        )
+        self.assertEqual(plan_missing_markers(text), [])
+
     def test_layered_plan_requires_fan_in_evidence(self) -> None:
         missing = plan_missing_markers('SEQUENTIAL_LAYERED\nRED GREEN REFACTOR VERIFY\n잔여 위험: none\n')
         self.assertIn('integration owner', missing)

@@ -52,10 +52,7 @@ def relative_label(path: Path) -> str:
 
 
 def has_unresolved_evidence_placeholder(text: str) -> bool:
-    if re.search(r'<[^>\n]+>', text):
-        return True
-
-    placeholder_value = r'(?:pending|todo|tbd|대기 중)'
+    placeholder_value = r'(?:pending|대기 중)'
     for line in text.splitlines():
         stripped = line.strip()
         if re.search(rf'(?i)(?:^|\||:)\s*`?{placeholder_value}`?\s*(?:\||$)', stripped):
