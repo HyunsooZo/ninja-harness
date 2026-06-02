@@ -448,6 +448,8 @@ for token in [
     'evidence hook rejects narrative-only RED evidence',
     'evidence hook bypass mode requires audit reason',
     'evidence hook bypass mode accepts audit reason',
+    'completed plan quality tracked source ignores local fixture files',
+    'eval tracked source ignores local fixture files',
     'harness upgrade checker accepts changelog delta from previous version',
     'harness upgrade checker rejects ownership placeholders when required',
     'harness upgrade checker rejects ownership placeholders in org standard',
@@ -459,7 +461,7 @@ for token in [
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
 
 completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
-for token in ['HARNESS_COMPLETED_PLAN_DIR', 'completed plan quality: no completed plans', 'plan_missing_markers']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'HARNESS_COMPLETED_PLAN_SOURCE', 'completed_plan_files', 'completed plan quality: no completed plans', 'plan_missing_markers']:
     check(token in completed_quality_text, f'completed plan quality script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -1553,11 +1555,11 @@ for doc in [root/'README.md', root/'docs/harness/SECURITY_POLICY.md', root/'docs
     check('symlink' in doc.read_text(encoding='utf-8'), f'{doc} missing project gate symlink policy')
 
 metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8')
-for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간', '운영 임계값', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'make verify-org']:
+for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간', '운영 임계값', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'HARNESS_COMPLETED_PLAN_SOURCE', 'make verify-org']:
     check(token in metrics_text, f'eval metrics missing {token}')
 
 collect_eval_text = (root/'scripts/collect-eval-metrics.py').read_text(encoding='utf-8')
-for token in ['HARNESS_COMPLETED_PLAN_DIR', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration', 'Operational guardrails', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'HARNESS_MAX_REWORK_RATE', 'regression_marker']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'HARNESS_COMPLETED_PLAN_SOURCE', 'completed_plan_source', 'Task type success rate', 'Agent rework rate', 'Reviewer FAIL reasons TOP 10', 'Project gate failure trend', 'Fan-in conflict rate', 'Regression case capture rate', 'Orchestration mode success/failure/duration', 'Operational guardrails', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'HARNESS_MAX_REWORK_RATE', 'regression_marker']:
     check(token in collect_eval_text, f'eval collector missing {token}')
 
 print('[OK] governance and project gate policy verified')

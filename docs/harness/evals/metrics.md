@@ -34,10 +34,11 @@
 - 기존 marker count: FAIL, SKIP, BLOCKED, rework, regression
 - 운영 임계값: review fail, rework, project gate fail, fan-in conflict, regression capture 기준 초과 여부
 
-격리된 fixture나 외부 completed plan 디렉터리를 집계할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다.
+격리된 fixture나 외부 completed plan 디렉터리를 집계할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다. 기본 source는 `HARNESS_COMPLETED_PLAN_SOURCE=local`이며 ignored local completed plan까지 포함한다. CI/package parity처럼 git에 tracked 된 completed plan만 보려면 `HARNESS_COMPLETED_PLAN_SOURCE=tracked`를 지정한다.
 
 ```bash
 HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/collect-eval-metrics.sh
+HARNESS_COMPLETED_PLAN_SOURCE=tracked bash scripts/collect-eval-metrics.sh
 ```
 
 실패 지표는 RED 증거의 의도된 실패나 서술형 "실패" 표현이 아니라 `Verdict`, `Status`, `Review`, `Verify`, 리뷰/검증 표의 최종 결과가 `FAIL`인 경우를 중심으로 집계한다. regression capture 지표도 서술형 "회귀" 표현이 아니라 `Regression Captured`, `Regression Case`, `회귀 사례`, `회귀 반영` 같은 명시 marker만 분모로 삼는다.

@@ -7,13 +7,21 @@ from collections import Counter, defaultdict
 from statistics import mean
 
 from harness_lib.stdio import configure_utf8_stdio
+from harness_lib.completed_plans import completed_plan_dir, completed_plan_files, completed_plan_source
 
 
 configure_utf8_stdio()
 
+# HARNESS_COMPLETED_PLAN_DIR and HARNESS_COMPLETED_PLAN_SOURCE are resolved by
+# harness_lib.completed_plans so quality checks and eval use the same source.
 root = Path('.')
-completed_dir = Path(os.environ.get('HARNESS_COMPLETED_PLAN_DIR', 'docs/harness/plans/completed'))
-plans = sorted(completed_dir.glob('*.md')) if completed_dir.exists() else []
+completed_dir = completed_plan_dir()
+source = completed_plan_source()
+try:
+    plans = completed_plan_files(completed_dir, source)
+except (RuntimeError, ValueError) as exc:
+    print(f'[FAIL] {exc}', file=sys.stderr)
+    raise SystemExit(1)
 fail_on_guardrail = os.environ.get('HARNESS_EVAL_FAIL_ON_GUARDRAIL', '0') == '1'
 
 def float_env(name: str, default: float) -> float:
@@ -162,6 +170,8 @@ summary['parallel_markers'] = sum(mode_total[m] for m in ['PARALLEL_INVESTIGATIO
 print('# Eval summary')
 for k, v in summary.items():
     print(f'{k}={v}')
+print(f'completed_plan_source={source}')
+print(f'completed_plan_dir={completed_dir}')
 print('metrics_file=docs/harness/evals/metrics.md')
 
 print('\n# Task type success rate')

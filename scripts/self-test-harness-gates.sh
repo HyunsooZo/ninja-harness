@@ -217,6 +217,11 @@ printf '# Bad completed plan\n\nVERIFY only\n' > "$completed_quality_dir/bad.md"
 expect_fail "completed plan quality rejects missing evidence markers" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
+
+expect_pass "completed plan quality tracked source ignores local fixture files" \
+  env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
+      HARNESS_COMPLETED_PLAN_SOURCE=tracked \
+      bash scripts/check-completed-plan-quality.sh
 rm -f "$completed_quality_dir/bad.md"
 
 evidence_hook_root="$tmp_dir/evidence-hook-root"
@@ -429,8 +434,14 @@ expect_pass "eval ignores narrative failure and regression wording" \
 env HARNESS_COMPLETED_PLAN_DIR="$eval_fixture_dir" bash scripts/collect-eval-metrics.sh > "$output_file"
 grep -q '^fail_markers=0$' "$output_file" || fail "eval should not count narrative failure wording as fail marker"
 grep -q '^regression_markers=0$' "$output_file" || fail "eval should not count narrative regression wording as regression marker"
+grep -q '^completed_plan_source=local$' "$output_file" || fail "eval should report local completed plan source"
 grep -q $'docs\t2/2\t100.0%' "$output_file" || fail "eval should count PASS verdict and backtick DONE status as successful docs tasks"
 pass "eval fixture metrics verified"
+
+env HARNESS_COMPLETED_PLAN_DIR="$eval_fixture_dir" HARNESS_COMPLETED_PLAN_SOURCE=tracked bash scripts/collect-eval-metrics.sh > "$output_file"
+grep -q '^completed_plans=0$' "$output_file" || fail "tracked eval source should ignore local fixture files"
+grep -q '^completed_plan_source=tracked$' "$output_file" || fail "eval should report tracked completed plan source"
+pass "eval tracked source ignores local fixture files"
 
 expect_pass "harness upgrade checker accepts current metadata" \
   python3 scripts/check-harness-upgrade.py

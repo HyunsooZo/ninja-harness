@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 from pathlib import Path
 
 
@@ -10,6 +11,36 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 def completed_plan_dir() -> Path:
     configured = Path(os.environ.get('HARNESS_COMPLETED_PLAN_DIR', 'docs/harness/plans/completed'))
     return configured if configured.is_absolute() else ROOT / configured
+
+
+def completed_plan_source() -> str:
+    return os.environ.get('HARNESS_COMPLETED_PLAN_SOURCE', 'local').strip().lower() or 'local'
+
+
+def completed_plan_files(completed_dir: Path | None = None, source: str | None = None) -> list[Path]:
+    completed_dir = completed_dir or completed_plan_dir()
+    source = source or completed_plan_source()
+    if source == 'local':
+        return sorted(completed_dir.glob('*.md')) if completed_dir.exists() else []
+    if source != 'tracked':
+        raise ValueError(f'HARNESS_COMPLETED_PLAN_SOURCE must be local or tracked: {source}')
+
+    try:
+        rel_dir = completed_dir.resolve().relative_to(ROOT)
+    except ValueError:
+        return []
+
+    result = subprocess.run(
+        ['git', 'ls-files', f'{rel_dir.as_posix()}/*.md'],
+        cwd=ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f'git ls-files failed for completed plans: {result.stderr.strip()}')
+    return sorted(ROOT / line for line in result.stdout.splitlines() if line.strip().endswith('.md'))
 
 
 def relative_label(path: Path) -> str:
@@ -55,9 +86,15 @@ def plan_missing_markers(text: str) -> list[str]:
 
 def main() -> int:
     completed_dir = completed_plan_dir()
-    plans = sorted(completed_dir.glob('*.md')) if completed_dir.exists() else []
+    source = completed_plan_source()
+    try:
+        plans = completed_plan_files(completed_dir, source)
+    except (RuntimeError, ValueError) as exc:
+        print(f'[FAIL] {exc}')
+        return 1
+    print(f'[INFO] completed plan source: {source} dir={relative_label(completed_dir)}')
     if not plans:
-        print(f'[OK] completed plan quality: no completed plans in {relative_label(completed_dir)}')
+        print(f'[OK] completed plan quality: no completed plans in {relative_label(completed_dir)} source={source}')
         return 0
 
     failed = False

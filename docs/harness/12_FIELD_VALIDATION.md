@@ -72,7 +72,7 @@
 
 ## 운영 임계값과 되먹임
 
-`make eval` 또는 `scripts/collect-eval-metrics.py`는 completed plan 지표를 모아 운영 임계값을 계산한다. 기본 임계값은 보고용이고, 조직 표준 CI에서 hard gate로 쓰려면 `HARNESS_EVAL_FAIL_ON_GUARDRAIL=1`을 설정한다.
+`make eval` 또는 `scripts/collect-eval-metrics.py`는 completed plan 지표를 모아 운영 임계값을 계산한다. 기본 source는 `HARNESS_COMPLETED_PLAN_SOURCE=local`이라 ignored local evidence도 포함한다. CI/package parity 검토처럼 tracked completed plan만 보려면 `HARNESS_COMPLETED_PLAN_SOURCE=tracked`를 설정한다. 기본 임계값은 보고용이고, 조직 표준 CI에서 hard gate로 쓰려면 `HARNESS_EVAL_FAIL_ON_GUARDRAIL=1`을 설정한다.
 
 | 신호 | 기본 임계값 | 되돌릴 위치 |
 |---|---:|---|

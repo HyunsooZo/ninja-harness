@@ -201,7 +201,7 @@ HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh
 make integrity
 ```
 
-이 target은 `make doctor`, `make verify`, gate self-test, completed plan 품질 검사, active plan 잔여 여부, `git diff --check`를 함께 확인한다. 실제 프로젝트 build/test/lint는 여전히 project gate 영역이므로 조직 표준에서는 `HARNESS_*_SCRIPT=... make verify-org`를 별도로 연결한다.
+이 target은 `make doctor`, `make verify`, gate self-test, completed plan 품질 검사, active plan 잔여 여부, `git diff --check`를 함께 확인한다. completed plan 품질 검사는 기본적으로 `HARNESS_COMPLETED_PLAN_SOURCE=local`이라 템플릿에서 ignored 처리된 로컬 evidence도 점검한다. package/CI parity만 보려면 `HARNESS_COMPLETED_PLAN_SOURCE=tracked`를 명시한다. 실제 프로젝트 build/test/lint는 여전히 project gate 영역이므로 조직 표준에서는 `HARNESS_*_SCRIPT=... make verify-org`를 별도로 연결한다.
 
 템플릿 레포 자체는 `.github/workflows/harness-verify.yml`에서 `make integrity`와 Windows PowerShell 구조 검증을 실행한다. 다운스트림 조직 gate 예시는 `docs/harness/examples/github-actions/harness-verify.yml`에 둔다.
 
