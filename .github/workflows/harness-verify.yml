@@ -26,7 +26,18 @@ jobs:
           python --version
           git --version
           pwsh -File scripts/doctor.ps1
+          pwsh -File scripts/check-harness-upgrade.ps1 --from-version 0.1.0
           $env:HARNESS_VERIFY_MODE = "template"
           pwsh -File scripts/verify-harness-structure.ps1
           $env:HARNESS_VERIFY_MODE = "project"
           pwsh -File scripts/verify-harness-structure.ps1
+          '{"tool_name":"Edit","tool_input":{"file_path":"docs/harness/plans/active/ci-hook.md"}}' | pwsh -File scripts/check-evidence-gate-hook.ps1
+          '{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}' | pwsh -File scripts/check-evidence-gate-hook.ps1
+          if ($LASTEXITCODE -ne 2) {
+            throw "expected evidence hook to block non-plan edit with exit code 2"
+          }
+          New-Item -ItemType Directory -Force scripts/ci | Out-Null
+          Set-Content -Encoding UTF8 scripts/ci/harness-ci-smoke.ps1 'exit 0'
+          $env:HARNESS_BACKEND_TEST_SCRIPT = "scripts/ci/harness-ci-smoke.ps1"
+          $env:HARNESS_RUN_PROJECT_CHECKS = "1"
+          pwsh -File scripts/verify-project-gates.ps1
