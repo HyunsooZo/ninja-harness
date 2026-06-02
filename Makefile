@@ -46,7 +46,7 @@ help:
 	@echo "  make check-plans             Check completed plan quality"
 	@echo "  make check-active-plans      Fail if active plans remain"
 	@echo "  make set-model MODEL=<model> Update Codex agent model in all TOML files"
-	@echo "  make clean                   Remove OS/editor metadata files"
+	@echo "  make clean                   Remove local generated metadata and runtime cache files"
 	@echo ""
 	@echo "Organization mode requires at least one repository script gate. Supported variables:"
 	@for var in $(ORG_GATE_SCRIPT_VARS); do echo "  $$var"; done
@@ -183,3 +183,7 @@ clean:
 	find . -name "._*" -delete
 	find . -type d -name "__MACOSX" -prune -exec rm -rf {} +
 	find . -name "__tmp-*.sh" -delete
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +
+	find . -name "*.pyc" -delete
+	find . -name "*.pyo" -delete

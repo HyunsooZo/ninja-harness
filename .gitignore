@@ -11,6 +11,11 @@ __MACOSX/
 .idea/
 .claude/settings.local.json
 
+# Python local runtime artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # Harness local evidence and retired mirrors
 docs/harness/plans/active/*.md
 docs/harness/plans/completed/*.md
