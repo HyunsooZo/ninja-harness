@@ -8,6 +8,18 @@
 2. `VERSION`, `docs/harness/harness.yaml`, `docs/harness/CHANGELOG.md`를 확인한다.
 3. 적용 중인 active plan이 있으면 완료하거나 업그레이드를 미룬다.
 4. 프로젝트별 값은 `docs/harness/context/**`와 `docs/harness/profiles/**`에만 남아 있는지 확인한다.
+5. 현재 버전 기준 업그레이드 메타데이터를 확인한다.
+
+```bash
+make harness-upgrade
+FROM_VERSION=0.1.0 make harness-upgrade
+```
+
+Windows native PowerShell에서는 아래처럼 실행한다.
+
+```powershell
+pwsh -File scripts/check-harness-upgrade.ps1 --from-version 0.1.0
+```
 
 ## 업그레이드 적용
 
@@ -19,6 +31,7 @@
 ## 업그레이드 후
 
 ```bash
+make harness-upgrade
 make integrity
 make project-ready
 ```

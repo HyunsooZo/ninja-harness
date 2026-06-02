@@ -10,6 +10,7 @@ HARNESS_SELF_TEST_GATES ?= scripts/self-test-harness-gates.sh
 HARNESS_EVAL ?= scripts/collect-eval-metrics.sh
 HARNESS_CHECK_PLANS ?= scripts/check-completed-plan-quality.sh
 HARNESS_SET_MODEL ?= scripts/set-codex-agent-model.sh
+HARNESS_CHECK_UPGRADE ?= scripts/check-harness-upgrade.py
 HARNESS_POSIX_UTILITIES ?= find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd
 
 ORG_GATE_SCRIPT_VARS := \
@@ -21,7 +22,7 @@ ORG_GATE_SCRIPT_VARS := \
   HARNESS_A11Y_CHECK_SCRIPT
 
 .PHONY: \
-  help doctor verify verify-template verify-project verify-org \
+  help doctor verify verify-template verify-project verify-org harness-upgrade \
   project-ready check-profile project-gates project-gates-required sync-skills check-sync \
   self-test-gates unit-tests check-active-plans integrity eval check-plans set-model clean
 
@@ -46,6 +47,7 @@ help:
 	@echo "  make check-plans             Check completed plan quality"
 	@echo "  make check-active-plans      Fail if active plans remain"
 	@echo "  make set-model MODEL=<model> Update Codex agent model in all TOML files"
+	@echo "  make harness-upgrade         Check harness version and upgrade metadata"
 	@echo "  make clean                   Remove local generated metadata and runtime cache files"
 	@echo ""
 	@echo "Organization mode requires at least one repository script gate. Supported variables:"
@@ -62,12 +64,13 @@ doctor:
 	@for script in \
 		"$(HARNESS_VERIFY)" \
 		"$(HARNESS_PROJECT_GATES)" \
-		"$(HARNESS_SYNC_SKILLS)" \
-		"$(HARNESS_CHECK_PROFILE)" \
-		"$(HARNESS_SELF_TEST_GATES)" \
-		"$(HARNESS_EVAL)" \
-		"$(HARNESS_CHECK_PLANS)" \
-		"$(HARNESS_SET_MODEL)"; do \
+			"$(HARNESS_SYNC_SKILLS)" \
+			"$(HARNESS_CHECK_PROFILE)" \
+			"$(HARNESS_SELF_TEST_GATES)" \
+			"$(HARNESS_EVAL)" \
+			"$(HARNESS_CHECK_PLANS)" \
+			"$(HARNESS_SET_MODEL)" \
+			"$(HARNESS_CHECK_UPGRADE)"; do \
 		if [ ! -f "$$script" ]; then echo "[FAIL] missing script: $$script"; exit 1; fi; \
 		if [ ! -x "$$script" ]; then echo "[FAIL] script must be executable: $$script"; exit 1; fi; \
 		done
@@ -177,6 +180,9 @@ set-model:
 		exit 1; \
 	fi
 	bash "$(HARNESS_SET_MODEL)" "$${MODEL}"
+
+harness-upgrade:
+	python3 "$(HARNESS_CHECK_UPGRADE)" $${FROM_VERSION:+--from-version "$$FROM_VERSION"}
 
 clean:
 	find . -name ".DS_Store" -delete

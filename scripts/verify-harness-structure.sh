@@ -59,6 +59,8 @@ required=(
   "scripts/check-evidence-gate-hook.sh"
   "scripts/check-evidence-gate-hook.py"
   "scripts/check-evidence-gate-hook.ps1"
+  "scripts/check-harness-upgrade.py"
+  "scripts/check-harness-upgrade.ps1"
 )
 
 for path in "${required[@]}"; do

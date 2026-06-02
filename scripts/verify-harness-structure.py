@@ -103,6 +103,8 @@ required = [
     'scripts/check-evidence-gate-hook.sh',
     'scripts/check-evidence-gate-hook.py',
     'scripts/check-evidence-gate-hook.ps1',
+    'scripts/check-harness-upgrade.py',
+    'scripts/check-harness-upgrade.ps1',
     'tests/harness/test_completed_plans.py',
     'tests/harness/test_project_gates.py',
     'tests/harness/test_evidence_hook.py',
@@ -249,12 +251,13 @@ required_runtime_refs = {
     'unsupported_windows_native': 'false',
     'required_tools': 'python3 git',
     'posix_required_tools': 'bash make',
-    'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1',
+    'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1 scripts/check-harness-upgrade.ps1',
     'powershell_required_tool': 'pwsh_or_windows_powershell',
     'powershell_structure_verification': 'true',
     'project_gate_runner': 'python_cross_platform',
     'python_verifier': 'scripts/verify-harness-structure.py',
     'evidence_gate_hook': 'scripts/check-evidence-gate-hook.py',
+    'upgrade_checker': 'scripts/check-harness-upgrade.py',
     'claude_pretooluse_hook': 'true',
     'posix_utilities': 'find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
     'toml_parser': 'tomllib_or_tomli',
@@ -296,7 +299,7 @@ for token in ['최소 공통 도구', 'macOS, Linux/WSL', 'Git Bash/MSYS/Cygwin/
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
 for token in ['configure_utf8_stdio()', 'PYTHONUTF8=1', 'PYTHONIOENCODING=utf-8', '[Console]::OutputEncoding', '한글 경로']:
     check(token in readme_text_for_runtime, f'README runtime section missing UTF-8 token: {token}')
-for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'scripts/verify-project-gates.ps1', 'scripts/check-completed-plan-quality.ps1', 'scripts/sync-skills.ps1', 'scripts/check-profile-readiness.ps1', 'scripts/collect-eval-metrics.ps1', 'scripts/set-codex-agent-model.ps1', 'scripts/check-evidence-gate-hook.ps1']:
+for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'scripts/verify-project-gates.ps1', 'scripts/check-completed-plan-quality.ps1', 'scripts/sync-skills.ps1', 'scripts/check-profile-readiness.ps1', 'scripts/collect-eval-metrics.ps1', 'scripts/set-codex-agent-model.ps1', 'scripts/check-evidence-gate-hook.ps1', 'scripts/check-harness-upgrade.ps1']:
     ps_text = (root/ps_script).read_text(encoding='utf-8')
     check('Set-StrictMode -Version Latest' in ps_text, f'{ps_script} must enable strict mode')
     check('$ErrorActionPreference = "Stop"' in ps_text, f'{ps_script} must stop on errors')
@@ -428,12 +431,12 @@ sync_script = root/'scripts/sync-skills.sh'
 check(os.access(sync_script, os.X_OK), 'scripts/sync-skills.sh must be executable')
 project_gate_script = root/'scripts/verify-project-gates.sh'
 check(os.access(project_gate_script, os.X_OK), 'scripts/verify-project-gates.sh must be executable')
-for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync-skills.py', 'sync-skills.ps1', 'check-profile-readiness.sh', 'check-profile-readiness.py', 'check-profile-readiness.ps1', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'collect-eval-metrics.py', 'collect-eval-metrics.ps1', 'check-completed-plan-quality.sh', 'check-completed-plan-quality.py', 'check-completed-plan-quality.ps1', 'set-codex-agent-model.sh', 'set-codex-agent-model.py', 'set-codex-agent-model.ps1', 'check-evidence-gate-hook.sh', 'check-evidence-gate-hook.py', 'check-evidence-gate-hook.ps1']:
+for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync-skills.py', 'sync-skills.ps1', 'check-profile-readiness.sh', 'check-profile-readiness.py', 'check-profile-readiness.ps1', 'self-test-harness-gates.sh', 'collect-eval-metrics.sh', 'collect-eval-metrics.py', 'collect-eval-metrics.ps1', 'check-completed-plan-quality.sh', 'check-completed-plan-quality.py', 'check-completed-plan-quality.ps1', 'set-codex-agent-model.sh', 'set-codex-agent-model.py', 'set-codex-agent-model.ps1', 'check-evidence-gate-hook.sh', 'check-evidence-gate-hook.py', 'check-evidence-gate-hook.ps1', 'check-harness-upgrade.py', 'check-harness-upgrade.ps1']:
     script_path = root/'scripts'/script_name
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'harness upgrade checker accepts current metadata', 'harness upgrade checker rejects newer from-version', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
 completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
@@ -528,6 +531,7 @@ for token in [
     'docs/harness/ORG_ROLLOUT.md',
     'docs/harness/rubrics/backend.md',
     'optional_project_gates: true',
+    'upgrade_readiness_gate: scripts/check-harness-upgrade.py',
     'project_gates:',
     'agent_orchestration:',
     'orchestration:',
@@ -539,6 +543,7 @@ for token in [
     'powershell_structure_verification: true',
     'project_gate_runner: python_cross_platform',
     'python_verifier: scripts/verify-harness-structure.py',
+    'upgrade_checker: scripts/check-harness-upgrade.py',
     'required_tools: python3 git',
     'posix_required_tools: bash make',
     'posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
@@ -1079,7 +1084,7 @@ upgrade_text = (root/'docs/harness/UPGRADE.md').read_text(encoding='utf-8')
 check(f'## {version_text}' in changelog_text, f'CHANGELOG missing current version entry: {version_text}')
 for required in ['breaking change', 'major', 'minor', 'patch', 'make integrity']:
     check(required in changelog_text, f'CHANGELOG missing version policy token: {required}')
-for required in ['VERSION', 'harness_version', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan']:
+for required in ['VERSION', 'harness_version', 'make harness-upgrade', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan']:
     check(required in upgrade_text, f'UPGRADE missing downstream upgrade token: {required}')
 readme_text_for_version = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for required in ['CHANGELOG.md', 'UPGRADE.md', 'VERSION']:

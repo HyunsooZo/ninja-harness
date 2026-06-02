@@ -117,7 +117,9 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
     ├── check-completed-plan-quality.ps1
     ├── set-codex-agent-model.sh
     ├── set-codex-agent-model.py
-    └── set-codex-agent-model.ps1
+    ├── set-codex-agent-model.ps1
+    ├── check-harness-upgrade.py
+    └── check-harness-upgrade.ps1
 ```
 
 마이그레이션/적용 이력 문서는 루트가 아니라 `docs/harness/history/`에 둡니다.
@@ -139,6 +141,7 @@ PowerShell 환경에서는 아래 진입점을 사용할 수 있습니다.
 ```powershell
 pwsh -File scripts/doctor.ps1
 pwsh -File scripts/sync-skills.ps1
+pwsh -File scripts/check-harness-upgrade.ps1
 ```
 
 ### 2. 전체 구조 검증
@@ -215,7 +218,8 @@ make help
 | `make eval` | completed plan 기반 eval metrics를 수집합니다. |
 | `make check-plans` | completed plan 품질을 점검합니다. |
 | `make set-model MODEL=<model>` | Codex agent model 값을 일괄 변경합니다. |
-| `make clean` | OS 메타 파일을 제거합니다. |
+| `make harness-upgrade` | 하네스 버전과 업그레이드 메타데이터를 점검합니다. |
+| `make clean` | 로컬 생성 메타데이터와 런타임 캐시를 제거합니다. |
 
 ---
 

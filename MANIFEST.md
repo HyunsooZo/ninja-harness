@@ -88,6 +88,7 @@ workflow:
   non_trivial_requires_active_plan: true
   optional_project_gates: true
   project_readiness_gate: scripts/check-profile-readiness.py
+  upgrade_readiness_gate: scripts/check-harness-upgrade.py
   final_integrity_target: make integrity
   gate_self_test: scripts/self-test-harness-gates.sh
   orchestration_default_mode: SINGLE_AGENT
@@ -230,12 +231,13 @@ runtime:
   unsupported_windows_native: false
   required_tools: python3 git
   posix_required_tools: bash make
-  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1
+  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1 scripts/check-harness-upgrade.ps1
   powershell_required_tool: pwsh_or_windows_powershell
   powershell_structure_verification: true
   project_gate_runner: python_cross_platform
   python_verifier: scripts/verify-harness-structure.py
   evidence_gate_hook: scripts/check-evidence-gate-hook.py
+  upgrade_checker: scripts/check-harness-upgrade.py
   claude_pretooluse_hook: true
   posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd
   toml_parser: tomllib_or_tomli

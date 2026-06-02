@@ -52,7 +52,9 @@ $RequiredFiles = @(
   "scripts/set-codex-agent-model.ps1",
   "scripts/check-evidence-gate-hook.sh",
   "scripts/check-evidence-gate-hook.py",
-  "scripts/check-evidence-gate-hook.ps1"
+  "scripts/check-evidence-gate-hook.ps1",
+  "scripts/check-harness-upgrade.py",
+  "scripts/check-harness-upgrade.ps1"
 )
 
 foreach ($Path in $RequiredFiles) {

@@ -135,6 +135,7 @@ make doctor
 ```powershell
 pwsh -File scripts/doctor.ps1
 pwsh -File scripts/sync-skills.ps1
+pwsh -File scripts/check-harness-upgrade.ps1
 
 $env:HARNESS_VERIFY_MODE = "template"
 pwsh -File scripts/verify-harness-structure.ps1
@@ -252,6 +253,7 @@ make check-sync
 make eval
 make check-plans
 make set-model MODEL=<model>
+make harness-upgrade
 make clean
 ```
 

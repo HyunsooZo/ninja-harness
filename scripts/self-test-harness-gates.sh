@@ -344,6 +344,12 @@ grep -q '^fail_markers=0$' "$output_file" || fail "eval should not count narrati
 grep -q $'docs\t2/2\t100.0%' "$output_file" || fail "eval should count PASS verdict and backtick DONE status as successful docs tasks"
 pass "eval fixture metrics verified"
 
+expect_pass "harness upgrade checker accepts current metadata" \
+  python3 scripts/check-harness-upgrade.py
+
+expect_fail "harness upgrade checker rejects newer from-version" \
+  python3 scripts/check-harness-upgrade.py --from-version 999.0.0
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 
@@ -501,7 +507,7 @@ expect_fail "runtime rejects missing OS support manifest" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing PowerShell entrypoint manifest" \
-  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1" \
+  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1 scripts/sync-skills.ps1 scripts/check-profile-readiness.ps1 scripts/collect-eval-metrics.ps1 scripts/set-codex-agent-model.ps1 scripts/check-evidence-gate-hook.ps1 scripts/check-harness-upgrade.ps1" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing Python verifier manifest" \
