@@ -89,6 +89,7 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 │       ├── profiles/
 │       ├── examples/
 │       ├── evals/
+│       ├── history/
 │       └── plans/
 └── scripts/
     ├── verify-harness-structure.sh
@@ -114,6 +115,8 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
     ├── set-codex-agent-model.py
     └── set-codex-agent-model.ps1
 ```
+
+마이그레이션/적용 이력 문서는 루트가 아니라 `docs/harness/history/`에 둡니다.
 
 ---
 

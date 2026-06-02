@@ -30,6 +30,7 @@
 | `QUICKSTART_5_MIN.md` | 온보딩 | 새 사용자가 5분 안에 읽을 진입 절차 |
 | `12_FIELD_VALIDATION.md` | 실전 검증 | 구조 검증과 실제 품질 검증의 차이, eval 운영 기준 |
 | `profiles/` | 프로젝트 프로파일 | 행위자/API prefix/토큰/패키지 등 프로젝트별 값 |
+| `history/` | 하네스 이력 | migration/adaptation notes 같은 이전 버전 이력 |
 
 ## 권장 흐름
 
@@ -53,6 +54,7 @@
 - `13_AGENT_ORCHESTRATION.md`는 레이어별 에이전트가 항상 자동 협업한다는 오해를 막고, 단일/순차/병렬 위임 기준을 정의한다.
 - `14_SPEC_REQUIREMENTS.md`는 실행 전 요구사항/EARS/옵션/story slice를 정의한다.
 - 핵심 문서는 프로젝트별 값을 직접 담지 않는다. 그런 값은 프로필/컨텍스트로 이동한다.
+- migration/adaptation 이력은 루트가 아니라 `docs/harness/history/`에 둔다.
 
 ## 라우팅 요약
 

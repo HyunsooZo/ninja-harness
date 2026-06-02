@@ -96,8 +96,13 @@ check(not missing_required, f'missing required paths: {missing_required}')
 retired_docs = [
     root/'docs/harness/06_PROJECT_BASELINE.md',
     root/'docs/harness/12_CONTEXT_LOADING_RULE.md',
+    root/'ADAPTATION_NOTES.md',
+    root/'MIGRATION_NOTES_V3.md',
+    root/'MIGRATION_NOTES_V3_5.md',
 ]
 check(not any(p.exists() for p in retired_docs), f'retired duplicate docs must not exist: {[str(p) for p in retired_docs if p.exists()]}')
+for history_doc in ['ADAPTATION_NOTES.md', 'MIGRATION_NOTES_V3.md', 'MIGRATION_NOTES_V3_5.md']:
+    check((root/'docs/harness/history'/history_doc).exists(), f'history doc must live under docs/harness/history: {history_doc}')
 
 
 # Makefile should provide one stable local/CI entry point for common harness tasks.
