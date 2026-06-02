@@ -565,6 +565,15 @@ expect_fail "harness upgrade checker rejects missing downstream managed file" \
     --require-downstream-audit \
     --require-clean-downstream
 
+printf 'stale downstream file\n' > "$upgrade_downstream/scripts/deleted-upstream-tool.py"
+printf 'scripts/deleted-upstream-tool.py\n' > "$tmp_dir/changed-deleted-managed-paths.txt"
+expect_fail "harness upgrade checker rejects deleted upstream managed file left downstream" \
+  python3 scripts/check-harness-upgrade.py \
+    --downstream-root "$upgrade_downstream" \
+    --changed-paths-file "$tmp_dir/changed-deleted-managed-paths.txt" \
+    --require-downstream-audit \
+    --require-clean-downstream
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 

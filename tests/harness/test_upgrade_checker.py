@@ -3,6 +3,7 @@ import importlib.util
 import sys
 import tempfile
 import unittest
+import subprocess
 
 
 def load_upgrade_module():
@@ -103,6 +104,44 @@ class UpgradeCheckerTest(unittest.TestCase):
             errors,
             ['downstream manual merge required for changed harness paths: scripts/new-upstream-tool.py (missing downstream file)'],
         )
+
+    def test_clean_downstream_audit_detects_deleted_upstream_managed_file(self) -> None:
+        changed_paths = Path(self.tmp.name) / 'changed-paths.txt'
+        changed_paths.write_text('scripts/old-upstream-tool.py\n', encoding='utf-8')
+        self.write(self.downstream, 'scripts/old-upstream-tool.py', 'stale downstream file\n')
+        errors = self.mod.run_checks(
+            self.root,
+            downstream_root=self.downstream,
+            changed_paths_file=changed_paths,
+            require_downstream_audit=True,
+            require_clean_downstream=True,
+        )
+        self.assertEqual(
+            errors,
+            ['downstream manual merge required for changed harness paths: scripts/old-upstream-tool.py (deleted upstream file remains downstream)'],
+        )
+
+    def test_git_changed_paths_include_deleted_managed_file(self) -> None:
+        repo = Path(self.tmp.name) / 'git-template'
+        repo.mkdir()
+        self.write(repo, 'scripts/old-upstream-tool.py', 'old upstream file\n')
+        subprocess.run(['git', 'init', '--quiet'], cwd=repo, check=True)
+        subprocess.run(['git', 'add', 'scripts/old-upstream-tool.py'], cwd=repo, check=True)
+        subprocess.run(
+            ['git', '-c', 'user.name=Test User', '-c', 'user.email=test@example.com', 'commit', '--quiet', '-m', 'initial'],
+            cwd=repo,
+            check=True,
+        )
+        (repo / 'scripts/old-upstream-tool.py').unlink()
+        subprocess.run(['git', 'add', '-u'], cwd=repo, check=True)
+        subprocess.run(
+            ['git', '-c', 'user.name=Test User', '-c', 'user.email=test@example.com', 'commit', '--quiet', '-m', 'delete old tool'],
+            cwd=repo,
+            check=True,
+        )
+        paths, error = self.mod.path_list_from_git(repo, 'HEAD~1')
+        self.assertEqual(error, '')
+        self.assertIn('scripts/old-upstream-tool.py', paths)
 
 
 if __name__ == '__main__':

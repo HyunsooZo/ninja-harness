@@ -113,7 +113,7 @@ def path_list_from_git(root: Path, from_ref: str) -> tuple[list[str], str]:
     import subprocess
 
     result = subprocess.run(
-        ['git', 'diff', '--name-only', '--diff-filter=ACMRT', f'{from_ref}..HEAD'],
+        ['git', 'diff', '--name-only', '--diff-filter=ACDMRT', f'{from_ref}..HEAD'],
         cwd=root,
         text=True,
         stdout=subprocess.PIPE,
@@ -153,7 +153,10 @@ def downstream_audit_errors(
             continue
         template_path = root / rel_path
         downstream_path = downstream_root / rel_path
-        if template_path.is_file():
+        if not template_path.exists():
+            if downstream_path.exists():
+                manual_review.append(f'{rel_path} (deleted upstream file remains downstream)')
+        elif template_path.is_file():
             if not downstream_path.exists():
                 manual_review.append(f'{rel_path} (missing downstream file)')
             elif not downstream_path.is_file():
