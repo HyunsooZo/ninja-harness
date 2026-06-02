@@ -98,7 +98,7 @@ def has_red_evidence(path: Path) -> bool:
     if has_failure_check and has_failure_reason:
         return True
 
-    return bool(re.search(r'(?i)\bexpect_fail\b|\bFAIL\b|실패|재현', red))
+    return False
 
 
 def scoped_patterns(scope_text: str) -> set[str]:
@@ -150,6 +150,14 @@ def evidence_ready_for_target(target: str) -> bool:
 def main() -> int:
     mode = os.environ.get('HARNESS_EVIDENCE_HOOK_MODE', 'strict').strip().lower()
     if mode in {'off', 'disabled', '0', 'false'}:
+        reason = os.environ.get('HARNESS_EVIDENCE_HOOK_BYPASS_REASON', '').strip()
+        if not reason:
+            fail(
+                '[evidence-gate] blocked bypass without audit reason. '
+                'Set HARNESS_EVIDENCE_HOOK_BYPASS_REASON with the approved emergency reason before using '
+                'HARNESS_EVIDENCE_HOOK_MODE=off.'
+            )
+        print(f'[evidence-gate] bypassed with approved reason: {reason}', file=sys.stderr)
         return 0
 
     try:
@@ -177,7 +185,8 @@ def main() -> int:
         'then record RED Evidence or a documented RED exception and include the target file or glob scope '
         'inside an explicit Editable Scope/Scope section '
         'before editing non-plan files. '
-        'Set HARNESS_EVIDENCE_HOOK_MODE=off only for an approved emergency bypass.'
+        'Set HARNESS_EVIDENCE_HOOK_MODE=off only with HARNESS_EVIDENCE_HOOK_BYPASS_REASON for an approved '
+        'emergency bypass.'
     )
     if mode == 'warn':
         print(message, file=sys.stderr)

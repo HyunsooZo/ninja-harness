@@ -1,0 +1,33 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -Command \"& { & (Join-Path $env:CLAUDE_PROJECT_DIR 'scripts/check-evidence-gate-hook.ps1') }\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Write(.env*)",
+      "Edit(.env*)",
+      "Write(**/*.pem)",
+      "Edit(**/*.pem)",
+      "Write(**/*secret*)",
+      "Edit(**/*secret*)"
+    ],
+    "ask": [
+      "Edit(package.json)",
+      "Edit(build.gradle)",
+      "Edit(settings.gradle)",
+      "Edit(docker-compose*.yml)",
+      "Bash(git commit*)",
+      "Bash(git push*)"
+    ]
+  }
+}

@@ -78,6 +78,7 @@ required = [
     '.claude/skills',
     '.claude/agents',
     '.claude/commands',
+    '.claude/settings.windows.json',
     'scripts/sync-skills.sh',
     'scripts/sync-skills.py',
     'scripts/sync-skills.ps1',
@@ -152,7 +153,7 @@ for token in ['integrity: doctor verify self-test-gates unit-tests check-plans c
 clean_match = re.search(r'^clean:\n(?P<body>.*?)(?=^[A-Za-z0-9_.-]+:|\Z)', make_text, re.M | re.S)
 check(clean_match, 'Makefile missing clean target body')
 clean_body = clean_match.group('body')
-for token in ['find . -name ".DS_Store" -delete', 'find . -name "._*" -delete', 'find . -type d -name "__MACOSX" -prune -exec rm -rf {} +', 'find . -name "__tmp-*.sh" -delete']:
+for token in ['find . -name ".DS_Store" -delete', 'find . -name "._*" -delete', 'find . -type d -name "__MACOSX" -prune -exec rm -rf {} +', 'find . -name "__tmp-*.sh" -delete', 'find . -type d -name "__pycache__" -prune -exec rm -rf {} +', 'find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +', 'find . -name "*.pyc" -delete']:
     check(token in clean_body, f'Makefile clean target missing cleanup token: {token}')
 for token in ['command -v bash','command -v python3','HARNESS_POSIX_UTILITIES','POSIX utility is required','find_spec("tomllib")','find_spec("tomli")','Python TOML parser','supported OS','unsupported OS']:
     check(token in make_text, f'Makefile doctor missing runtime readiness token: {token}')
@@ -443,6 +444,9 @@ for token in [
     'evidence hook settings command preserves block exit code',
     'evidence hook rejects generic Files section as scope',
     'evidence hook rejects risk-left-only RED evidence',
+    'evidence hook rejects narrative-only RED evidence',
+    'evidence hook bypass mode requires audit reason',
+    'evidence hook bypass mode accepts audit reason',
     'harness upgrade checker accepts changelog delta from previous version',
     'harness upgrade checker rejects ownership placeholders when required',
 ]:
@@ -482,12 +486,27 @@ hook_commands = [
 check(any('$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh' in command for command in hook_commands), (
     '.claude/settings.json PreToolUse hook must call $CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh'
 ))
+windows_settings_path = root/'.claude/settings.windows.json'
+windows_settings = json.loads(windows_settings_path.read_text(encoding='utf-8'))
+windows_pretool_hooks = windows_settings.get('hooks', {}).get('PreToolUse', [])
+check(isinstance(windows_pretool_hooks, list) and windows_pretool_hooks, '.claude/settings.windows.json missing PreToolUse evidence hook')
+windows_hook_commands = [
+    hook.get('command', '')
+    for entry in windows_pretool_hooks
+    if isinstance(entry, dict)
+    for hook in entry.get('hooks', [])
+    if isinstance(hook, dict) and hook.get('type') == 'command'
+]
+check(any('pwsh -NoProfile -Command' in command and 'scripts/check-evidence-gate-hook.ps1' in command for command in windows_hook_commands), (
+    '.claude/settings.windows.json PreToolUse hook must call scripts/check-evidence-gate-hook.ps1 through pwsh'
+))
 evidence_hook_text = (root/'scripts/check-evidence-gate-hook.py').read_text(encoding='utf-8')
-for token in ['HARNESS_EVIDENCE_HOOK_MODE', 'Edit', 'MultiEdit', 'Write', 'NotebookEdit', 'ACTIVE_PLAN_PREFIX', 'RED Evidence', 'RED 증거', 'SCOPE_HEADINGS', 'has_exception_reason', 'has_alternative_verification', 'explicit_scope_patterns', 'scoped_patterns', 'plan_allows_target', 'evidence_ready_for_target', 'sys.exit(2)']:
+for token in ['HARNESS_EVIDENCE_HOOK_MODE', 'HARNESS_EVIDENCE_HOOK_BYPASS_REASON', 'Edit', 'MultiEdit', 'Write', 'NotebookEdit', 'ACTIVE_PLAN_PREFIX', 'RED Evidence', 'RED 증거', 'SCOPE_HEADINGS', 'has_exception_reason', 'has_alternative_verification', 'explicit_scope_patterns', 'scoped_patterns', 'plan_allows_target', 'evidence_ready_for_target', 'sys.exit(2)']:
     check(token in evidence_hook_text, f'evidence gate hook missing token: {token}')
 check("'Files'," not in evidence_hook_text, 'evidence gate hook must not treat generic Files heading as editable scope')
 check('Plan State:' not in evidence_hook_text, 'evidence gate hook must not accept lifecycle Plan State as RED evidence')
-for token in ['PreToolUse', '$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.ps1', 'Editable Scope', '대상 파일 또는 glob 범위', 'Files', 'Risk left', 'completed plan 직접 편집', 'HARNESS_EVIDENCE_HOOK_MODE=off', 'Bash 도구로 파일을 수정하는 우회']:
+check('return bool(re.search' not in evidence_hook_text, 'evidence gate hook must not accept narrative regex fallback as RED evidence')
+for token in ['PreToolUse', '$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.ps1', '.claude/settings.windows.json', 'Editable Scope', '대상 파일 또는 glob 범위', 'Files', 'Risk left', 'completed plan 직접 편집', 'HARNESS_EVIDENCE_HOOK_MODE=off', 'HARNESS_EVIDENCE_HOOK_BYPASS_REASON', 'Bash 도구로 파일을 수정하는 우회']:
     check(token in evidence_gate_text, f'evidence gate doc missing hook token: {token}')
 
 # No root generated 전체 스캔.

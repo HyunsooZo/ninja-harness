@@ -345,6 +345,22 @@ expect_fail "evidence hook rejects risk-left-only RED evidence" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 
+cat > "$evidence_hook_root/docs/harness/plans/active/narrative-only.md" <<'EOF'
+# Narrative only
+
+## RED Evidence
+
+실패를 재현했다.
+
+## Scope
+
+- `src/**`
+EOF
+
+expect_fail "evidence hook rejects narrative-only RED evidence" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
 cat > "$evidence_hook_root/docs/harness/plans/active/hook-test.md" <<'EOF'
 # Hook test
 
@@ -366,6 +382,17 @@ expect_pass "evidence hook accepts documented RED exception" \
 expect_pass "evidence hook wrapper works outside repo cwd" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       bash -c 'cd /tmp && "$2/scripts/check-evidence-gate-hook.sh" < "$1"' _ "$tmp_dir/hook-src-edit.json" "$PWD"
+
+expect_fail "evidence hook bypass mode requires audit reason" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      HARNESS_EVIDENCE_HOOK_MODE=off \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
+expect_pass "evidence hook bypass mode accepts audit reason" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      HARNESS_EVIDENCE_HOOK_MODE=off \
+      HARNESS_EVIDENCE_HOOK_BYPASS_REASON="approved emergency self-test" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 
 eval_fixture_dir="$tmp_dir/eval-completed-plans"
 mkdir -p "$eval_fixture_dir"

@@ -1,5 +1,7 @@
 from pathlib import Path
 import importlib.util
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -15,6 +17,9 @@ def load_hook_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+HOOK_PATH = Path(__file__).resolve().parents[2] / 'scripts/check-evidence-gate-hook.py'
 
 
 class EvidenceHookScopeTest(unittest.TestCase):
@@ -63,6 +68,44 @@ class EvidenceHookScopeTest(unittest.TestCase):
     def test_risk_left_only_is_not_red_evidence(self) -> None:
         self.write_plan('# Plan\n\n## RED Evidence\n\n- Risk left: fixture\n\n## Scope\n\n- `src/**`\n')
         self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
+
+    def test_narrative_failure_word_only_is_not_red_evidence(self) -> None:
+        self.write_plan('# Plan\n\n## RED Evidence\n\n실패를 재현했다.\n\n## Scope\n\n- `src/**`\n')
+        self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
+
+    def test_bypass_mode_requires_audit_reason(self) -> None:
+        env = os.environ.copy()
+        env['CLAUDE_PROJECT_DIR'] = str(Path(self.tmp.name))
+        env['HARNESS_EVIDENCE_HOOK_MODE'] = 'off'
+        env.pop('HARNESS_EVIDENCE_HOOK_BYPASS_REASON', None)
+        result = subprocess.run(
+            [sys.executable, str(HOOK_PATH)],
+            input='{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}',
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('bypass without audit reason', result.stderr)
+
+    def test_bypass_mode_accepts_audit_reason(self) -> None:
+        env = os.environ.copy()
+        env['CLAUDE_PROJECT_DIR'] = str(Path(self.tmp.name))
+        env['HARNESS_EVIDENCE_HOOK_MODE'] = 'off'
+        env['HARNESS_EVIDENCE_HOOK_BYPASS_REASON'] = 'approved emergency fixture'
+        result = subprocess.run(
+            [sys.executable, str(HOOK_PATH)],
+            input='{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}',
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn('approved emergency fixture', result.stderr)
 
 
 if __name__ == '__main__':
