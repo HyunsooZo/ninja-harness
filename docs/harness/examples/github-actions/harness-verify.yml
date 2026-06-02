@@ -39,3 +39,7 @@ jobs:
           pwsh -File scripts/verify-harness-structure.ps1
           $env:HARNESS_VERIFY_MODE = "project"
           pwsh -File scripts/verify-harness-structure.ps1
+          if (Test-Path "scripts/ci/windows-smoke.ps1") {
+            $env:HARNESS_BACKEND_TEST_SCRIPT = "scripts/ci/windows-smoke.ps1"
+            pwsh -File scripts/verify-project-gates.ps1
+          }

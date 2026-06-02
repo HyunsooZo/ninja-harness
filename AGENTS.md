@@ -86,7 +86,7 @@
 
 대표 명령은 `docs/harness/context/BASELINE.md`와 `docs/harness/05_TESTING.md`를 따른다. 경로가 placeholder이면 실제 repo 경로를 먼저 확인한다.
 
-구조 검증은 기본적으로 하네스 무결성을 확인한다. 실제 프로젝트 값이 모두 채워졌는지 확인하려면 `make project-ready` 또는 `HARNESS_REQUIRE_FILLED_PROFILE=1 HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh`를 실행한다. 실제 프로젝트 build/test/lint까지 확인하려면 `HARNESS_RUN_PROJECT_CHECKS=1`과 `HARNESS_*_SCRIPT` 환경변수를 설정해 `scripts/verify-project-gates.sh`를 함께 실행한다. 조직 표준에서는 repository script gate를 우선하고, legacy `HARNESS_*_CMD`는 `HARNESS_ALLOW_LEGACY_BASH_LC=1`로 명시 허용된 경우에만 사용한다.
+구조 검증은 기본적으로 하네스 무결성을 확인한다. 실제 프로젝트 값이 모두 채워졌는지 확인하려면 `make project-ready` 또는 `HARNESS_REQUIRE_FILLED_PROFILE=1 HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh`를 실행한다. 실제 프로젝트 build/test/lint까지 확인하려면 `HARNESS_RUN_PROJECT_CHECKS=1`과 `HARNESS_*_SCRIPT` 환경변수를 설정해 `scripts/verify-project-gates.sh`, `python3 scripts/verify-project-gates.py`, 또는 PowerShell의 `pwsh -File scripts/verify-project-gates.ps1`를 실행한다. 조직 표준에서는 repository script gate를 우선하고, legacy `HARNESS_*_CMD`는 `HARNESS_ALLOW_LEGACY_BASH_LC=1`로 명시 허용된 경우에만 사용한다.
 
 ## 실전 검증
 

@@ -2,7 +2,7 @@
 
 ## Project gate 실행 정책
 
-`HARNESS_*_SCRIPT`가 기본이다. 지정된 script는 repository 내부의 허용 경로에 있어야 하고 실행 가능해야 한다.
+`HARNESS_*_SCRIPT`가 기본이다. 지정된 script는 repository 내부의 허용 경로에 있어야 한다.
 허용 경로 안의 script 파일과 경로 구성 요소는 symlink이면 안 된다. Gate script는 실제 repository 파일이어야 하며, symlink로 repository 밖 스크립트를 가리키는 구성은 거부한다.
 
 허용 기본 경로:
@@ -12,6 +12,13 @@
 - `ci/**`
 
 `HARNESS_*_CMD`는 legacy escape hatch다. 조직 표준에서는 아래 두 값을 모두 설정해야만 동작한다.
+
+실행 정책:
+
+- `.sh` gate는 Bash로 실행하고 실행 권한이 필요하다.
+- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행한다.
+- `.py` gate는 Python으로 실행한다.
+- 그 외 파일은 직접 실행 가능한 파일이어야 한다.
 
 ```bash
 HARNESS_ACK_TRUSTED_PROJECT_CMDS=1

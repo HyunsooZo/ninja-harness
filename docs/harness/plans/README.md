@@ -57,7 +57,7 @@ make check-plans
 격리된 fixture나 외부 plan 디렉터리를 검사할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다.
 
 ```bash
-HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/check-completed-plan-quality.sh
+HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans python3 scripts/check-completed-plan-quality.py
 ```
 
 ## Plan State

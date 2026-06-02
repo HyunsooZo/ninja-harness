@@ -16,12 +16,12 @@
 
 | 영역 | 권장 환경변수 | 예시 |
 |---|---|---|
-| 백엔드 테스트 | `HARNESS_BACKEND_TEST_SCRIPT` | `scripts/ci/backend-test.sh` |
-| 주요 프론트엔드 테스트 | `HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT` | `scripts/ci/primary-frontend-test.sh` |
-| 보조 앱 테스트 | `HARNESS_SECONDARY_APP_TEST_SCRIPT` | `scripts/ci/secondary-app-test.sh` |
-| 통합 테스트 | `HARNESS_INTEGRATION_TEST_SCRIPT` | `scripts/ci/integration-test.sh` |
-| 보안 스캔 | `HARNESS_SECURITY_SCAN_SCRIPT` | `scripts/ci/security-scan.sh` |
-| 접근성 검사 | `HARNESS_A11Y_CHECK_SCRIPT` | `scripts/ci/a11y-check.sh` |
+| 백엔드 테스트 | `HARNESS_BACKEND_TEST_SCRIPT` | `scripts/ci/backend-test.sh`, `scripts/ci/backend-test.ps1` |
+| 주요 프론트엔드 테스트 | `HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT` | `scripts/ci/primary-frontend-test.sh`, `scripts/ci/primary-frontend-test.ps1` |
+| 보조 앱 테스트 | `HARNESS_SECONDARY_APP_TEST_SCRIPT` | `scripts/ci/secondary-app-test.sh`, `scripts/ci/secondary-app-test.ps1` |
+| 통합 테스트 | `HARNESS_INTEGRATION_TEST_SCRIPT` | `scripts/ci/integration-test.sh`, `scripts/ci/integration-test.ps1` |
+| 보안 스캔 | `HARNESS_SECURITY_SCAN_SCRIPT` | `scripts/ci/security-scan.sh`, `scripts/ci/security-scan.ps1` |
+| 접근성 검사 | `HARNESS_A11Y_CHECK_SCRIPT` | `scripts/ci/a11y-check.sh`, `scripts/ci/a11y-check.ps1` |
 
 Legacy `HARNESS_*_CMD`는 `bash -lc`로 실행되는 escape hatch다. 조직 표준에서는 예외 승인 없이는 쓰지 않는다.
 
@@ -34,6 +34,8 @@ HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
 HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' \
 bash scripts/verify-harness-structure.sh
 ```
+
+Windows PowerShell에서는 같은 계약을 `pwsh -File scripts/verify-project-gates.ps1`로 실행할 수 있다. `.ps1`/`.py` gate는 네이티브 실행이고, `.sh` gate는 Bash가 있는 환경에서만 실행된다.
 
 `HARNESS_ORG_STANDARD=1`은 다음을 의미한다.
 
@@ -84,6 +86,9 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - 기본: `HARNESS_*_SCRIPT`로 repository script를 실행한다.
 - 허용 경로: `scripts/ci/**`, `.github/scripts/**`, `ci/**`.
 - 허용 경로 안의 script 파일과 경로 구성 요소는 symlink이면 안 된다.
+- `.sh` gate는 Bash와 실행 권한이 필요하다.
+- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행한다.
+- `.py` gate는 Python으로 실행한다.
 - Legacy: `HARNESS_*_CMD`는 `bash -lc`로 실행된다.
 - 조직 표준에서 legacy command를 쓰려면 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`과 `HARNESS_ALLOW_LEGACY_BASH_LC=1`을 모두 설정한다.
 - 외부 입력, PR 본문, 이슈 내용, 사용자 입력을 그대로 gate 변수에 연결하지 않는다.

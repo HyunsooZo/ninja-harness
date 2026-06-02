@@ -344,3 +344,10 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - `doctor`, `project-gates-required`, `check-sync` target을 추가했다.
 - Makefile은 조직 표준에서 script gate를 우선하고 legacy `HARNESS_*_CMD` 문자열은 primary path로 안내하지 않는다.
 - `verify-harness-structure.sh`가 Makefile target, organization gate 변수, integration script gate 지원 여부를 검증한다.
+
+## v3.8.7 보정
+
+- Project gate runner source of truth를 `scripts/verify-project-gates.py`와 `scripts/harness_lib/project_gates.py`로 수렴했다.
+- Bash wrapper는 기존 Makefile 호환 진입점으로 유지하고 PowerShell wrapper `scripts/verify-project-gates.ps1`을 추가했다.
+- `.ps1`/`.py` gate는 Windows native PowerShell에서 실행할 수 있고, `.sh` gate는 Bash가 있는 환경에서 실행한다.
+- Completed plan 품질 검사는 `scripts/check-completed-plan-quality.py`와 `scripts/harness_lib/completed_plans.py`로 수렴하고 PowerShell wrapper를 추가했다.

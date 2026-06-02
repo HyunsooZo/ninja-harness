@@ -33,7 +33,7 @@ make doctor
 make verify
 ```
 
-Windows PowerShell에서는 template/project 구조 검증 진입점을 사용할 수 있다. 조직 표준 project gate 실행은 allowlist된 shell script를 `bash`로 실행하므로 Git Bash/MSYS2/WSL 또는 Linux runner가 필요하다.
+Windows PowerShell에서는 template/project 구조 검증과 `.ps1`/`.py` project gate 진입점을 사용할 수 있다. `.sh` gate를 선택한 경우에만 Git Bash/MSYS2/WSL 또는 Linux runner의 `bash`가 필요하다.
 
 ```powershell
 pwsh -File scripts/doctor.ps1
@@ -41,6 +41,9 @@ $env:HARNESS_VERIFY_MODE = "template"
 pwsh -File scripts/verify-harness-structure.ps1
 $env:HARNESS_VERIFY_MODE = "project"
 pwsh -File scripts/verify-harness-structure.ps1
+
+$env:HARNESS_BACKEND_TEST_SCRIPT = "scripts/ci/backend-test.ps1"
+pwsh -File scripts/verify-project-gates.ps1
 ```
 
 스크립트를 직접 실행해도 된다.
@@ -86,6 +89,8 @@ bash scripts/verify-harness-structure.sh
 ```
 
 명령이 비어 있으면 해당 게이트는 `SKIP` 처리한다. 조직 표준으로 쓰려면 최소 하나 이상의 실제 프로젝트 게이트를 연결한다. 이를 강제하려면 `HARNESS_REQUIRE_PROJECT_CHECKS=1`을 함께 지정한다.
+
+PowerShell에서는 같은 `HARNESS_*_SCRIPT` 계약을 사용한다. `scripts/ci/*.ps1` 또는 `scripts/ci/*.py`는 PowerShell/Python으로 실행되고, `scripts/ci/*.sh`는 Bash가 있을 때만 실행된다.
 
 ## 5. 작업은 active plan으로 시작한다
 

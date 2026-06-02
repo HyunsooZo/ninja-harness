@@ -126,7 +126,7 @@ integrity: doctor verify self-test-gates check-plans check-active-plans
 
 # Organization-standard verification intentionally requires script gates, not
 # legacy HARNESS_*_CMD strings.  The gate scripts must live under the allowlisted
-# repository paths enforced by scripts/verify-project-gates.sh.
+# repository paths enforced by scripts/verify-project-gates.py.
 verify-org:
 	@found=0; \
 	for var in $(ORG_GATE_SCRIPT_VARS); do \
