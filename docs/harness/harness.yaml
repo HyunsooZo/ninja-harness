@@ -1,4 +1,4 @@
-harness_version: 0.1.0
+harness_version: 0.2.0
 schema_version: 1
 
 project:

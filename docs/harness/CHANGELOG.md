@@ -1,5 +1,13 @@
 # 하네스 변경 이력
 
+## 0.2.0
+
+- evidence hook command를 `CLAUDE_PROJECT_DIR` 기준 wrapper 호출로 고쳐 repo 외부 cwd와 exit code 보존을 강화했다.
+- evidence hook의 editable scope 판정을 `Editable Scope`/`Scope` 계열로 제한하고, generic `Files` heading과 `Risk left` 단독 RED evidence를 거부한다.
+- `make harness-upgrade`와 `scripts/check-harness-upgrade.py` / `.ps1`를 upgrade readiness gate로 편입했다.
+- Python runtime cache clean/ignore, UTF-8 stdio, unit tests, active CI dogfood, ownership/security metadata를 보강했다.
+- verifier와 self-test가 새 hook/upgrade invariants를 강제한다. `make integrity` 통과 기준을 유지한다.
+
 ## 0.1.0
 
 - 초기 버전 식별자와 schema version을 도입했다.

@@ -509,6 +509,7 @@ make set-model MODEL=<model-name>
 make doctor
 make verify
 make check-sync
+make harness-upgrade
 make integrity
 make eval
 ```

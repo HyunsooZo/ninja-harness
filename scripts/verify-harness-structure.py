@@ -133,9 +133,9 @@ makefile = root/'Makefile'
 make_text = makefile.read_text(encoding='utf-8')
 check(re.search(r'^SHELL := bash$', make_text, re.M), 'Makefile must use PATH-resolved bash, not a hardcoded /bin/bash path')
 check('SHELL := /bin/bash' not in make_text, 'Makefile must not hardcode /bin/bash')
-for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','self-test-gates','unit-tests','check-active-plans','integrity','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
+for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','self-test-gates','unit-tests','check-active-plans','integrity','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','harness-upgrade','clean']:
     check(re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}')
-for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/self-test-harness-gates.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
+for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','HARNESS_CHECK_UPGRADE','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/self-test-harness-gates.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh','scripts/check-harness-upgrade.py']:
     check(token in make_text, f'Makefile missing command/policy token: {token}')
 help_match = re.search(r'^help:\n(?P<body>.*?)(?=^[A-Za-z0-9_.-]+:|\Z)', make_text, re.M | re.S)
 check(help_match, 'Makefile missing help target body')
@@ -553,7 +553,7 @@ for token in [
     check(token in manifest_text, f'MANIFEST.md missing current manifest token: {token}')
 
 root_readme_text = (root/'README.md').read_text(encoding='utf-8')
-for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make integrity', 'make eval', 'make verify-org']:
+for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make harness-upgrade', 'make integrity', 'make eval', 'make verify-org']:
     check(token in root_readme_text, f'root README release checklist missing token: {token}')
 harness_readme_text = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for doc_name, doc_text in [('README.md', root_readme_text), ('docs/harness/README.md', harness_readme_text)]:
