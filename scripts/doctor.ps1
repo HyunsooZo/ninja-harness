@@ -53,6 +53,7 @@ if (-not $Git) {
 
 $Bash = Find-CommandName @("bash")
 $Make = Find-CommandName @("make")
+$MissingPosixTools = @()
 
 & $Python -c "import importlib.util, sys; parser = 'tomllib' if importlib.util.find_spec('tomllib') else ('tomli' if importlib.util.find_spec('tomli') else ''); print('[OK] Python TOML parser ready: ' + parser if parser else '[FAIL] Python TOML parser is required: use Python 3.11+ or install tomli'); sys.exit(0 if parser else 1)"
 if ($LASTEXITCODE -ne 0) {
@@ -70,13 +71,21 @@ if ($Bash) {
     exit $LASTEXITCODE
   }
 } else {
+  $MissingPosixTools += "bash"
   Write-Host "[WARN] bash not found; Makefile and shell-script targets require Git Bash, MSYS, WSL, or another POSIX-compatible shell"
 }
 
 if ($Make) {
   Write-Host "[OK] make: $Make"
 } else {
+  $MissingPosixTools += "make"
   Write-Host "[WARN] make not found; use PowerShell wrapper scripts or install make for Makefile targets"
 }
 
-Write-Host "[OK] harness PowerShell tooling looks ready"
+Write-Host "[OK] harness PowerShell structure verification tooling looks ready"
+
+if ($MissingPosixTools.Count -gt 0) {
+  Write-Host "[WARN] full Makefile/Bash tooling is incomplete: $($MissingPosixTools -join ', ')"
+} else {
+  Write-Host "[OK] full Makefile/Bash tooling looks ready"
+}
