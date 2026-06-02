@@ -233,9 +233,31 @@ expect_pass "evidence hook allows active plan edit" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-plan-edit.json"
 
+settings_hook_command="$(
+  python3 - <<'PY'
+import json
+from pathlib import Path
+
+settings = json.loads(Path('.claude/settings.json').read_text(encoding='utf-8'))
+print(settings['hooks']['PreToolUse'][0]['hooks'][0]['command'])
+PY
+)"
+
+expect_pass "evidence hook settings command works outside repo cwd" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      bash -c 'cd /tmp && eval "$1" < "$2"' _ "$settings_hook_command" "$tmp_dir/hook-plan-edit.json"
+
 expect_fail "evidence hook blocks edit without RED" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
+if env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+  bash -c 'cd /tmp; eval "$1" < "$2"; code=$?; test "$code" -eq 2' _ "$settings_hook_command" "$tmp_dir/hook-src-edit.json"; then
+  pass "evidence hook settings command preserves block exit code"
+else
+  sed -n '1,80p' "$output_file" >&2
+  fail "evidence hook settings command should preserve exit code 2"
+fi
 
 cat > "$evidence_hook_root/docs/harness/plans/active/stale.md" <<'EOF'
 # Stale plan
