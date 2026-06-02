@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -1290,29 +1291,40 @@ check('reject_symlink_components' in project_gate_text, 'project gate must rejec
 check('script gate path component must not be a symlink' in project_gate_text, 'project gate must explain symlink path component rejection')
 check('bash -lc "$cmd"' in project_gate_text, 'legacy command path should be explicit and auditable')
 
-# Negative policy tests: invalid script gates must return non-zero so CI can enforce policy.
+# Negative policy tests: invalid script gates must be rejected without requiring
+# Bash. Runtime execution checks live in scripts/self-test-harness-gates.sh.
+allowed_project_gate_roots = ('scripts/ci/', '.github/scripts/', 'ci/')
+project_gate_metacharacters = [';', '&', '|', '`', '$(', '${']
+
+def is_valid_project_gate_path(value: str) -> bool:
+    if not value or not value.strip():
+        return False
+    if value.startswith('/') or re.match(r'^[A-Za-z]:[\\/]', value):
+        return False
+    if '..' in value:
+        return False
+    if any(token in value for token in project_gate_metacharacters):
+        return False
+    if not value.startswith(allowed_project_gate_roots):
+        return False
+    candidate = root/value
+    if not candidate.is_file():
+        return False
+    for index, _ in enumerate(candidate.parts, start=1):
+        component = Path(*candidate.parts[:index])
+        if component.is_symlink():
+            return False
+    return os.access(candidate, os.X_OK)
+
 invalid_gate_cases = [
     ('/tmp/nope.sh', 'absolute path'),
+    ('C:/tmp/nope.sh', 'windows absolute path'),
     ('../hack.sh', 'parent traversal'),
     ('foo;bar.sh', 'shell metacharacter'),
     ('scripts/ci/nope.sh', 'missing script'),
 ]
 for bad_value, label in invalid_gate_cases:
-    env = os.environ.copy()
-    env.update({
-        'HARNESS_ORG_STANDARD': '1',
-        'HARNESS_ACK_TRUSTED_PROJECT_CMDS': '1',
-        'HARNESS_BACKEND_TEST_SCRIPT': bad_value,
-    })
-    result = subprocess.run(
-        ['bash', 'scripts/verify-project-gates.sh'],
-        cwd=root,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    check(result.returncode != 0, f'invalid project gate should fail ({label}): {bad_value}')
+    check(not is_valid_project_gate_path(bad_value), f'invalid project gate should fail ({label}): {bad_value}')
 
 ci_text = ci_example_path.read_text(encoding='utf-8')
 check('make integrity' in ci_text, 'CI example must run make integrity before organization gates')
@@ -1366,6 +1378,7 @@ if os.environ.get('HARNESS_REQUIRE_FILLED_PROFILE', '0') == '1':
 print(f'[OK] harness structure verified ({mode})')
 
 if os.environ.get('HARNESS_ORG_STANDARD', '0') == '1':
+    check(shutil.which('bash') is not None, 'bash is required to run project gate scripts in organization mode')
     env = os.environ.copy()
     env['HARNESS_RUN_PROJECT_CHECKS'] = '1'
     env['HARNESS_REQUIRE_PROJECT_CHECKS'] = '1'
@@ -1376,6 +1389,7 @@ if os.environ.get('HARNESS_ORG_STANDARD', '0') == '1':
     check(result.returncode == 0, 'completed plan quality check failed')
     print('[OK] completed plan quality checked')
 elif os.environ.get('HARNESS_RUN_PROJECT_CHECKS', '0') == '1':
+    check(shutil.which('bash') is not None, 'bash is required to run project gate scripts')
     result = subprocess.run(['bash', 'scripts/verify-project-gates.sh'], cwd=root, env=os.environ.copy())
     check(result.returncode == 0, 'project gates failed')
     print('[OK] project gates checked')
