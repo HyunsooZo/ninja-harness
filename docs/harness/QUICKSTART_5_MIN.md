@@ -33,6 +33,16 @@ make doctor
 make verify
 ```
 
+Windows PowerShell에서는 아래 진입점을 사용할 수 있다.
+
+```powershell
+pwsh -File scripts/doctor.ps1
+$env:HARNESS_VERIFY_MODE = "template"
+pwsh -File scripts/verify-harness-structure.ps1
+$env:HARNESS_VERIFY_MODE = "project"
+pwsh -File scripts/verify-harness-structure.ps1
+```
+
 스크립트를 직접 실행해도 된다.
 
 ```bash

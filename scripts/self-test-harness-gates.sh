@@ -385,7 +385,11 @@ expect_fail "runtime manifest rejects missing override env" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing OS support manifest" \
-  with_harness_yaml_without_line "supported_os: macos_linux_wsl_posix_shell" \
+  with_harness_yaml_without_line "supported_os: macos_linux_windows" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "runtime rejects missing PowerShell entrypoint manifest" \
+  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing git required tool" \

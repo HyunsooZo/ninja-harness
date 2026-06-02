@@ -92,6 +92,8 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 │       └── plans/
 └── scripts/
     ├── verify-harness-structure.sh
+    ├── verify-harness-structure.ps1
+    ├── doctor.ps1
     ├── verify-project-gates.sh
     ├── sync-skills.sh
     ├── collect-eval-metrics.sh
@@ -111,6 +113,12 @@ make doctor
 
 필수 파일, shell script, 실행 권한, shell syntax를 확인합니다.
 
+PowerShell 환경에서는 아래 진입점을 사용할 수 있습니다.
+
+```powershell
+pwsh -File scripts/doctor.ps1
+```
+
 ### 2. 전체 구조 검증
 
 ```bash
@@ -118,6 +126,15 @@ make verify
 ```
 
 template mode와 project mode를 모두 검증합니다.
+
+PowerShell 환경에서는 같은 검증을 아래처럼 실행할 수 있습니다.
+
+```powershell
+$env:HARNESS_VERIFY_MODE = "template"
+pwsh -File scripts/verify-harness-structure.ps1
+$env:HARNESS_VERIFY_MODE = "project"
+pwsh -File scripts/verify-harness-structure.ps1
+```
 
 ### 3. 스킬 동기화
 
