@@ -1114,7 +1114,7 @@ print('[OK] source_of_truth entries verified')
 orchestration_doc = root/'docs/harness/13_AGENT_ORCHESTRATION.md'
 check(orchestration_doc.exists(), 'missing docs/harness/13_AGENT_ORCHESTRATION.md')
 orchestration_text = orchestration_doc.read_text(encoding='utf-8')
-for required in ['SINGLE_AGENT', 'SINGLE_AGENT_WITH_REVIEW', 'SEQUENTIAL_LAYERED', 'PARALLEL_REVIEW', '단일 통합자', '레이어별 에이전트는', 'task-orchestrator', 'fan-in', '큰 작업 감지 신호']:
+for required in ['SINGLE_AGENT', 'SINGLE_AGENT_WITH_REVIEW', 'SEQUENTIAL_LAYERED', 'PARALLEL_REVIEW', '단일 통합자', '레이어별 에이전트는', 'task-orchestrator', 'fan-in', '큰 작업 감지 신호', '비용 / 지연 가드', '예상 fanout', '시간/토큰 예산', '축소 기준']:
     check(required in orchestration_text, f'missing orchestration keyword: {required}')
 check('task-orchestrator' in agent_names, 'missing task-orchestrator codex agent')
 check((root/'.claude/agents/task-orchestrator.md').exists(), 'missing task-orchestrator claude agent')
@@ -1124,7 +1124,7 @@ for required_skill in ['orchestration-planning', 'backend-domain', 'backend-api'
 
 plan_template_text = (root/'docs/harness/plans/TEMPLATE.md').read_text(encoding='utf-8')
 check('## 에이전트 오케스트레이션' in plan_template_text, 'plan template must include agent orchestration block')
-for required in ['Orchestration', 'task-orchestrator', '수정 범위 이탈 확인']:
+for required in ['Orchestration', 'task-orchestrator', '수정 범위 이탈 확인', '비용 / 지연 가드', '예상 fanout', '시간/토큰 예산', '축소 기준']:
     check(required in plan_template_text, f'plan template missing orchestration field: {required}')
 
 plan_cmd_text = (root/'.claude/commands/plan.md').read_text(encoding='utf-8')
