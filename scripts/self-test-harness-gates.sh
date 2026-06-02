@@ -196,8 +196,11 @@ make_mutation_fixture() {
   (
     cd "$ROOT"
     git ls-files -z | while IFS= read -r -d '' rel_path; do
+      if [[ ! -e "$rel_path" && ! -L "$rel_path" ]]; then
+        continue
+      fi
       mkdir -p "$fixture/$(dirname "$rel_path")"
-      cp "$rel_path" "$fixture/$rel_path"
+      cp -P "$rel_path" "$fixture/$rel_path"
     done
   )
   (
