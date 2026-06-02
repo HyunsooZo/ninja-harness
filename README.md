@@ -128,7 +128,7 @@ make verify
 
 template mode와 project mode를 모두 검증합니다.
 
-PowerShell 환경에서는 같은 검증을 아래처럼 실행할 수 있습니다.
+PowerShell 환경에서는 template/project 구조 검증을 아래처럼 실행할 수 있습니다. 조직 표준 project gate 실행은 allowlist된 shell script를 `bash`로 실행하므로 Git Bash/MSYS2/WSL 또는 Linux runner가 필요합니다.
 
 ```powershell
 $env:HARNESS_VERIFY_MODE = "template"

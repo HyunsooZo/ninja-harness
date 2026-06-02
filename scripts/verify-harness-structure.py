@@ -191,9 +191,12 @@ required_runtime_refs = {
     'supported_os': 'macos_linux_windows',
     'shell_entrypoints': 'bash_make_powershell',
     'unsupported_windows_native': 'false',
-    'required_tools': 'bash make python3 git',
+    'required_tools': 'python3 git',
+    'posix_required_tools': 'bash make',
     'powershell_entrypoints': 'scripts/doctor.ps1 scripts/verify-harness-structure.ps1',
     'powershell_required_tool': 'pwsh_or_windows_powershell',
+    'powershell_structure_verification': 'true',
+    'project_gate_runner': 'bash_required',
     'python_verifier': 'scripts/verify-harness-structure.py',
     'posix_utilities': 'find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
     'toml_parser': 'tomllib_or_tomli',
@@ -217,6 +220,8 @@ for token in ['Darwin|Linux', 'CYGWIN*|MINGW*|MSYS*', 'prefer WSL for CI parity'
     check(token in make_text, f'Makefile doctor missing OS support token: {token}')
 for tool in runtime_refs['required_tools'].split():
     check(f'command -v {tool}' in make_text, f'Makefile doctor missing required tool check: {tool}')
+for tool in runtime_refs['posix_required_tools'].split():
+    check(f'command -v {tool}' in make_text, f'Makefile doctor missing POSIX tool check: {tool}')
 posix_make_match = re.search(r'^HARNESS_POSIX_UTILITIES \?= (.+)$', make_text, flags=re.M)
 check(posix_make_match, 'Makefile missing HARNESS_POSIX_UTILITIES ?= assignment')
 check(posix_make_match.group(1).strip() == runtime_refs['posix_utilities'], (
@@ -229,7 +234,7 @@ check(runtime_refs['toml_parser'] == 'tomllib_or_tomli', 'runtime TOML parser co
 for token in ['find_spec("tomllib")', 'find_spec("tomli")', 'Python TOML parser']:
     check(token in make_text, f'Makefile doctor missing Python TOML parser check token: {token}')
 readme_text_for_runtime = (root/'docs/harness/README.md').read_text(encoding='utf-8')
-for token in ['macOS, Linux/WSL', 'Git Bash/MSYS/Cygwin/PowerShell', 'Windows native PowerShell', 'scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'cat', 'dirname', 'pwd', 'tomllib', 'tomli', 'Python TOML 파서']:
+for token in ['최소 공통 도구', 'macOS, Linux/WSL', 'Git Bash/MSYS/Cygwin/PowerShell', 'Windows native PowerShell', 'template/project 구조 검증', 'shell project gate 실행', 'scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 'bash', 'python3', 'make', 'git', 'POSIX 유틸리티', 'find', 'cp', 'rm', 'mkdir', 'chmod', 'rmdir', 'sed', 'env', 'uname', 'head', 'cat', 'dirname', 'pwd', 'tomllib', 'tomli', 'Python TOML 파서']:
     check(token in readme_text_for_runtime, f'README runtime section missing token: {token}')
 for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1']:
     ps_text = (root/ps_script).read_text(encoding='utf-8')
@@ -423,8 +428,11 @@ for token in [
     'supported_os: macos_linux_windows',
     'shell_entrypoints: bash_make_powershell',
     'powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1',
+    'powershell_structure_verification: true',
+    'project_gate_runner: bash_required',
     'python_verifier: scripts/verify-harness-structure.py',
-    'required_tools: bash make python3 git',
+    'required_tools: python3 git',
+    'posix_required_tools: bash make',
     'posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd',
     'toml_parser: tomllib_or_tomli',
 ]:

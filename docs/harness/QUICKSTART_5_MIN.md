@@ -33,7 +33,7 @@ make doctor
 make verify
 ```
 
-Windows PowerShell에서는 아래 진입점을 사용할 수 있다.
+Windows PowerShell에서는 template/project 구조 검증 진입점을 사용할 수 있다. 조직 표준 project gate 실행은 allowlist된 shell script를 `bash`로 실행하므로 Git Bash/MSYS2/WSL 또는 Linux runner가 필요하다.
 
 ```powershell
 pwsh -File scripts/doctor.ps1

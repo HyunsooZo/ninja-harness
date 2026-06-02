@@ -397,7 +397,19 @@ expect_fail "runtime rejects missing Python verifier manifest" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing git required tool" \
-  with_harness_yaml_without_line "required_tools: bash make python3 git" \
+  with_harness_yaml_without_line "required_tools: python3 git" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "runtime rejects missing POSIX required tools" \
+  with_harness_yaml_without_line "posix_required_tools: bash make" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "runtime rejects missing PowerShell structure verification policy" \
+  with_harness_yaml_without_line "powershell_structure_verification: true" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
+expect_fail "runtime rejects missing project gate runner policy" \
+  with_harness_yaml_without_line "project_gate_runner: bash_required" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing POSIX utility manifest" \
