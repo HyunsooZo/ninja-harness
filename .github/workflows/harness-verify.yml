@@ -1,0 +1,32 @@
+name: harness-verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify harness integrity
+        run: make integrity
+
+  powershell-structure:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify PowerShell entrypoints
+        shell: pwsh
+        run: |
+          $env:PYTHONUTF8 = "1"
+          python --version
+          git --version
+          pwsh -File scripts/doctor.ps1
+          $env:HARNESS_VERIFY_MODE = "template"
+          pwsh -File scripts/verify-harness-structure.ps1
+          $env:HARNESS_VERIFY_MODE = "project"
+          pwsh -File scripts/verify-harness-structure.ps1

@@ -198,6 +198,8 @@ make integrity
 
 이 target은 `make doctor`, `make verify`, gate self-test, completed plan 품질 검사, active plan 잔여 여부, `git diff --check`를 함께 확인한다. 실제 프로젝트 build/test/lint는 여전히 project gate 영역이므로 조직 표준에서는 `HARNESS_*_SCRIPT=... make verify-org`를 별도로 연결한다.
 
+템플릿 레포 자체는 `.github/workflows/harness-verify.yml`에서 `make integrity`와 Windows PowerShell 구조 검증을 실행한다. 다운스트림 조직 gate 예시는 `docs/harness/examples/github-actions/harness-verify.yml`에 둔다.
+
 ## 에이전트 오케스트레이션
 
 레이어별 에이전트 분리는 작업을 무조건 여러 에이전트에게 나누라는 뜻이 아니다. 작은 단일 수정은 `SINGLE_AGENT`로 처리하고, 여러 레이어의 도메인 규칙/트랜잭션/영속성/API 계약이 함께 바뀔 때는 main agent가 혼자 구현하지 않고 `task-orchestrator`와 `13_AGENT_ORCHESTRATION.md` 기준으로 분리한다. 분리 후에는 단일 통합자가 결정사항과 충돌을 수렴한다.

@@ -1335,6 +1335,11 @@ ci_example = ci_example_path.read_text(encoding='utf-8')
 check('HARNESS_VERIFY_MODE=project \\' in ci_example, 'CI example should use readable multiline env assignment')
 for token in ['powershell-structure:', 'runs-on: windows-latest', 'shell: pwsh', 'pwsh -File scripts/doctor.ps1', 'pwsh -File scripts/verify-harness-structure.ps1', 'pwsh -File scripts/verify-project-gates.ps1', '$env:HARNESS_VERIFY_MODE = "template"', '$env:HARNESS_VERIFY_MODE = "project"', '$env:HARNESS_BACKEND_TEST_SCRIPT']:
     check(token in ci_example, f'CI example missing PowerShell structure verification token: {token}')
+ci_workflow_path = root/'.github/workflows/harness-verify.yml'
+check(ci_workflow_path.exists(), f'missing active harness dogfood CI workflow: {ci_workflow_path}')
+ci_workflow = ci_workflow_path.read_text(encoding='utf-8')
+for token in ['pull_request:', 'push:', 'make integrity', 'runs-on: windows-latest', 'shell: pwsh', 'pwsh -File scripts/doctor.ps1', 'pwsh -File scripts/verify-harness-structure.ps1', '$env:PYTHONUTF8 = "1"', '$env:HARNESS_VERIFY_MODE = "template"', '$env:HARNESS_VERIFY_MODE = "project"']:
+    check(token in ci_workflow, f'active CI workflow missing dogfood token: {token}')
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
 for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
