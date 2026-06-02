@@ -42,6 +42,11 @@ required=(
   "scripts/check-profile-readiness.sh"
   "scripts/self-test-harness-gates.sh"
   "scripts/verify-project-gates.sh"
+  "scripts/verify-project-gates.py"
+  "scripts/verify-project-gates.ps1"
+  "scripts/check-completed-plan-quality.sh"
+  "scripts/check-completed-plan-quality.py"
+  "scripts/check-completed-plan-quality.ps1"
   "scripts/collect-eval-metrics.sh"
 )
 

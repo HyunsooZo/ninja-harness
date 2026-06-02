@@ -96,9 +96,13 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
     ├── verify-harness-structure.ps1
     ├── doctor.ps1
     ├── verify-project-gates.sh
+    ├── verify-project-gates.py
+    ├── verify-project-gates.ps1
     ├── sync-skills.sh
     ├── collect-eval-metrics.sh
     ├── check-completed-plan-quality.sh
+    ├── check-completed-plan-quality.py
+    ├── check-completed-plan-quality.ps1
     └── set-codex-agent-model.sh
 ```
 
@@ -128,13 +132,16 @@ make verify
 
 template mode와 project mode를 모두 검증합니다.
 
-PowerShell 환경에서는 template/project 구조 검증을 아래처럼 실행할 수 있습니다. 조직 표준 project gate 실행은 allowlist된 shell script를 `bash`로 실행하므로 Git Bash/MSYS2/WSL 또는 Linux runner가 필요합니다.
+PowerShell 환경에서는 template/project 구조 검증을 아래처럼 실행할 수 있습니다. `HARNESS_*_SCRIPT` project gate도 `scripts/verify-project-gates.ps1`로 실행할 수 있으며, `.ps1`/`.py` gate는 네이티브로 실행되고 `.sh` gate만 Bash가 필요합니다.
 
 ```powershell
 $env:HARNESS_VERIFY_MODE = "template"
 pwsh -File scripts/verify-harness-structure.ps1
 $env:HARNESS_VERIFY_MODE = "project"
 pwsh -File scripts/verify-harness-structure.ps1
+
+$env:HARNESS_BACKEND_TEST_SCRIPT = "scripts/ci/backend-test.ps1"
+pwsh -File scripts/verify-project-gates.ps1
 ```
 
 ### 3. 스킬 동기화

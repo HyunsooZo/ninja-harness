@@ -1,0 +1,19 @@
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$Root = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $Root
+
+$Python = Get-Command python3 -ErrorAction SilentlyContinue
+if ($null -eq $Python) {
+  $Python = Get-Command python -ErrorAction SilentlyContinue
+}
+if ($null -eq $Python) {
+  Write-Error "[FAIL] python3 or python is required"
+  exit 1
+}
+
+& $Python.Source "scripts/check-completed-plan-quality.py"
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}

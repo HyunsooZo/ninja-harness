@@ -26,12 +26,17 @@ $RequiredFiles = @(
   "Makefile",
   "scripts/verify-harness-structure.sh",
   "scripts/verify-harness-structure.ps1",
+  "scripts/verify-harness-structure.py",
   "scripts/verify-project-gates.sh",
+  "scripts/verify-project-gates.ps1",
+  "scripts/verify-project-gates.py",
   "scripts/sync-skills.sh",
   "scripts/check-profile-readiness.sh",
   "scripts/self-test-harness-gates.sh",
   "scripts/collect-eval-metrics.sh",
   "scripts/check-completed-plan-quality.sh",
+  "scripts/check-completed-plan-quality.ps1",
+  "scripts/check-completed-plan-quality.py",
   "scripts/set-codex-agent-model.sh"
 )
 
@@ -82,7 +87,7 @@ if ($Make) {
   Write-Host "[WARN] make not found; use PowerShell wrapper scripts or install make for Makefile targets"
 }
 
-Write-Host "[OK] harness PowerShell structure verification tooling looks ready"
+Write-Host "[OK] harness PowerShell structure and project gate tooling looks ready"
 
 if ($MissingPosixTools.Count -gt 0) {
   Write-Host "[WARN] full Makefile/Bash tooling is incomplete: $($MissingPosixTools -join ', ')"

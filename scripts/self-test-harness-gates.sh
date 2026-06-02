@@ -17,6 +17,7 @@ cleanup() {
   fi
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
+  rm -f scripts/ci/.harness-self-test-ok.py
   rm -f scripts/ci/.harness-self-test-link.sh
   rm -f scripts/ci/.harness-self-test-link-dir
   rm -f .env.harness-self-test
@@ -389,7 +390,7 @@ expect_fail "runtime rejects missing OS support manifest" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing PowerShell entrypoint manifest" \
-  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1" \
+  with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing Python verifier manifest" \
@@ -409,7 +410,7 @@ expect_fail "runtime rejects missing PowerShell structure verification policy" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing project gate runner policy" \
-  with_harness_yaml_without_line "project_gate_runner: bash_required" \
+  with_harness_yaml_without_line "project_gate_runner: python_cross_platform" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
 expect_fail "runtime rejects missing POSIX utility manifest" \
@@ -494,6 +495,7 @@ if [[ ! -d scripts/ci ]]; then
 fi
 printf '#!/usr/bin/env bash\nset -euo pipefail\necho "[OK] self-test project gate"\n' > scripts/ci/.harness-self-test-ok.sh
 chmod +x scripts/ci/.harness-self-test-ok.sh
+printf 'print("[OK] self-test python project gate")\n' > scripts/ci/.harness-self-test-ok.py
 
 python3 - <<'PY'
 from pathlib import Path
@@ -533,6 +535,11 @@ expect_pass "project gate accepts allowlisted executable script" \
   env HARNESS_RUN_PROJECT_CHECKS=1 \
       HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-ok.sh \
       bash scripts/verify-project-gates.sh
+
+expect_pass "project gate accepts allowlisted python script" \
+  env HARNESS_RUN_PROJECT_CHECKS=1 \
+      HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-ok.py \
+      python3 scripts/verify-project-gates.py
 
 expect_fail "required project gates reject empty configuration" \
   env HARNESS_RUN_PROJECT_CHECKS=1 \

@@ -113,7 +113,7 @@ rules:
     enabled_by_env: HARNESS_RUN_PROJECT_CHECKS
     profile_readiness_enabled_by_env: HARNESS_REQUIRE_FILLED_PROFILE
     profile_readiness_script: scripts/check-profile-readiness.sh
-    script: scripts/verify-project-gates.sh
+    script: scripts/verify-project-gates.py
     preferred_scripts:
       backend: HARNESS_BACKEND_TEST_SCRIPT
       primary_frontend: HARNESS_PRIMARY_FRONTEND_TEST_SCRIPT
@@ -210,7 +210,7 @@ organization:
   org_standard_flag: HARNESS_ORG_STANDARD
   eval_scripts:
     - scripts/collect-eval-metrics.sh
-    - scripts/check-completed-plan-quality.sh
+    - scripts/check-completed-plan-quality.py
 
 
 runtime:
@@ -221,10 +221,10 @@ runtime:
   unsupported_windows_native: false
   required_tools: python3 git
   posix_required_tools: bash make
-  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1
+  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1 scripts/verify-project-gates.ps1 scripts/check-completed-plan-quality.ps1
   powershell_required_tool: pwsh_or_windows_powershell
   powershell_structure_verification: true
-  project_gate_runner: bash_required
+  project_gate_runner: python_cross_platform
   python_verifier: scripts/verify-harness-structure.py
   posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd
   toml_parser: tomllib_or_tomli
