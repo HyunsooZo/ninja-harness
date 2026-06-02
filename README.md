@@ -202,6 +202,7 @@ make help
 | `make project-ready` | project mode에서 profile/context placeholder가 남아 있으면 실패합니다. |
 | `make check-profile` | project profile/context placeholder만 점검합니다. |
 | `make self-test-gates` | 핵심 positive/negative gate self-test를 실행합니다. |
+| `make unit-tests` | Python 하네스 라이브러리 단위 테스트를 실행합니다. |
 | `make integrity` | 최종 로컬 하네스 무결성 검증을 실행합니다. |
 | `make check-active-plans` | 완료되지 않은 active plan이 남아 있으면 실패합니다. |
 | `make verify-org` | 조직 표준 모드 검증을 실행합니다. 최소 하나의 gate script가 필요합니다. |

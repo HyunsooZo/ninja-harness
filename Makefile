@@ -23,7 +23,7 @@ ORG_GATE_SCRIPT_VARS := \
 .PHONY: \
   help doctor verify verify-template verify-project verify-org \
   project-ready check-profile project-gates project-gates-required sync-skills check-sync \
-  self-test-gates check-active-plans integrity eval check-plans set-model clean
+  self-test-gates unit-tests check-active-plans integrity eval check-plans set-model clean
 
 help:
 	@echo "Harness commands:"
@@ -35,6 +35,7 @@ help:
 	@echo "  make project-ready           Verify project mode and fail on unfilled profile placeholders"
 	@echo "  make check-profile           Check project profile/context placeholders only"
 	@echo "  make self-test-gates         Verify key positive and negative harness gate behavior"
+	@echo "  make unit-tests              Run Python unit tests for harness libraries"
 	@echo "  make integrity               Run final local harness integrity checks"
 	@echo "  make verify-org              Run organization-standard verification with real project gates"
 	@echo "  make project-gates           Run configured project gates only; skips if none configured"
@@ -111,6 +112,9 @@ check-profile:
 self-test-gates:
 	bash "$(HARNESS_SELF_TEST_GATES)"
 
+unit-tests:
+	python3 -m unittest discover -s tests/harness -p 'test_*.py'
+
 check-active-plans:
 	@active="$$(find docs/harness/plans/active -mindepth 1 ! -name .gitkeep -print)"; \
 	if [ -n "$$active" ]; then \
@@ -120,7 +124,7 @@ check-active-plans:
 	fi
 	@echo "[OK] no active plans"
 
-integrity: doctor verify self-test-gates check-plans check-active-plans
+integrity: doctor verify self-test-gates unit-tests check-plans check-active-plans
 	@git diff --check
 	@echo "[OK] harness integrity verified"
 

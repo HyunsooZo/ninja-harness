@@ -101,6 +101,9 @@ required = [
     'scripts/check-evidence-gate-hook.sh',
     'scripts/check-evidence-gate-hook.py',
     'scripts/check-evidence-gate-hook.ps1',
+    'tests/harness/test_completed_plans.py',
+    'tests/harness/test_project_gates.py',
+    'tests/harness/test_evidence_hook.py',
 ]
 missing_required = [path for path in required if not (root/path).exists()]
 check(not missing_required, f'missing required paths: {missing_required}')
@@ -126,7 +129,7 @@ makefile = root/'Makefile'
 make_text = makefile.read_text(encoding='utf-8')
 check(re.search(r'^SHELL := bash$', make_text, re.M), 'Makefile must use PATH-resolved bash, not a hardcoded /bin/bash path')
 check('SHELL := /bin/bash' not in make_text, 'Makefile must not hardcode /bin/bash')
-for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','self-test-gates','check-active-plans','integrity','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
+for target in ['help','doctor','verify','verify-template','verify-project','project-ready','check-profile','self-test-gates','unit-tests','check-active-plans','integrity','verify-org','project-gates','project-gates-required','sync-skills','check-sync','eval','check-plans','set-model','clean']:
     check(re.search(rf'^{re.escape(target)}:', make_text, re.M), f'Makefile missing target: {target}')
 for token in ['HARNESS_VERIFY_MODE=template','HARNESS_VERIFY_MODE=project','HARNESS_REQUIRE_FILLED_PROFILE=1','HARNESS_ORG_STANDARD=1','HARNESS_ACK_TRUSTED_PROJECT_CMDS=1','HARNESS_REQUIRE_PROJECT_CHECKS=1','HARNESS_INTEGRATION_TEST_SCRIPT','ORG_GATE_SCRIPT_VARS','scripts/sync-skills.sh','scripts/check-profile-readiness.sh','scripts/self-test-harness-gates.sh','scripts/collect-eval-metrics.sh','scripts/check-completed-plan-quality.sh','scripts/set-codex-agent-model.sh']:
     check(token in make_text, f'Makefile missing command/policy token: {token}')
@@ -140,7 +143,7 @@ public_make_targets = [
 ]
 missing_help_targets = [target for target in public_make_targets if f'make {target}' not in help_body]
 check(not missing_help_targets, f'Makefile help missing public targets: {missing_help_targets}')
-for token in ['integrity: doctor verify self-test-gates check-plans check-active-plans', 'git diff --check', 'no active plans']:
+for token in ['integrity: doctor verify self-test-gates unit-tests check-plans check-active-plans', 'python3 -m unittest discover', 'git diff --check', 'no active plans']:
     check(token in make_text, f'Makefile missing integrity token: {token}')
 clean_match = re.search(r'^clean:\n(?P<body>.*?)(?=^[A-Za-z0-9_.-]+:|\Z)', make_text, re.M | re.S)
 check(clean_match, 'Makefile missing clean target body')
@@ -302,6 +305,14 @@ for ps_script in ['scripts/doctor.ps1', 'scripts/verify-harness-structure.ps1', 
 stdio_text = (root/'scripts/harness_lib/stdio.py').read_text(encoding='utf-8')
 for token in ['configure_utf8_stdio', 'PYTHONUTF8', 'reconfigure', 'errors=']:
     check(token in stdio_text, f'stdio helper missing UTF-8 token: {token}')
+for test_file, tokens in {
+    'tests/harness/test_completed_plans.py': ['plan_missing_markers', 'test_rejects_missing_residual_risk'],
+    'tests/harness/test_project_gates.py': ['validate_repo_script', 'test_rejects_parent_traversal'],
+    'tests/harness/test_evidence_hook.py': ['evidence_ready_for_target', 'test_state_only_red_is_not_evidence'],
+}.items():
+    test_text = (root/test_file).read_text(encoding='utf-8')
+    for token in tokens:
+        check(token in test_text, f'{test_file} missing unit test token: {token}')
 check('scripts/verify-harness-structure.py' in (root/'scripts/verify-harness-structure.ps1').read_text(encoding='utf-8'), 'PowerShell verifier must call Python verifier')
 check('python3' in (root/'scripts/verify-harness-structure.sh').read_text(encoding='utf-8'), 'Bash verifier wrapper must call Python')
 check('scripts/verify-harness-structure.py' in (root/'scripts/verify-harness-structure.sh').read_text(encoding='utf-8'), 'Bash verifier wrapper must call Python verifier')

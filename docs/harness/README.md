@@ -240,6 +240,7 @@ make verify-org
 make project-ready
 make check-profile
 make self-test-gates
+make unit-tests
 make check-active-plans
 make integrity
 make project-gates
