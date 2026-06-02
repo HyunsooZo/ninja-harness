@@ -149,7 +149,7 @@ public_make_targets = [
 ]
 missing_help_targets = [target for target in public_make_targets if f'make {target}' not in help_body]
 check(not missing_help_targets, f'Makefile help missing public targets: {missing_help_targets}')
-for token in ['integrity: doctor verify self-test-gates unit-tests check-plans check-active-plans', 'python3 -m unittest discover', 'git diff --check', 'no active plans', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL=1 bash "$(HARNESS_EVAL)"']:
+for token in ['integrity: doctor verify self-test-gates unit-tests check-plans check-active-plans', 'python3 -m unittest discover', 'git diff --check', 'no active plans', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL=1 bash "$(HARNESS_EVAL)"', 'HARNESS_ORG_STANDARD=1 python3 "$(HARNESS_CHECK_UPGRADE)"']:
     check(token in make_text, f'Makefile missing integrity token: {token}')
 clean_match = re.search(r'^clean:\n(?P<body>.*?)(?=^[A-Za-z0-9_.-]+:|\Z)', make_text, re.M | re.S)
 check(clean_match, 'Makefile missing clean target body')
@@ -453,6 +453,7 @@ for token in [
     'harness upgrade checker rejects ownership placeholders in org standard',
     'harness upgrade checker rejects dirty downstream changed path',
     'harness upgrade checker rejects project-owned downstream overwrite',
+    'verify-org rejects ownership placeholders',
 ]:
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
 

@@ -51,7 +51,7 @@ make integrity
 make project-ready
 ```
 
-조직 표준 레포에서는 최소 하나 이상의 project gate를 연결해 아래도 실행한다.
+조직 표준 레포에서는 소유권 placeholder를 먼저 실제 값으로 채우고, 최소 하나 이상의 project gate를 연결해 아래도 실행한다. `make verify-org`는 `HARNESS_ORG_STANDARD=1 make harness-upgrade`와 같은 ownership strict check를 포함한다.
 
 ```bash
 HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org

@@ -18,6 +18,7 @@ cleanup() {
   rm -rf "$tmp_dir"
   rm -f scripts/ci/.harness-self-test-ok.sh
   rm -f scripts/ci/.harness-self-test-ok.py
+  rm -f scripts/ci/.harness-self-test-org.sh
   rm -f scripts/ci/.harness-self-test-link.sh
   rm -f scripts/ci/.harness-self-test-link-dir
   rm -f .env.harness-self-test
@@ -783,6 +784,16 @@ expect_fail "organization mode blocks legacy command without explicit opt-in" \
       HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
       HARNESS_BACKEND_TEST_CMD='echo legacy' \
       bash scripts/verify-project-gates.sh
+
+if [[ ! -d scripts/ci ]]; then
+  mkdir -p scripts/ci
+  created_ci_dir=1
+fi
+printf '#!/usr/bin/env bash\nexit 0\n' > scripts/ci/.harness-self-test-org.sh
+chmod +x scripts/ci/.harness-self-test-org.sh
+expect_fail "verify-org rejects ownership placeholders" \
+  env HARNESS_BACKEND_TEST_SCRIPT=scripts/ci/.harness-self-test-org.sh \
+      make verify-org
 
 expect_fail "legacy command blocks without explicit opt-in" \
   env HARNESS_REQUIRE_PROJECT_CHECKS=1 \

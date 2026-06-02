@@ -146,6 +146,7 @@ verify-org:
 		echo "       example: HARNESS_INTEGRATION_TEST_SCRIPT=scripts/ci/integration-test.sh make verify-org"; \
 		exit 1; \
 	fi
+	HARNESS_ORG_STANDARD=1 python3 "$(HARNESS_CHECK_UPGRADE)"
 	HARNESS_VERIFY_MODE=project \
 	HARNESS_ORG_STANDARD=1 \
 	HARNESS_ACK_TRUSTED_PROJECT_CMDS=1 \
