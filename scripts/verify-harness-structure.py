@@ -61,6 +61,9 @@ required = [
     'scripts/verify-project-gates.sh',
     'scripts/verify-project-gates.py',
     'scripts/verify-project-gates.ps1',
+    'scripts/harness_lib/__init__.py',
+    'scripts/harness_lib/project_gates.py',
+    'scripts/harness_lib/completed_plans.py',
     'scripts/collect-eval-metrics.sh',
     'scripts/check-completed-plan-quality.sh',
     'scripts/check-completed-plan-quality.py',
@@ -365,7 +368,7 @@ self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding=
 for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'sensitive artifact rejects local env file', 'sensitive artifact rejects token config file', 'sensitive artifact rejects secret properties file', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 
-completed_quality_text = (root/'scripts/check-completed-plan-quality.py').read_text(encoding='utf-8')
+completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
 for token in ['HARNESS_COMPLETED_PLAN_DIR', 'completed plan quality: no completed plans', 'plan_missing_markers']:
     check(token in completed_quality_text, f'completed plan quality script missing token: {token}')
 
@@ -1063,7 +1066,7 @@ check(preferred_scripts == expected_preferred_scripts, (
 check(legacy_commands == expected_legacy_commands, (
     f'rules.project_gates.legacy_commands mismatch: expected={expected_legacy_commands}, actual={legacy_commands}'
 ))
-project_gate_text_for_manifest = (root/project_gate_scalars['script']).read_text(encoding='utf-8')
+project_gate_text_for_manifest = (root/'scripts/harness_lib/project_gates.py').read_text(encoding='utf-8')
 actual_run_gates = {
     name: (script_var, cmd_var)
     for name, script_var, cmd_var in re.findall(
@@ -1241,7 +1244,7 @@ for token in ['powershell-structure:', 'runs-on: windows-latest', 'shell: pwsh',
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
 for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
-vpg_text = (root/'scripts/verify-project-gates.py').read_text(encoding='utf-8')
+vpg_text = (root/'scripts/harness_lib/project_gates.py').read_text(encoding='utf-8')
 for required in ['HARNESS_ACK_TRUSTED_PROJECT_CMDS', 'bash -lc', 'ALLOWED_ROOTS', 'is_symlink']:
     check(required in vpg_text, f'verify-project-gates missing trust policy: {required}')
 for required in ['orchestration mode별 성공률', 'reviewer FAIL 사유 TOP 5', 'project gate 실패율']:
@@ -1293,7 +1296,7 @@ check('project mode' in plans_readme_text, 'plans README must distinguish projec
 verifier_text = (root/'scripts/verify-harness-structure.py').read_text(encoding='utf-8')
 check("if mode == 'template':\n    tracked_plan_markdown = subprocess.run" in verifier_text, 'tracked plan markdown guard must be template-mode only')
 
-project_gate_text = (root/'scripts/verify-project-gates.py').read_text(encoding='utf-8')
+project_gate_text = (root/'scripts/harness_lib/project_gates.py').read_text(encoding='utf-8')
 check('HARNESS_*_SCRIPT' in project_gate_text, 'project gate must support script-based gates')
 check('HARNESS_ALLOW_LEGACY_BASH_LC' in project_gate_text, 'legacy bash -lc must require explicit opt-in')
 check('HARNESS_*_CMD is legacy; prefer HARNESS_*_SCRIPT or set HARNESS_ALLOW_LEGACY_BASH_LC=1' in project_gate_text, 'legacy bash -lc opt-in must apply outside organization mode too')
