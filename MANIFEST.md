@@ -1,3 +1,6 @@
+harness_version: 0.1.0
+schema_version: 1
+
 project:
   name: 범용 개발 하네스
   maintainer: <project-maintainer>
@@ -17,6 +20,7 @@ repositories:
 
 source_of_truth:
   entry:
+    - VERSION
     - AGENTS.md
     - CLAUDE.md
     - docs/harness/context/BASELINE.md
@@ -38,6 +42,8 @@ source_of_truth:
     - docs/harness/12_FIELD_VALIDATION.md
     - docs/harness/13_AGENT_ORCHESTRATION.md
     - docs/harness/14_SPEC_REQUIREMENTS.md
+    - docs/harness/CHANGELOG.md
+    - docs/harness/UPGRADE.md
     - docs/harness/ORG_ROLLOUT.md
     - docs/harness/CI_EXAMPLES.md
     - docs/harness/GOVERNANCE.md

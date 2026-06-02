@@ -4,6 +4,8 @@ Codex와 Claude Code를 함께 사용하는 프로젝트를 위한 **운영형 A
 
 이 하네스는 단순한 프롬프트 모음이 아니라, 에이전트·스킬·검증 게이트·오케스트레이션·프로젝트 프로파일·조직 운영 규칙을 함께 제공하여 AI 코딩 작업을 더 안전하고 일관되게 수행하기 위한 구조입니다.
 
+현재 하네스 버전은 루트 `VERSION`과 `docs/harness/harness.yaml`의 `harness_version`이 source of truth입니다. 다운스트림 레포 업그레이드는 `docs/harness/CHANGELOG.md`와 `docs/harness/UPGRADE.md`를 따릅니다.
+
 ## 목적
 
 이 하네스의 목적은 다음과 같습니다.

@@ -21,6 +21,8 @@
 | `11_PARALLEL_AGENT_GATE.md` | 병렬 실행 | 병렬 에이전트 가능 조건, 금지 조건, 수렴 기준 |
 | `13_AGENT_ORCHESTRATION.md` | 에이전트 위임 | task-orchestrator, 단일/순차/병렬 위임 판단, 레이어별 협업 기준, fan-in 수렴 기준 |
 | `14_SPEC_REQUIREMENTS.md` | 스펙/요구사항 | EARS 요구사항, 옵션 비교, story slice |
+| `CHANGELOG.md` | 버전 변경 이력 | 하네스 버전별 변경과 verifier 영향 |
+| `UPGRADE.md` | 업그레이드 | 다운스트림 레포 업그레이드 절차 |
 | `harness.yaml` | 정책 설정 | 하네스 라우팅, 검증 게이트, 런타임별 공통 정책 |
 | `skill-routing.md` | 라우팅 | 요청 유형별 기본 skill/agent |
 | `rubrics/` | 호환 체크리스트 | 기존 참조를 위한 얇은 리뷰 기준 |
@@ -34,7 +36,7 @@
 
 ## 권장 흐름
 
-1. `AGENTS.md` 또는 `CLAUDE.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`를 읽는다. 작은 작업은 `INDEX.md`의 `T0_MINIMAL`/`T1_STANDARD` context tier로 고정 컨텍스트를 줄인다. 신규 사용자는 `QUICKSTART_5_MIN.md`도 읽는다.
+1. `AGENTS.md` 또는 `CLAUDE.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`를 읽는다. 작은 작업은 `INDEX.md`의 `T0_MINIMAL`/`T1_STANDARD` context tier로 고정 컨텍스트를 줄인다. 신규 사용자는 `QUICKSTART_5_MIN.md`도 읽는다. 템플릿 업그레이드 작업이면 먼저 `VERSION`, `CHANGELOG.md`, `UPGRADE.md`를 확인한다.
 2. 이 문서에서 작업 범위에 맞는 레이어/게이트 문서로 이동한다. 신규 기능이나 모호한 요구는 `14_SPEC_REQUIREMENTS.md`로 스펙 수준을 먼저 정한다. 여러 에이전트가 필요한지 애매하면 `13_AGENT_ORCHESTRATION.md`를 먼저 확인한다.
 3. 대상 도메인/화면/API의 `docs/harness/context/**`와 필요한 `docs/harness/profiles/**` 문서를 추가로 읽는다.
 4. 단순하지 않은 작업은 `docs/harness/plans/active/`에 계획을 만들거나 기존 활성 계획을 갱신한다.

@@ -40,6 +40,7 @@ def git_tracked_files() -> list[Path]:
 check(not sys.flags.optimize, 'Python optimization mode is not supported for harness verification; unset PYTHONOPTIMIZE and do not run python with -O')
 
 required = [
+    'VERSION',
     'Makefile',
     'AGENTS.md',
     'CLAUDE.md',
@@ -48,6 +49,8 @@ required = [
     'docs/harness/09_EVIDENCE_GATE.md',
     'docs/harness/12_FIELD_VALIDATION.md',
     'docs/harness/14_SPEC_REQUIREMENTS.md',
+    'docs/harness/CHANGELOG.md',
+    'docs/harness/UPGRADE.md',
     'docs/harness/harness.yaml',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/ORG_ROLLOUT.md',
@@ -95,6 +98,9 @@ required = [
 ]
 missing_required = [path for path in required if not (root/path).exists()]
 check(not missing_required, f'missing required paths: {missing_required}')
+
+version_text = (root/'VERSION').read_text(encoding='utf-8').strip()
+check(re.fullmatch(r'\d+\.\d+\.\d+', version_text) is not None, f'VERSION must be semver MAJOR.MINOR.PATCH: {version_text}')
 
 # Retired duplicate core docs must stay merged into their source documents.
 retired_docs = [
@@ -207,6 +213,11 @@ def parse_frontmatter_list(value: str):
 claude_frontmatters = {}
 
 yaml_text_for_model = (root/'docs/harness/harness.yaml').read_text(encoding='utf-8')
+yaml_version_match = re.search(r'^harness_version:\s*(\S+)\s*$', yaml_text_for_model, flags=re.M)
+yaml_schema_match = re.search(r'^schema_version:\s*(\d+)\s*$', yaml_text_for_model, flags=re.M)
+check(yaml_version_match, 'harness.yaml missing top-level harness_version')
+check(yaml_version_match.group(1) == version_text, f'harness.yaml harness_version must match VERSION: {yaml_version_match.group(1)} != {version_text}')
+check(yaml_schema_match, 'harness.yaml missing top-level schema_version')
 model_match = re.search(r'^  codex_agent_model:\s*(\S+)\s*$', yaml_text_for_model, flags=re.M)
 expected_model = os.environ.get('HARNESS_EXPECTED_CODEX_MODEL') or (model_match.group(1) if model_match else 'gpt-5.5')
 runtime_match = re.search(
@@ -457,6 +468,11 @@ if mode == 'template':
 
 manifest_text = (root/'MANIFEST.md').read_text(encoding='utf-8')
 manifest_policy_text = manifest_text.split('\n## ', 1)[0].rstrip() + '\n'
+manifest_version_match = re.search(r'^harness_version:\s*(\S+)\s*$', manifest_text, flags=re.M)
+manifest_schema_match = re.search(r'^schema_version:\s*(\d+)\s*$', manifest_text, flags=re.M)
+check(manifest_version_match, 'MANIFEST.md missing top-level harness_version')
+check(manifest_version_match.group(1) == version_text, f'MANIFEST.md harness_version must match VERSION: {manifest_version_match.group(1)} != {version_text}')
+check(manifest_schema_match, 'MANIFEST.md missing top-level schema_version')
 
 def canonical_manifest_policy(text: str) -> str:
     lines = [line.rstrip() for line in text.splitlines()]
@@ -824,6 +840,7 @@ check(len(entries) == len(set(entries)), f'duplicate source_of_truth.entry: {ent
 for ref in entries:
     check((root/ref).exists(), f'missing source_of_truth.entry path: {ref}')
 required_entries = {
+    'VERSION',
     'AGENTS.md',
     'CLAUDE.md',
     'docs/harness/context/BASELINE.md',
@@ -855,6 +872,8 @@ required_harness_refs = {
     'docs/harness/12_FIELD_VALIDATION.md',
     'docs/harness/13_AGENT_ORCHESTRATION.md',
     'docs/harness/14_SPEC_REQUIREMENTS.md',
+    'docs/harness/CHANGELOG.md',
+    'docs/harness/UPGRADE.md',
     'docs/harness/ORG_ROLLOUT.md',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/GOVERNANCE.md',
@@ -1022,6 +1041,17 @@ for required in ['전체 스캔', '기본 컨텍스트', 'generated/', 'Context 
 context_readme_text = (root/'docs/harness/context/README.md').read_text(encoding='utf-8')
 for required in ['전체 스캔', '기본 컨텍스트', 'generated/PROJECT_CONTEXT_SCAN.generated.md']:
     check(required in context_readme_text, f'context README missing context policy token: {required}')
+
+changelog_text = (root/'docs/harness/CHANGELOG.md').read_text(encoding='utf-8')
+upgrade_text = (root/'docs/harness/UPGRADE.md').read_text(encoding='utf-8')
+check(f'## {version_text}' in changelog_text, f'CHANGELOG missing current version entry: {version_text}')
+for required in ['breaking change', 'major', 'minor', 'patch', 'make integrity']:
+    check(required in changelog_text, f'CHANGELOG missing version policy token: {required}')
+for required in ['VERSION', 'harness_version', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan']:
+    check(required in upgrade_text, f'UPGRADE missing downstream upgrade token: {required}')
+readme_text_for_version = (root/'docs/harness/README.md').read_text(encoding='utf-8')
+for required in ['CHANGELOG.md', 'UPGRADE.md', 'VERSION']:
+    check(required in readme_text_for_version, f'README missing version lifecycle token: {required}')
 
 testing_text = (root/'docs/harness/05_TESTING.md').read_text(encoding='utf-8')
 for required in ['RED -> GREEN -> REFACTOR -> VERIFY', 'RED', 'GREEN', 'VERIFY', '예외 사유']:
