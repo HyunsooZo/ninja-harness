@@ -220,6 +220,7 @@ runtime:
   required_tools: bash make python3 git
   powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1
   powershell_required_tool: pwsh_or_windows_powershell
+  python_verifier: scripts/verify-harness-structure.py
   posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd
   toml_parser: tomllib_or_tomli
   note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.

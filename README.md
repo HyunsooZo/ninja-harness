@@ -92,6 +92,7 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 │       └── plans/
 └── scripts/
     ├── verify-harness-structure.sh
+    ├── verify-harness-structure.py
     ├── verify-harness-structure.ps1
     ├── doctor.ps1
     ├── verify-project-gates.sh

@@ -41,6 +41,7 @@ def sync_runtime_model(path: Path) -> None:
             f'  required_tools: bash make python3 git\n'
             f'  powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1\n'
             f'  powershell_required_tool: pwsh_or_windows_powershell\n'
+            f'  python_verifier: scripts/verify-harness-structure.py\n'
             f'  posix_utilities: find cp rm mkdir chmod rmdir sed env uname head cat dirname pwd\n'
             f'  toml_parser: tomllib_or_tomli\n'
             f'  note: 조직 표준 적용 시 모델명은 scripts/set-codex-agent-model.sh로 일괄 변경한다.\n'

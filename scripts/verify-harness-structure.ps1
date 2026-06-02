@@ -10,12 +10,16 @@ function Fail([string]$Message) {
   exit 1
 }
 
-$Bash = Get-Command bash -ErrorAction SilentlyContinue
-if (-not $Bash) {
-  Fail "bash is required for the current structure verifier. On Windows, install Git for Windows, MSYS2, or run the harness in WSL."
+$Python = Get-Command python3 -ErrorAction SilentlyContinue
+if (-not $Python) {
+  $Python = Get-Command python -ErrorAction SilentlyContinue
 }
 
-& $Bash.Source "scripts/verify-harness-structure.sh"
+if (-not $Python) {
+  Fail "python3 or python is required for harness structure verification."
+}
+
+& $Python.Source "scripts/verify-harness-structure.py"
 if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }

@@ -392,6 +392,10 @@ expect_fail "runtime rejects missing PowerShell entrypoint manifest" \
   with_harness_yaml_without_line "powershell_entrypoints: scripts/doctor.ps1 scripts/verify-harness-structure.ps1" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "runtime rejects missing Python verifier manifest" \
+  with_harness_yaml_without_line "python_verifier: scripts/verify-harness-structure.py" \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "runtime rejects missing git required tool" \
   with_harness_yaml_without_line "required_tools: bash make python3 git" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
