@@ -109,6 +109,7 @@ required = [
     'tests/harness/test_completed_plans.py',
     'tests/harness/test_project_gates.py',
     'tests/harness/test_evidence_hook.py',
+    'tests/harness/test_upgrade_checker.py',
 ]
 missing_required = [path for path in required if not (root/path).exists()]
 check(not missing_required, f'missing required paths: {missing_required}')
@@ -148,7 +149,7 @@ public_make_targets = [
 ]
 missing_help_targets = [target for target in public_make_targets if f'make {target}' not in help_body]
 check(not missing_help_targets, f'Makefile help missing public targets: {missing_help_targets}')
-for token in ['integrity: doctor verify self-test-gates unit-tests check-plans check-active-plans', 'python3 -m unittest discover', 'git diff --check', 'no active plans']:
+for token in ['integrity: doctor verify self-test-gates unit-tests check-plans check-active-plans', 'python3 -m unittest discover', 'git diff --check', 'no active plans', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL=1 bash "$(HARNESS_EVAL)"']:
     check(token in make_text, f'Makefile missing integrity token: {token}')
 clean_match = re.search(r'^clean:\n(?P<body>.*?)(?=^[A-Za-z0-9_.-]+:|\Z)', make_text, re.M | re.S)
 check(clean_match, 'Makefile missing clean target body')
@@ -449,6 +450,9 @@ for token in [
     'evidence hook bypass mode accepts audit reason',
     'harness upgrade checker accepts changelog delta from previous version',
     'harness upgrade checker rejects ownership placeholders when required',
+    'harness upgrade checker rejects ownership placeholders in org standard',
+    'harness upgrade checker rejects dirty downstream changed path',
+    'harness upgrade checker rejects project-owned downstream overwrite',
 ]:
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
 
@@ -1113,10 +1117,10 @@ upgrade_text = (root/'docs/harness/UPGRADE.md').read_text(encoding='utf-8')
 check(f'## {version_text}' in changelog_text, f'CHANGELOG missing current version entry: {version_text}')
 for required in ['breaking change', 'major', 'minor', 'patch', 'make integrity']:
     check(required in changelog_text, f'CHANGELOG missing version policy token: {required}')
-for required in ['VERSION', 'harness_version', 'make harness-upgrade', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', '--require-filled-ownership']:
+for required in ['VERSION', 'harness_version', 'make harness-upgrade', 'make integrity', 'make project-ready', 'HARNESS_BACKEND_TEST_SCRIPT', 'completed plan', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'HARNESS_ORG_STANDARD=1 make harness-upgrade', 'HARNESS_REQUIRE_DOWNSTREAM_AUDIT', 'HARNESS_REQUIRE_CLEAN_DOWNSTREAM', '--downstream-root', '--changed-paths-file', '--from-ref', '--require-filled-ownership', '--require-downstream-audit', '--require-clean-downstream']:
     check(required in upgrade_text, f'UPGRADE missing downstream upgrade token: {required}')
 upgrade_checker_text = (root/'scripts/check-harness-upgrade.py').read_text(encoding='utf-8')
-for required in ['changelog_versions', 'require_filled_ownership', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'ownership_placeholder_errors', 'CHANGELOG.md missing upgrade delta entries']:
+for required in ['changelog_versions', 'require_filled_ownership', 'HARNESS_REQUIRE_FILLED_OWNERSHIP', 'HARNESS_ORG_STANDARD', 'ownership_placeholder_errors', 'CHANGELOG.md missing upgrade delta entries', 'require_downstream_audit', 'require_clean_downstream', 'downstream_audit_errors', 'PROJECT_OWNED_PREFIXES', 'HARNESS_REQUIRE_CLEAN_DOWNSTREAM']:
     check(required in upgrade_checker_text, f'upgrade checker missing readiness token: {required}')
 readme_text_for_version = (root/'docs/harness/README.md').read_text(encoding='utf-8')
 for required in ['CHANGELOG.md', 'UPGRADE.md', 'VERSION']:
@@ -1545,7 +1549,7 @@ for doc in [root/'README.md', root/'docs/harness/SECURITY_POLICY.md', root/'docs
     check('symlink' in doc.read_text(encoding='utf-8'), f'{doc} missing project gate symlink policy')
 
 metrics_text = (root/'docs/harness/evals/metrics.md').read_text(encoding='utf-8')
-for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간', '운영 임계값', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL']:
+for token in ['작업 유형별 성공률', 'agent별 재작업률', 'reviewer별 또는 사유별 FAIL TOP N', 'project gate 실패율 추이', 'fan-in 충돌 발생률', 'regression case 반영률', 'orchestration mode별 성공률/실패율/평균 소요 시간', '운영 임계값', 'HARNESS_EVAL_FAIL_ON_GUARDRAIL', 'make verify-org']:
     check(token in metrics_text, f'eval metrics missing {token}')
 
 collect_eval_text = (root/'scripts/collect-eval-metrics.py').read_text(encoding='utf-8')

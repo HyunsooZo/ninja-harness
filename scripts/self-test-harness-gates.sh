@@ -438,6 +438,28 @@ expect_fail "harness upgrade checker rejects newer from-version" \
 expect_fail "harness upgrade checker rejects ownership placeholders when required" \
   env HARNESS_REQUIRE_FILLED_OWNERSHIP=1 python3 scripts/check-harness-upgrade.py
 
+expect_fail "harness upgrade checker rejects ownership placeholders in org standard" \
+  env HARNESS_ORG_STANDARD=1 python3 scripts/check-harness-upgrade.py
+
+upgrade_downstream="$tmp_dir/upgrade-downstream"
+mkdir -p "$upgrade_downstream/scripts" "$upgrade_downstream/docs/harness/context"
+printf 'downstream local edit\n' > "$upgrade_downstream/scripts/check-harness-upgrade.py"
+printf 'scripts/check-harness-upgrade.py\n' > "$tmp_dir/changed-harness-paths.txt"
+expect_fail "harness upgrade checker rejects dirty downstream changed path" \
+  python3 scripts/check-harness-upgrade.py \
+    --downstream-root "$upgrade_downstream" \
+    --changed-paths-file "$tmp_dir/changed-harness-paths.txt" \
+    --require-downstream-audit \
+    --require-clean-downstream
+
+printf 'docs/harness/context/BASELINE.md\n' > "$tmp_dir/changed-project-owned-paths.txt"
+expect_fail "harness upgrade checker rejects project-owned downstream overwrite" \
+  python3 scripts/check-harness-upgrade.py \
+    --downstream-root "$upgrade_downstream" \
+    --changed-paths-file "$tmp_dir/changed-project-owned-paths.txt" \
+    --require-downstream-audit \
+    --require-clean-downstream
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 

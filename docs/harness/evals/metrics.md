@@ -44,7 +44,7 @@ HARNESS_COMPLETED_PLAN_DIR=/tmp/completed-plans bash scripts/collect-eval-metric
 
 ## 운영 임계값
 
-collector는 기본적으로 임계값 초과 여부를 보고만 한다. 조직 표준에서 eval을 hard gate로 쓰려면 `HARNESS_EVAL_FAIL_ON_GUARDRAIL=1`을 설정한다.
+collector는 기본적으로 임계값 초과 여부를 보고만 한다. `make verify-org`는 조직 표준 경로이므로 `HARNESS_EVAL_FAIL_ON_GUARDRAIL=1`로 eval을 hard gate로 실행한다. 개별 CI나 별도 eval job에서 hard gate로 쓰려면 같은 환경변수를 설정한다.
 
 | 환경변수 | 기본값 | 의미 |
 |---|---:|---|
