@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import fnmatch
 import json
 import os
 import re
@@ -8,10 +9,7 @@ import sys
 
 ROOT = Path(os.environ.get('CLAUDE_PROJECT_DIR', '.')).resolve()
 ACTIVE_PLAN_DIR = ROOT / 'docs/harness/plans/active'
-PLAN_ALLOWED_PREFIXES = (
-    'docs/harness/plans/active/',
-    'docs/harness/plans/completed/',
-)
+ACTIVE_PLAN_PREFIX = 'docs/harness/plans/active/'
 
 
 def fail(message: str) -> None:
@@ -40,8 +38,8 @@ def target_path(payload: dict) -> str:
     return ''
 
 
-def is_plan_path(path: str) -> bool:
-    return any(path == prefix.rstrip('/') or path.startswith(prefix) for prefix in PLAN_ALLOWED_PREFIXES)
+def is_active_plan_path(path: str) -> bool:
+    return path == ACTIVE_PLAN_PREFIX.rstrip('/') or path.startswith(ACTIVE_PLAN_PREFIX)
 
 
 def active_plan_files() -> list[Path]:
@@ -75,9 +73,6 @@ def has_non_empty_field(body: str, labels: tuple[str, ...]) -> bool:
 
 def has_red_evidence(path: Path) -> bool:
     text = path.read_text(encoding='utf-8', errors='ignore')
-    if re.search(r'(?im)^\s*-\s*Plan State:\s*`?(red|green|refactor|verify|review|completed)`?\s*$', text):
-        return True
-
     red = section(text, ('RED Evidence', 'RED 증거'))
     if not red:
         return False
@@ -91,9 +86,43 @@ def has_red_evidence(path: Path) -> bool:
     return bool(re.search(r'(?i)\bexpect_fail\b|\bFAIL\b|실패|재현', red))
 
 
-def evidence_ready() -> bool:
-    plans = active_plan_files()
-    return any(has_red_evidence(plan) for plan in plans)
+def scoped_patterns(text: str) -> set[str]:
+    patterns: set[str] = set()
+    for match in re.findall(r'`([^`\n]+)`', text):
+        value = match.strip()
+        if '/' in value or value.startswith('.'):
+            patterns.add(value)
+
+    for match in re.findall(r'(?<![\w./-])(?:[A-Za-z0-9_.-]+/[\w./*\-]+|\.[\w./*\-]+)(?![\w./-])', text):
+        patterns.add(match.strip())
+
+    return patterns
+
+
+def pattern_allows(pattern: str, target: str) -> bool:
+    normalized = pattern.strip().replace('\\', '/')
+    if not normalized or normalized in {'/', '.', './'}:
+        return False
+    normalized = normalized.lstrip('./')
+    if normalized.endswith('/'):
+        normalized = f'{normalized}**'
+    if normalized.endswith('/**'):
+        prefix = normalized[:-3]
+        return target == prefix or target.startswith(f'{prefix}/')
+    if any(ch in normalized for ch in '*?[]'):
+        return fnmatch.fnmatch(target, normalized)
+    return target == normalized
+
+
+def plan_allows_target(plan: Path, target: str) -> bool:
+    text = plan.read_text(encoding='utf-8', errors='ignore')
+    if not has_red_evidence(plan):
+        return False
+    return any(pattern_allows(pattern, target) for pattern in scoped_patterns(text))
+
+
+def evidence_ready_for_target(target: str) -> bool:
+    return any(plan_allows_target(plan, target) for plan in active_plan_files())
 
 
 def main() -> int:
@@ -114,16 +143,17 @@ def main() -> int:
     if not path:
         fail('[evidence-gate] blocked: edit tool did not provide a target file path')
 
-    if is_plan_path(path):
+    if is_active_plan_path(path):
         return 0
 
-    if evidence_ready():
+    if evidence_ready_for_target(path):
         return 0
 
     message = (
         '[evidence-gate] blocked direct file edit before RED evidence. '
         f'target={path}. Create/update docs/harness/plans/active/*.md first, '
-        'then record RED Evidence or a documented RED exception before editing non-plan files. '
+        'then record RED Evidence or a documented RED exception and include the target file or glob scope '
+        'before editing non-plan files. '
         'Set HARNESS_EVIDENCE_HOOK_MODE=off only for an approved emergency bypass.'
     )
     if mode == 'warn':

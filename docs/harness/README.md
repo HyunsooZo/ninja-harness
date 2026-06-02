@@ -146,7 +146,7 @@ pwsh -File scripts/check-evidence-gate-hook.ps1
 
 `scripts/self-test-harness-gates.sh`는 하네스의 POSIX 통합 회귀 테스트다. Windows native 일상 흐름에서는 구조 검증, project gate, skill sync, profile readiness, eval metrics, model 관리 wrapper를 PowerShell로 실행할 수 있고, 전체 self-test는 Git Bash/WSL/Linux runner에서 실행한다.
 
-Claude Code에서는 `.claude/settings.json`의 `PreToolUse` hook이 `Edit`/`MultiEdit`/`Write`/`NotebookEdit` 직접 수정 전에 `scripts/check-evidence-gate-hook.py`를 실행한다. 활성 plan의 RED 증거 또는 RED 예외 없이 non-plan 파일을 직접 수정하면 hook이 exit code 2로 차단한다. PowerShell에서는 같은 Python 본체를 `scripts/check-evidence-gate-hook.ps1`로 실행할 수 있다. Bash 도구로 파일을 수정하는 우회는 1차 hook의 선행 차단 범위가 아니며, `make integrity`와 리뷰로 보완한다.
+Claude Code에서는 `.claude/settings.json`의 `PreToolUse` hook이 `Edit`/`MultiEdit`/`Write`/`NotebookEdit` 직접 수정 전에 `$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh`를 실행한다. 활성 plan의 RED 증거 또는 RED 예외 없이 non-plan 파일을 직접 수정하거나, 대상 파일/범위가 active plan에 없으면 hook이 exit code 2로 차단한다. PowerShell에서는 같은 Python 본체를 `scripts/check-evidence-gate-hook.ps1`로 실행할 수 있다. Bash 도구로 파일을 수정하는 우회는 1차 hook의 선행 차단 범위가 아니며, `make integrity`와 리뷰로 보완한다.
 
 ## 프로젝트 적용 준비도
 

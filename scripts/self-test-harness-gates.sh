@@ -219,7 +219,10 @@ expect_fail "completed plan quality rejects missing evidence markers" \
 rm -f "$completed_quality_dir/bad.md"
 
 evidence_hook_root="$tmp_dir/evidence-hook-root"
-mkdir -p "$evidence_hook_root/docs/harness/plans/active"
+mkdir -p "$evidence_hook_root/docs/harness/plans/active" "$evidence_hook_root/scripts"
+cp scripts/check-evidence-gate-hook.py "$evidence_hook_root/scripts/check-evidence-gate-hook.py"
+cp scripts/check-evidence-gate-hook.sh "$evidence_hook_root/scripts/check-evidence-gate-hook.sh"
+chmod +x "$evidence_hook_root/scripts/check-evidence-gate-hook.py" "$evidence_hook_root/scripts/check-evidence-gate-hook.sh"
 printf '{"tool_name":"Edit","tool_input":{"file_path":"docs/harness/plans/active/hook-test.md"}}\n' > "$tmp_dir/hook-plan-edit.json"
 printf '{"tool_name":"Edit","tool_input":{"file_path":"src/app.py"}}\n' > "$tmp_dir/hook-src-edit.json"
 
@@ -231,6 +234,39 @@ expect_fail "evidence hook blocks edit without RED" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 
+cat > "$evidence_hook_root/docs/harness/plans/active/stale.md" <<'EOF'
+# Stale plan
+
+## RED Evidence
+
+- 예외 사유: stale unrelated scope
+- 대체 검증: fixture
+- Risk left: none
+
+## Scope
+
+- `docs/only/**`
+EOF
+
+expect_fail "evidence hook rejects unrelated stale plan scope" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
+printf '{"tool_name":"Edit","tool_input":{"file_path":"docs/harness/plans/completed/old.md"}}\n' > "$tmp_dir/hook-completed-edit.json"
+expect_fail "evidence hook blocks completed plan direct edit without scope" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-completed-edit.json"
+
+cat > "$evidence_hook_root/docs/harness/plans/active/state-only.md" <<'EOF'
+# State only
+
+- Plan State: `red`
+EOF
+
+expect_fail "evidence hook rejects state-only RED" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
 cat > "$evidence_hook_root/docs/harness/plans/active/hook-test.md" <<'EOF'
 # Hook test
 
@@ -239,11 +275,19 @@ cat > "$evidence_hook_root/docs/harness/plans/active/hook-test.md" <<'EOF'
 - 예외 사유: hook self-test
 - 대체 검증: fixture
 - Risk left: none
+
+## Scope
+
+- `src/**`
 EOF
 
 expect_pass "evidence hook accepts documented RED exception" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+
+expect_pass "evidence hook wrapper works outside repo cwd" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      bash -c 'cd /tmp && "$2/scripts/check-evidence-gate-hook.sh" < "$1"' _ "$tmp_dir/hook-src-edit.json" "$PWD"
 
 eval_fixture_dir="$tmp_dir/eval-completed-plans"
 mkdir -p "$eval_fixture_dir"

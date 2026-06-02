@@ -56,6 +56,7 @@ required=(
   "scripts/collect-eval-metrics.ps1"
   "scripts/set-codex-agent-model.py"
   "scripts/set-codex-agent-model.ps1"
+  "scripts/check-evidence-gate-hook.sh"
   "scripts/check-evidence-gate-hook.py"
   "scripts/check-evidence-gate-hook.ps1"
 )

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 scripts/check-evidence-gate-hook.py"
+            "command": "\"$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh\""
           }
         ]
       }
