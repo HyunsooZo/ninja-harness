@@ -1487,7 +1487,7 @@ ci_workflow = ci_workflow_path.read_text(encoding='utf-8')
 for token in ['pull_request:', 'push:', 'make integrity', 'runs-on: windows-latest', 'shell: pwsh', 'pwsh -File scripts/doctor.ps1', 'pwsh -File scripts/check-harness-upgrade.ps1', 'pwsh -File scripts/verify-harness-structure.ps1', 'pwsh -File scripts/check-evidence-gate-hook.ps1', 'pwsh -File scripts/verify-project-gates.ps1', '$env:PYTHONUTF8 = "1"', '$env:HARNESS_VERIFY_MODE = "template"', '$env:HARNESS_VERIFY_MODE = "project"', '$env:HARNESS_BACKEND_TEST_SCRIPT', 'harness-ci-smoke.ps1', '$LASTEXITCODE -ne 2']:
     check(token in ci_workflow, f'active CI workflow missing dogfood token: {token}')
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
-for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
+for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink', 'lower-level runner']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
 for path in [
     root/'README.md',

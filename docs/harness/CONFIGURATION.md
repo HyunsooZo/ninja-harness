@@ -49,7 +49,7 @@
 
 | 변수 | 기본값 | 의미 |
 |---|---|---|
-| `HARNESS_ORG_STANDARD` | (off) | `1`이면 조직 표준 모드. repository script gate를 강제. |
+| `HARNESS_ORG_STANDARD` | (off) | `1`이면 조직 표준 모드. `make verify-org`에서는 repository script gate를 강제. |
 | `HARNESS_ACK_TRUSTED_PROJECT_CMDS` | (off) | `1`이면 신뢰된 프로젝트 명령 실행을 명시 승인. |
 | `HARNESS_REQUIRE_FILLED_OWNERSHIP` | (off) | `1`이면 LICENSE/CODEOWNERS/OWNERSHIP/SECURITY placeholder가 남아 있으면 실패. |
 

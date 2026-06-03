@@ -41,7 +41,7 @@ Windows PowerShell에서는 같은 계약을 `pwsh -File scripts/verify-project-
 
 - 구조 검증을 통과해야 한다.
 - project gate가 실행되어야 한다.
-- 최소 하나 이상의 `HARNESS_*_SCRIPT` 또는 명시 허용된 legacy `HARNESS_*_CMD`가 설정되어야 한다.
+- 권장 Makefile 진입점인 `make verify-org`는 최소 하나 이상의 `HARNESS_*_SCRIPT`를 요구한다.
 - completed plan 품질 검사를 통과해야 한다.
 - gate 설정이 신뢰된 CI 또는 maintainer-controlled임을 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`로 확인해야 한다.
 
@@ -90,7 +90,7 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행하며, 하네스 runner는 `-NoProfile -NonInteractive`를 붙인다.
 - `.py` gate는 Python으로 실행한다.
 - Legacy: `HARNESS_*_CMD`는 `bash -lc`로 실행된다.
-- 조직 표준에서 legacy command를 쓰려면 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`과 `HARNESS_ALLOW_LEGACY_BASH_LC=1`을 모두 설정한다.
+- 조직 표준에서 legacy command를 쓰려면 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`과 `HARNESS_ALLOW_LEGACY_BASH_LC=1`을 모두 설정하고, Makefile 진입점 대신 `scripts/verify-project-gates.*` 같은 lower-level runner를 예외 승인과 함께 직접 실행한다.
 - 외부 입력, PR 본문, 이슈 내용, 사용자 입력을 그대로 gate 변수에 연결하지 않는다.
 - workflow 또는 gate script 변경은 code-owner review/branch protection으로 리뷰를 강제한다.
 - secret, token, key를 출력하는 명령은 gate로 등록하지 않는다.
