@@ -21,6 +21,16 @@
 - 작은 오타, 문구, 단일 파일 정리는 `docs/harness/context/INDEX.md`의 `T0_MINIMAL` 기준으로 처리한다.
 - 동작 변경이 아니면 자동화 RED 대신 active plan 또는 최종 보고에 예외 사유와 대체 검증을 남긴다.
 - Claude Code hook을 바로 hard-stop으로 쓰기 부담스럽다면 `HARNESS_EVIDENCE_HOOK_MODE=warn`으로 시작하고, 중요한 작업부터 `strict`로 올린다.
+- 개발자별로 warn 모드를 유지하려면 gitignore되는 `.claude/settings.local.json`에 로컬 env를 둔다.
+
+```json
+{
+  "env": {
+    "HARNESS_EVIDENCE_HOOK_MODE": "warn"
+  }
+}
+```
+
 - 큰 기능, API 계약, 권한, 보안, 데이터 변경은 라이트 운영에서도 active plan과 RED/GREEN/VERIFY 증거를 남긴다.
 
 ## 1. 먼저 읽는다
