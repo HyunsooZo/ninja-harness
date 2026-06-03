@@ -446,7 +446,7 @@ for name, skill_dir in sorted(codex_skill_dirs.items()):
     check(len(desc) >= 50, f'skill description should include trigger words: {skill_dir}/SKILL.md')
 
 # CONFIGURATION.md must stay in sync with every HARNESS_* env var the harness actually
-# consumes (scripts) or declares (harness.yaml). Bidirectional: no undocumented var, no ghost.
+# consumes (scripts/workflows) or declares (harness.yaml). Bidirectional: no undocumented var, no ghost.
 config_undocumented, config_ghost = reference_drift(root)
 check(not config_undocumented, f'CONFIGURATION.md missing HARNESS_* env vars used by harness: {config_undocumented}')
 check(not config_ghost, f'CONFIGURATION.md documents HARNESS_* env vars not used anywhere: {config_ghost}')
