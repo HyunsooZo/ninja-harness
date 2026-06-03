@@ -15,6 +15,7 @@
 - Evidence hook 대상 경로가 repository 밖이면 넓은 glob scope에도 매칭하지 않도록 target 경계 검증을 추가했다.
 - 조직 표준 문서에서 `make verify-org`는 `HARNESS_*_SCRIPT`를 요구하고 legacy `HARNESS_*_CMD`는 lower-level 예외 경로임을 명확히 했다.
 - Completed plan 품질 검사가 `Pending:` 라벨 형태의 미완성 evidence placeholder도 거부하도록 보강했다.
+- Completed plan 품질 검사가 RED/GREEN/REFACTOR/VERIFY/Risk 단어만 있는 문장이나 빈 evidence heading을 완료 증거로 인정하지 않도록 강화했다.
 
 ## 0.3.0
 

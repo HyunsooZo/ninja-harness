@@ -7,12 +7,41 @@ from scripts.harness_lib.completed_plans import completed_plan_files, plan_missi
 
 class CompletedPlanQualityTest(unittest.TestCase):
     def test_accepts_required_evidence_markers(self) -> None:
-        text = 'RED\nGREEN\nREFACTOR\nVERIFY\n잔여 위험: none\n'
+        text = (
+            '## RED Evidence\n- 명령: failed test\n'
+            '## GREEN Evidence\n- 확인: passed test\n'
+            '## REFACTOR Decision\n- 결정: none\n'
+            '## VERIFY Evidence\n- 결과: pass\n'
+            '## Residual Risk\n- none\n'
+        )
         self.assertEqual(plan_missing_markers(text), [])
 
     def test_rejects_missing_residual_risk(self) -> None:
-        text = 'RED\nGREEN\nREFACTOR\nVERIFY\n'
+        text = (
+            '## RED Evidence\n- 명령: failed test\n'
+            '## GREEN Evidence\n- 확인: passed test\n'
+            '## REFACTOR Decision\n- 결정: none\n'
+            '## VERIFY Evidence\n- 결과: pass\n'
+        )
         self.assertIn('residual risk', plan_missing_markers(text))
+
+    def test_rejects_marker_words_without_evidence_sections(self) -> None:
+        text = 'No RED evidence yet. No GREEN evidence yet. No REFACTOR decision yet. No VERIFY evidence yet. No Risk left yet.\n'
+        missing = plan_missing_markers(text)
+        self.assertIn('RED evidence', missing)
+        self.assertIn('GREEN evidence', missing)
+        self.assertIn('REFACTOR decision', missing)
+        self.assertIn('VERIFY evidence', missing)
+        self.assertIn('residual risk', missing)
+
+    def test_rejects_empty_evidence_sections(self) -> None:
+        text = '## RED Evidence\n\n## GREEN Evidence\n\n## REFACTOR Decision\n\n## VERIFY Evidence\n\n## Residual Risk\n\n'
+        missing = plan_missing_markers(text)
+        self.assertIn('RED evidence', missing)
+        self.assertIn('GREEN evidence', missing)
+        self.assertIn('REFACTOR decision', missing)
+        self.assertIn('VERIFY evidence', missing)
+        self.assertIn('residual risk', missing)
 
     def test_rejects_pending_evidence_placeholders(self) -> None:
         text = (
@@ -45,17 +74,24 @@ class CompletedPlanQualityTest(unittest.TestCase):
 
     def test_accepts_documented_temporary_command_placeholders(self) -> None:
         text = (
-            'RED\n'
+            '## RED Evidence\n'
             '- 명령: `HARNESS_COMPLETED_PLAN_DIR=<tmp> bash scripts/check-completed-plan-quality.sh`\n'
-            'GREEN\n'
-            'REFACTOR\n'
-            'VERIFY\n'
-            '잔여 위험: none\n'
+            '## GREEN Evidence\n- 확인: PASS\n'
+            '## REFACTOR Decision\n- 결정: none\n'
+            '## VERIFY Evidence\n- 결과: PASS\n'
+            '## Residual Risk\n- none\n'
         )
         self.assertEqual(plan_missing_markers(text), [])
 
     def test_layered_plan_requires_fan_in_evidence(self) -> None:
-        missing = plan_missing_markers('SEQUENTIAL_LAYERED\nRED GREEN REFACTOR VERIFY\n잔여 위험: none\n')
+        missing = plan_missing_markers(
+            'SEQUENTIAL_LAYERED\n'
+            '## RED Evidence\n- 명령: failed test\n'
+            '## GREEN Evidence\n- 확인: passed test\n'
+            '## REFACTOR Decision\n- 결정: none\n'
+            '## VERIFY Evidence\n- 결과: pass\n'
+            '## Residual Risk\n- none\n'
+        )
         self.assertIn('integration owner', missing)
         self.assertIn('contract consistency check', missing)
 
@@ -63,13 +99,27 @@ class CompletedPlanQualityTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             completed_dir = Path(tmp)
             plan = completed_dir / 'local.md'
-            plan.write_text('RED GREEN REFACTOR VERIFY\n잔여 위험: none\n', encoding='utf-8')
+            plan.write_text(
+                '## RED Evidence\n- 명령: failed test\n'
+                '## GREEN Evidence\n- 확인: passed test\n'
+                '## REFACTOR Decision\n- 결정: none\n'
+                '## VERIFY Evidence\n- 결과: pass\n'
+                '## Residual Risk\n- none\n',
+                encoding='utf-8',
+            )
             self.assertEqual(completed_plan_files(completed_dir, 'local'), [plan])
 
     def test_tracked_source_ignores_external_local_directory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             completed_dir = Path(tmp)
-            (completed_dir / 'local.md').write_text('RED GREEN REFACTOR VERIFY\n잔여 위험: none\n', encoding='utf-8')
+            (completed_dir / 'local.md').write_text(
+                '## RED Evidence\n- 명령: failed test\n'
+                '## GREEN Evidence\n- 확인: passed test\n'
+                '## REFACTOR Decision\n- 결정: none\n'
+                '## VERIFY Evidence\n- 결과: pass\n'
+                '## Residual Risk\n- none\n',
+                encoding='utf-8',
+            )
             self.assertEqual(completed_plan_files(completed_dir, 'tracked'), [])
 
 

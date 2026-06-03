@@ -303,13 +303,40 @@ expect_pass "completed plan quality accepts empty directory" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
 
-printf '# Good completed plan\n\nRED GREEN REFACTOR VERIFY\n잔여 위험: none\n' > "$completed_quality_dir/good.md"
+cat > "$completed_quality_dir/good.md" <<'EOF'
+# Good completed plan
+
+## RED Evidence
+
+- 명령: failed fixture
+
+## GREEN Evidence
+
+- 확인: passed fixture
+
+## REFACTOR Decision
+
+- 결정: none
+
+## VERIFY Evidence
+
+- 결과: pass
+
+## Residual Risk
+
+- none
+EOF
 expect_pass "completed plan quality accepts required evidence markers" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
 
 printf '# Bad completed plan\n\nVERIFY only\n' > "$completed_quality_dir/bad.md"
 expect_fail "completed plan quality rejects missing evidence markers" \
+  env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
+      bash scripts/check-completed-plan-quality.sh
+
+printf '# Word-only completed plan\n\nNo RED evidence yet. No GREEN evidence yet. No REFACTOR decision yet. No VERIFY evidence yet. No Risk left yet.\n' > "$completed_quality_dir/word-only.md"
+expect_fail "completed plan quality rejects marker words without evidence sections" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
 
@@ -322,7 +349,7 @@ expect_pass "completed plan quality tracked source ignores local fixture files" 
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       HARNESS_COMPLETED_PLAN_SOURCE=tracked \
       bash scripts/check-completed-plan-quality.sh
-rm -f "$completed_quality_dir/bad.md" "$completed_quality_dir/pending.md"
+rm -f "$completed_quality_dir/bad.md" "$completed_quality_dir/word-only.md" "$completed_quality_dir/pending.md"
 
 evidence_hook_root="$tmp_dir/evidence-hook-root"
 mkdir -p "$evidence_hook_root/docs/harness/plans/active" "$evidence_hook_root/scripts"

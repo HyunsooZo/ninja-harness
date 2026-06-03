@@ -488,6 +488,7 @@ for token in [
     'evidence hook bypass mode requires audit reason',
     'evidence hook bypass mode accepts audit reason',
     'completed plan quality tracked source ignores local fixture files',
+    'completed plan quality rejects marker words without evidence sections',
     'eval tracked source ignores local fixture files',
     'harness upgrade checker accepts changelog delta from previous version',
     'harness upgrade checker rejects ownership placeholders when required',
@@ -504,7 +505,7 @@ for token in [
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
 
 completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
-for token in ['HARNESS_COMPLETED_PLAN_DIR', 'HARNESS_COMPLETED_PLAN_SOURCE', 'completed_plan_files', 'completed plan quality: no completed plans', 'plan_missing_markers']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'HARNESS_COMPLETED_PLAN_SOURCE', 'completed_plan_files', 'completed plan quality: no completed plans', 'plan_missing_markers', '_has_evidence_marker']:
     check(token in completed_quality_text, f'completed plan quality script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')

@@ -62,20 +62,70 @@ def has_unresolved_evidence_placeholder(text: str) -> bool:
     return False
 
 
+REQUIRED_MARKERS = (
+    ('RED evidence', ('RED Evidence', 'RED 증거', 'RED', '사전 실패')),
+    ('GREEN evidence', ('GREEN / REFACTOR Evidence', 'GREEN Evidence', 'GREEN 증거', 'GREEN', '구현 증거', '구현')),
+    (
+        'REFACTOR decision',
+        (
+            'GREEN / REFACTOR Evidence',
+            'REFACTOR Decision',
+            'REFACTOR Evidence',
+            'REFACTOR 증거',
+            'REFACTOR 기록',
+            'Refactor Note',
+            'REFACTOR',
+            '리팩토링 기록',
+            '리팩터링 기록',
+            '리팩토링',
+            '리팩터링',
+        ),
+    ),
+    ('VERIFY evidence', ('VERIFY Evidence', 'VERIFY 증거', 'Verify Report', 'VERIFY', '검증 보고', '검증')),
+    ('residual risk', ('Residual risk / 잔여 위험', 'Residual Risk', 'Risks left', 'Risk left', 'Risk Left', 'Risk', '잔여 위험', '남은 위험', '위험')),
+)
+
+
+def _marker_value(line: str, aliases: tuple[str, ...]) -> str | None:
+    candidate = re.sub(r'^\s*#+\s*', '', line).strip()
+    candidate = re.sub(r'^\s*[-*]\s*', '', candidate).strip()
+    for alias in aliases:
+        if re.search(rf'(?i)\|\s*{re.escape(alias)}\s*\|', line):
+            return 'table row'
+        match = re.match(rf'(?i)^{re.escape(alias)}(?:\s*[:：]\s*(?P<value>.*)|\s*)$', candidate)
+        if match:
+            return (match.group('value') or '').strip()
+    return None
+
+
+def _is_any_required_marker(line: str) -> bool:
+    return any(_marker_value(line, aliases) is not None for _, aliases in REQUIRED_MARKERS)
+
+
+def _has_evidence_marker(text: str, aliases: tuple[str, ...]) -> bool:
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        value = _marker_value(line, aliases)
+        if value is None:
+            continue
+        if value:
+            return True
+        for following in lines[index + 1:]:
+            if not following.strip():
+                continue
+            if _is_any_required_marker(following):
+                break
+            return True
+    return False
+
+
 def plan_missing_markers(text: str) -> list[str]:
     missing: list[str] = []
     if has_unresolved_evidence_placeholder(text):
         missing.append('pending evidence placeholders')
-    if 'RED' not in text and '사전 실패' not in text:
-        missing.append('RED evidence')
-    if 'GREEN' not in text and '구현' not in text:
-        missing.append('GREEN evidence')
-    if 'REFACTOR' not in text and '리팩토링' not in text and '리팩터링' not in text:
-        missing.append('REFACTOR decision')
-    if 'VERIFY' not in text and '검증' not in text:
-        missing.append('VERIFY evidence')
-    if '잔여 위험' not in text and 'Risk' not in text and 'risk' not in text:
-        missing.append('residual risk')
+    for label, aliases in REQUIRED_MARKERS:
+        if not _has_evidence_marker(text, aliases):
+            missing.append(label)
 
     if any(mode in text for mode in ('SEQUENTIAL_LAYERED', 'PARALLEL_IMPLEMENT', 'PARALLEL_REVIEW', 'PARALLEL_INVESTIGATION')):
         if '통합 담당자' not in text:
