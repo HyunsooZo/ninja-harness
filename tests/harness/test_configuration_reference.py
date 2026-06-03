@@ -131,6 +131,21 @@ class ConfigurationReferenceTest(unittest.TestCase):
             self.assertIn('HARNESS_WORKFLOW_FLAG', reality)
             self.assertIn('HARNESS_WORKFLOW_PS_FLAG', reality)
 
+    def test_detects_powershell_script_env_vars(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, 'all:\n\techo ok\n', '# config\n(no vars)\n')
+            script = tmp / 'scripts' / 'example.ps1'
+            script.write_text(
+                '$env:HARNESS_PS_SCRIPT_FLAG = "1"\n'
+                'Write-Host $env:HARNESS_PS_SCRIPT_READ_FLAG\n',
+                encoding='utf-8',
+            )
+
+            reality = reality_env_vars(tmp)
+            self.assertIn('HARNESS_PS_SCRIPT_FLAG', reality)
+            self.assertIn('HARNESS_PS_SCRIPT_READ_FLAG', reality)
+
     def test_comments_are_not_env_vars(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw)

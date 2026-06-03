@@ -156,6 +156,12 @@ def env_vars_consumed_in_scripts(root: Path) -> set[str]:
         for pattern in _SHELL_READ_PATTERNS:
             found |= _clean(re.findall(pattern, text))
 
+    powershell_sources = sorted((root / 'scripts').glob('*.ps1'))
+    for src in powershell_sources:
+        text = _strip_hash_comments(src.read_text(encoding='utf-8'))
+        for pattern in _WORKFLOW_READ_PATTERNS:
+            found |= _clean(re.findall(pattern, text))
+
     python_sources = sorted((root / 'scripts').glob('*.py'))
     python_sources += sorted((root / 'scripts' / 'harness_lib').glob('*.py'))
     for src in python_sources:
