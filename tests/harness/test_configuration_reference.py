@@ -76,6 +76,26 @@ class ConfigurationReferenceTest(unittest.TestCase):
             self.assertIn('HARNESS_WORKFLOW_FLAG', reality)
             self.assertIn('HARNESS_WORKFLOW_PS_FLAG', reality)
 
+    def test_comments_are_not_env_vars(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, '# HARNESS_SCRIPT_COMMENT=1\n', '# config\n(no vars)\n')
+            workflow_dir = tmp / '.github' / 'workflows'
+            workflow_dir.mkdir(parents=True)
+            (workflow_dir / 'verify.yml').write_text(
+                '# HARNESS_WORKFLOW_COMMENT=1\n'
+                'jobs:\n'
+                '  verify:\n'
+                '    steps:\n'
+                '      - run: echo ok # HARNESS_WORKFLOW_INLINE_COMMENT=1\n',
+                encoding='utf-8',
+            )
+
+            reality = reality_env_vars(tmp)
+            self.assertNotIn('HARNESS_SCRIPT_COMMENT', reality)
+            self.assertNotIn('HARNESS_WORKFLOW_COMMENT', reality)
+            self.assertNotIn('HARNESS_WORKFLOW_INLINE_COMMENT', reality)
+
 
 if __name__ == '__main__':
     unittest.main()

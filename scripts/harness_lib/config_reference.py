@@ -39,6 +39,37 @@ def _clean(names) -> set[str]:
     return {name for name in names if not name.endswith('_')}
 
 
+def _strip_hash_comments(text: str) -> str:
+    lines: list[str] = []
+    for line in text.splitlines():
+        in_single = False
+        in_double = False
+        escaped = False
+        kept: list[str] = []
+        for char in line:
+            if escaped:
+                kept.append(char)
+                escaped = False
+                continue
+            if char == '\\' and not in_single:
+                kept.append(char)
+                escaped = True
+                continue
+            if char == "'" and not in_double:
+                in_single = not in_single
+                kept.append(char)
+                continue
+            if char == '"' and not in_single:
+                in_double = not in_double
+                kept.append(char)
+                continue
+            if char == '#' and not in_single and not in_double:
+                break
+            kept.append(char)
+        lines.append(''.join(kept))
+    return '\n'.join(lines)
+
+
 def env_vars_in_text(text: str) -> set[str]:
     """HARNESS_* tokens mentioned in arbitrary text (e.g. CONFIGURATION.md)."""
     return _clean(re.findall(_TOKEN_PATTERN, text))
@@ -51,7 +82,7 @@ def env_vars_consumed_in_scripts(root: Path) -> set[str]:
     shell_sources = [makefile] if makefile.exists() else []
     shell_sources += sorted((root / 'scripts').glob('*.sh'))
     for src in shell_sources:
-        text = src.read_text(encoding='utf-8')
+        text = _strip_hash_comments(src.read_text(encoding='utf-8'))
         for pattern in _SHELL_READ_PATTERNS:
             found |= _clean(re.findall(pattern, text))
 
@@ -71,7 +102,7 @@ def env_vars_consumed_in_workflows(root: Path) -> set[str]:
     workflow_dir = root / '.github' / 'workflows'
     workflow_sources = sorted(workflow_dir.glob('*.yml')) + sorted(workflow_dir.glob('*.yaml'))
     for src in workflow_sources:
-        text = src.read_text(encoding='utf-8')
+        text = _strip_hash_comments(src.read_text(encoding='utf-8'))
         for pattern in _WORKFLOW_READ_PATTERNS + _SHELL_READ_PATTERNS:
             found |= _clean(re.findall(pattern, text))
     return found
