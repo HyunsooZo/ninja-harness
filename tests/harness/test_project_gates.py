@@ -43,7 +43,7 @@ class ProjectGateValidationTest(unittest.TestCase):
         try:
             self.assertEqual(
                 project_gates.command_for_script(script),
-                ['pwsh', '-NoProfile', '-File', str(script)],
+                ['pwsh', '-NoProfile', '-NonInteractive', '-File', str(script)],
             )
         finally:
             project_gates.powershell_executable = original

@@ -7,7 +7,7 @@
 - 5분 온보딩에 최소 적용 경로, 개인/라이트 운영, `HARNESS_EVIDENCE_HOOK_MODE=warn` 로컬 설정 예시를 추가해 adopter 진입 표면을 줄였다.
 - `CONFIGURATION.md` drift 대조에 `scripts/*.ps1`과 `.github/workflows/*.yml` / `.github/workflows/*.yaml`의 `HARNESS_*` 사용을 포함하고, PowerShell `$Env:` provider 표기도 대소문자 무관하게 감지하도록 정합화했다.
 - completed plan 품질 검사를 보강해 미완성 evidence placeholder를 더 넓게 거부하고, Python 상수명/주석/docstring, 비-env 객체 메서드, shell/workflow 주석을 `HARNESS_*` 환경변수로 오인하지 않도록 설정 대조 정밀도를 조정했다.
-- PowerShell project gate 실행 시 `-NoProfile`을 사용해 로컬/CI profile script에 따른 비결정성을 줄였다.
+- PowerShell project gate 실행 시 `-NoProfile -NonInteractive`를 사용해 로컬/CI profile script나 프롬프트에 따른 비결정성을 줄였다.
 
 ## 0.3.0
 
