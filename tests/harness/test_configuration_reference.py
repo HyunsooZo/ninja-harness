@@ -146,6 +146,16 @@ class ConfigurationReferenceTest(unittest.TestCase):
             self.assertIn('HARNESS_PS_SCRIPT_FLAG', reality)
             self.assertIn('HARNESS_PS_SCRIPT_READ_FLAG', reality)
 
+    def test_detects_powershell_env_provider_case_insensitively(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, 'all:\n\techo ok\n', '# config\n(no vars)\n')
+            script = tmp / 'scripts' / 'example.ps1'
+            script.write_text('$Env:HARNESS_PS_CASE_FLAG = "1"\n', encoding='utf-8')
+
+            reality = reality_env_vars(tmp)
+            self.assertIn('HARNESS_PS_CASE_FLAG', reality)
+
     def test_comments_are_not_env_vars(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw)

@@ -21,7 +21,7 @@ _SHELL_READ_PATTERNS = [
 
 _WORKFLOW_READ_PATTERNS = [
     r"(?m)^[ \t]*(HARNESS_[A-Z0-9_]+)\s*:",
-    r"\$env:(HARNESS_[A-Z0-9_]+)\b",
+    r"(?i:\$env:)(HARNESS_[A-Z0-9_]+)\b",
 ]
 
 # Boundary-guarded token match (drops path-name false hits like 08_HARNESS_AUDIT.md).

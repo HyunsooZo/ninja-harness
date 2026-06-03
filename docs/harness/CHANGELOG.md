@@ -5,7 +5,7 @@
 - evidence hook의 `scoped_patterns`가 Editable Scope 섹션의 루트 bare 파일명(`MANIFEST.md`, 점 포함 파일, 실제 존재하는 `VERSION`/`LICENSE`/`Makefile`)을 인식하도록 보강했다. 공백 포함 backtick(명령 문자열)은 scope 패턴에서 제외한다.
 - 회귀 단위테스트 3개를 추가했다(루트 파일명/확장자 없는 루트 파일/공백 backtick).
 - 5분 온보딩에 최소 적용 경로, 개인/라이트 운영, `HARNESS_EVIDENCE_HOOK_MODE=warn` 로컬 설정 예시를 추가해 adopter 진입 표면을 줄였다.
-- `CONFIGURATION.md` drift 대조에 `scripts/*.ps1`과 `.github/workflows/*.yml` / `.github/workflows/*.yaml`의 `HARNESS_*` 사용을 포함하고, 관련 단위테스트와 문서 표현을 정합화했다.
+- `CONFIGURATION.md` drift 대조에 `scripts/*.ps1`과 `.github/workflows/*.yml` / `.github/workflows/*.yaml`의 `HARNESS_*` 사용을 포함하고, PowerShell `$Env:` provider 표기도 대소문자 무관하게 감지하도록 정합화했다.
 - completed plan 품질 검사를 보강해 미완성 evidence placeholder를 더 넓게 거부하고, Python 상수명/주석/docstring, 비-env 객체 메서드, shell/workflow 주석을 `HARNESS_*` 환경변수로 오인하지 않도록 설정 대조 정밀도를 조정했다.
 
 ## 0.3.0
