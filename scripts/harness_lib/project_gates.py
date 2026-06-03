@@ -85,7 +85,7 @@ def command_for_script(script: Path) -> list[str]:
         ps = powershell_executable()
         if not ps:
             fail('pwsh or Windows PowerShell is required to run .ps1 project gate scripts')
-        return [ps, '-File', str(script)]
+        return [ps, '-NoProfile', '-File', str(script)]
     if suffix == '.py':
         return [python_executable(), str(script)]
     if not os.access(script, os.X_OK):

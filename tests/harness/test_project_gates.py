@@ -34,6 +34,20 @@ class ProjectGateValidationTest(unittest.TestCase):
         script.write_text('print("ok")\n', encoding='utf-8')
         self.assertEqual(project_gates.validate_repo_script('scripts/ci/test.py'), script)
 
+    def test_powershell_script_gate_disables_profile(self) -> None:
+        script = project_gates.ROOT / 'scripts/ci/test.ps1'
+        script.parent.mkdir(parents=True)
+        script.write_text('exit 0\n', encoding='utf-8')
+        original = project_gates.powershell_executable
+        project_gates.powershell_executable = lambda: 'pwsh'
+        try:
+            self.assertEqual(
+                project_gates.command_for_script(script),
+                ['pwsh', '-NoProfile', '-File', str(script)],
+            )
+        finally:
+            project_gates.powershell_executable = original
+
 
 if __name__ == '__main__':
     unittest.main()
