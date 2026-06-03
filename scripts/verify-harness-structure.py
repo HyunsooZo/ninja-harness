@@ -1486,6 +1486,14 @@ for token in ['pull_request:', 'push:', 'make integrity', 'runs-on: windows-late
 org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
 for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
+for path in [
+    root/'docs/harness/SECURITY_POLICY.md',
+    root/'docs/harness/CI_EXAMPLES.md',
+    root/'docs/harness/ORG_ROLLOUT.md',
+    root/'docs/harness/README.md',
+]:
+    text = path.read_text(encoding='utf-8')
+    check('-NoProfile -NonInteractive' in text, f'{path} must document deterministic PowerShell project gate invocation')
 vpg_text = (root/'scripts/harness_lib/project_gates.py').read_text(encoding='utf-8')
 for required in ['HARNESS_ACK_TRUSTED_PROJECT_CMDS', 'bash -lc', 'ALLOWED_ROOTS', 'is_symlink']:
     check(required in vpg_text, f'verify-project-gates missing trust policy: {required}')

@@ -35,7 +35,7 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' \
 bash scripts/verify-harness-structure.sh
 ```
 
-Windows PowerShell에서는 같은 계약을 `pwsh -File scripts/verify-project-gates.ps1`로 실행할 수 있다. `.ps1`/`.py` gate는 네이티브 실행이고, `.sh` gate는 Bash가 있는 환경에서만 실행된다.
+Windows PowerShell에서는 같은 계약을 `pwsh -File scripts/verify-project-gates.ps1`로 실행할 수 있다. `.ps1` gate는 하네스 runner가 `-NoProfile -NonInteractive`로 실행하고, `.py` gate는 네이티브 실행이다. `.sh` gate는 Bash가 있는 환경에서만 실행된다.
 
 `HARNESS_ORG_STANDARD=1`은 다음을 의미한다.
 
@@ -87,7 +87,7 @@ Codex agent TOML의 모델명은 `docs/harness/harness.yaml`의 `runtime.codex_a
 - 허용 경로: `scripts/ci/**`, `.github/scripts/**`, `ci/**`.
 - 허용 경로 안의 script 파일과 경로 구성 요소는 symlink이면 안 된다.
 - `.sh` gate는 Bash와 실행 권한이 필요하다.
-- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행한다.
+- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행하며, 하네스 runner는 `-NoProfile -NonInteractive`를 붙인다.
 - `.py` gate는 Python으로 실행한다.
 - Legacy: `HARNESS_*_CMD`는 `bash -lc`로 실행된다.
 - 조직 표준에서 legacy command를 쓰려면 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`과 `HARNESS_ALLOW_LEGACY_BASH_LC=1`을 모두 설정한다.

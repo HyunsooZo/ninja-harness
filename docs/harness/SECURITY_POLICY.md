@@ -24,7 +24,7 @@
 실행 정책:
 
 - `.sh` gate는 Bash로 실행하고 실행 권한이 필요하다.
-- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행한다.
+- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행하며, 하네스 runner는 `-NoProfile -NonInteractive`를 붙여 profile script와 프롬프트 영향을 줄인다.
 - `.py` gate는 Python으로 실행한다.
 - 그 외 파일은 직접 실행 가능한 파일이어야 한다.
 

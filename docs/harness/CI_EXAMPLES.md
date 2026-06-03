@@ -70,7 +70,7 @@ jobs:
           }
 ```
 
-`powershell-structure` job은 Windows native PowerShell에서 template/project 구조 검증 entrypoint가 실행되는지 확인한다. 실제 project gate도 `scripts/verify-project-gates.ps1`로 실행할 수 있다. `.ps1`/`.py` gate는 네이티브 실행이고, `.sh` gate를 선택하면 Bash가 필요하므로 Linux/WSL/Git Bash 계열 job에서 검증한다.
+`powershell-structure` job은 Windows native PowerShell에서 template/project 구조 검증 entrypoint가 실행되는지 확인한다. 실제 project gate도 `scripts/verify-project-gates.ps1`로 실행할 수 있다. `.ps1` gate는 하네스 runner가 `-NoProfile -NonInteractive`로 실행하고, `.py` gate는 네이티브 실행이다. `.sh` gate를 선택하면 Bash가 필요하므로 Linux/WSL/Git Bash 계열 job에서 검증한다.
 
 ## 권장 repository script 예시
 
@@ -94,7 +94,7 @@ npm audit --audit-level=high
 
 - `HARNESS_*_SCRIPT`에 `scripts/ci/**`, `.github/scripts/**`, `ci/**` 아래의 파일을 지정한다.
 - `.sh` gate는 Bash로 실행되며 실행 권한이 필요하다.
-- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행한다.
+- `.ps1` gate는 `pwsh` 또는 Windows PowerShell로 실행하며, 하네스 runner는 `-NoProfile -NonInteractive`를 붙인다.
 - `.py` gate는 현재 Python interpreter로 실행한다.
 - Gate script 파일과 경로 구성 요소는 symlink이면 안 된다.
 - 조직 표준 CI에서는 `HARNESS_ACK_TRUSTED_PROJECT_CMDS=1`을 설정해 gate 설정이 maintainer-controlled임을 명시한다.
