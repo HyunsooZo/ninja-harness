@@ -58,6 +58,28 @@ class UpgradeCheckerTest(unittest.TestCase):
         errors = self.mod.run_checks(self.root, require_downstream_audit=True)
         self.assertIn('downstream audit requires --downstream-root', errors)
 
+    def test_changed_paths_reject_parent_traversal(self) -> None:
+        changed_paths = Path(self.tmp.name) / 'changed-paths.txt'
+        changed_paths.write_text('../scripts/check-harness-upgrade.py\n', encoding='utf-8')
+        errors = self.mod.run_checks(
+            self.root,
+            downstream_root=self.downstream,
+            changed_paths_file=changed_paths,
+            require_downstream_audit=True,
+        )
+        self.assertIn('changed path must be repository-relative without parent traversal: ../scripts/check-harness-upgrade.py', errors)
+
+    def test_changed_paths_reject_absolute_path(self) -> None:
+        changed_paths = Path(self.tmp.name) / 'changed-paths.txt'
+        changed_paths.write_text('/tmp/scripts/check-harness-upgrade.py\n', encoding='utf-8')
+        errors = self.mod.run_checks(
+            self.root,
+            downstream_root=self.downstream,
+            changed_paths_file=changed_paths,
+            require_downstream_audit=True,
+        )
+        self.assertIn('changed path must be repository-relative without parent traversal: /tmp/scripts/check-harness-upgrade.py', errors)
+
     def test_clean_downstream_audit_detects_changed_harness_file(self) -> None:
         changed_paths = Path(self.tmp.name) / 'changed-paths.txt'
         changed_paths.write_text('scripts/check-harness-upgrade.py\n', encoding='utf-8')

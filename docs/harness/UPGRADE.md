@@ -41,7 +41,7 @@ pwsh -File scripts/check-harness-upgrade.ps1 `
 3. 프로젝트별 `context/**`, `profiles/**`, 완료 plan은 덮어쓰지 않는다.
 4. 스킬을 수정했다면 `scripts/sync-skills.sh`, `python3 scripts/sync-skills.py`, 또는 `pwsh -File scripts/sync-skills.ps1`를 실행한다.
 
-`--changed-paths-file`에는 upstream template에서 바뀐 파일 목록을 한 줄에 하나씩 넣는다. git tag 또는 branch 기준으로 계산할 수 있으면 `--from-ref <ref>`를 대신 쓸 수 있다. `--require-clean-downstream`은 바뀐 하네스 소유 파일이 다운스트림에서 이미 달라져 있거나, 새 managed file이 다운스트림에 없거나, `docs/harness/context/**`, `docs/harness/profiles/**`, `docs/harness/plans/**` 같은 프로젝트 소유 경로가 변경 목록에 있으면 manual merge 대상으로 실패 처리한다.
+`--changed-paths-file`에는 upstream template에서 바뀐 repository-relative 파일 목록을 한 줄에 하나씩 넣는다. 절대경로와 `..` parent traversal은 거부한다. git tag 또는 branch 기준으로 계산할 수 있으면 `--from-ref <ref>`를 대신 쓸 수 있다. `--require-clean-downstream`은 바뀐 하네스 소유 파일이 다운스트림에서 이미 달라져 있거나, 새 managed file이 다운스트림에 없거나, `docs/harness/context/**`, `docs/harness/profiles/**`, `docs/harness/plans/**` 같은 프로젝트 소유 경로가 변경 목록에 있으면 manual merge 대상으로 실패 처리한다.
 
 ## 업그레이드 후
 

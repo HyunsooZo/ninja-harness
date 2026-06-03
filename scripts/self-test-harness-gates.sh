@@ -598,6 +598,13 @@ expect_fail "harness upgrade checker rejects deleted upstream managed file left 
     --require-downstream-audit \
     --require-clean-downstream
 
+printf '../scripts/check-harness-upgrade.py\n' > "$tmp_dir/changed-unsafe-paths.txt"
+expect_fail "harness upgrade checker rejects unsafe changed path traversal" \
+  python3 scripts/check-harness-upgrade.py \
+    --downstream-root "$upgrade_downstream" \
+    --changed-paths-file "$tmp_dir/changed-unsafe-paths.txt" \
+    --require-downstream-audit
+
 expect_fail "verify rejects invalid mode" \
   env HARNESS_VERIFY_MODE=invalid bash scripts/verify-harness-structure.sh
 

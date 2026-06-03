@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import argparse
 import os
 import re
@@ -105,7 +105,13 @@ def path_list_from_file(path: Path) -> list[str]:
         value = line.strip()
         if not value or value.startswith('#'):
             continue
-        items.append(value.replace('\\', '/').lstrip('./'))
+        normalized = value.replace('\\', '/')
+        while normalized.startswith('./'):
+            normalized = normalized[2:]
+        parsed = PurePosixPath(normalized)
+        if parsed.is_absolute() or any(part == '..' for part in parsed.parts):
+            raise ValueError(f'changed path must be repository-relative without parent traversal: {value}')
+        items.append(parsed.as_posix())
     return sorted(set(items))
 
 
@@ -245,7 +251,10 @@ def run_checks(
         if not changed_paths_file.exists():
             errors.append(f'changed paths file does not exist: {changed_paths_file}')
         else:
-            changed_paths.extend(path_list_from_file(changed_paths_file))
+            try:
+                changed_paths.extend(path_list_from_file(changed_paths_file))
+            except ValueError as exc:
+                errors.append(str(exc))
     if from_ref:
         git_paths, git_error = path_list_from_git(root, from_ref)
         if git_error:
