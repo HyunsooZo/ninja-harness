@@ -54,6 +54,21 @@ class ConfigurationReferenceTest(unittest.TestCase):
             script.write_text('HARNESS_NOT_ENV = {"fixture"}\n', encoding='utf-8')
             self.assertNotIn('HARNESS_NOT_ENV', reality_env_vars(tmp))
 
+    def test_python_comments_and_strings_are_not_env_vars(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, 'all:\n\techo ok\n', '# config\n(no vars)\n')
+            script = tmp / 'scripts' / 'example.py'
+            script.write_text(
+                '# os.environ.get("HARNESS_PY_COMMENT")\n'
+                'doc = """os.environ.get("HARNESS_PY_DOCSTRING")"""\n',
+                encoding='utf-8',
+            )
+
+            reality = reality_env_vars(tmp)
+            self.assertNotIn('HARNESS_PY_COMMENT', reality)
+            self.assertNotIn('HARNESS_PY_DOCSTRING', reality)
+
     def test_detects_workflow_env_vars(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw)

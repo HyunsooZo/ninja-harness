@@ -6,17 +6,10 @@ ghost vars.
 """
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 
-
-# Precise consumption patterns: real env reads, not mere string mentions.
-_PYTHON_READ_PATTERNS = [
-    r"environ\.get\(\s*['\"](HARNESS_[A-Z0-9_]+)",
-    r"environ\[\s*['\"](HARNESS_[A-Z0-9_]+)",
-    r"getenv\(\s*['\"](HARNESS_[A-Z0-9_]+)",
-    r"float_env\(\s*['\"](HARNESS_[A-Z0-9_]+)",
-]
 
 _SHELL_READ_PATTERNS = [
     r"\$\{(HARNESS_[A-Z0-9_]+)",
@@ -75,6 +68,54 @@ def env_vars_in_text(text: str) -> set[str]:
     return _clean(re.findall(_TOKEN_PATTERN, text))
 
 
+def _constant_harness_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        value = node.value
+        if re.fullmatch(r"HARNESS_[A-Z0-9_]+", value):
+            return value
+    return None
+
+
+def _is_environ_ref(node: ast.AST) -> bool:
+    if isinstance(node, ast.Name):
+        return node.id == 'environ'
+    if isinstance(node, ast.Attribute):
+        return node.attr == 'environ'
+    return False
+
+
+def env_vars_consumed_in_python_text(text: str) -> set[str]:
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return set()
+
+    found: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and node.args:
+            func = node.func
+            if (
+                isinstance(func, ast.Attribute)
+                and func.attr == 'get'
+                and _is_environ_ref(func.value)
+            ):
+                name = _constant_harness_name(node.args[0])
+                if name:
+                    found.add(name)
+            if (
+                (isinstance(func, ast.Name) and func.id in {'getenv', 'float_env'})
+                or (isinstance(func, ast.Attribute) and func.attr == 'getenv')
+            ):
+                name = _constant_harness_name(node.args[0])
+                if name:
+                    found.add(name)
+        if isinstance(node, ast.Subscript) and _is_environ_ref(node.value):
+            name = _constant_harness_name(node.slice)
+            if name:
+                found.add(name)
+    return found
+
+
 def env_vars_consumed_in_scripts(root: Path) -> set[str]:
     found: set[str] = set()
 
@@ -91,9 +132,7 @@ def env_vars_consumed_in_scripts(root: Path) -> set[str]:
     for src in python_sources:
         if not src.exists():
             continue
-        text = src.read_text(encoding='utf-8')
-        for pattern in _PYTHON_READ_PATTERNS:
-            found |= _clean(re.findall(pattern, text))
+        found |= env_vars_consumed_in_python_text(src.read_text(encoding='utf-8'))
     return found
 
 
