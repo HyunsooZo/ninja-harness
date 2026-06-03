@@ -54,6 +54,10 @@ class EvidenceHookScopeTest(unittest.TestCase):
         self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n- 대체 검증: fixture\n\n## Scope\n\n- `../src/**`\n')
         self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
 
+    def test_absolute_target_does_not_match_broad_scope(self) -> None:
+        self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n- 대체 검증: fixture\n\n## Scope\n\n- `*`\n')
+        self.assertFalse(self.hook.evidence_ready_for_target('/tmp/outside.py'))
+
     def test_paths_outside_explicit_scope_do_not_allow_target(self) -> None:
         self.write_plan(
             '# Plan\n\n'

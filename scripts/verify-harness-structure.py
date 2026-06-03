@@ -497,6 +497,7 @@ for token in [
     'harness upgrade checker rejects missing downstream managed file',
     'harness upgrade checker rejects unsafe changed path traversal',
     'evidence hook rejects parent traversal scope pattern',
+    'evidence hook rejects outside-repo target despite broad scope',
     'organization structure rejects ownership placeholders',
     'verify-org rejects ownership placeholders',
 ]:
@@ -556,7 +557,7 @@ for token in ['HARNESS_EVIDENCE_HOOK_MODE', 'HARNESS_EVIDENCE_HOOK_BYPASS_REASON
 check("'Files'," not in evidence_hook_text, 'evidence gate hook must not treat generic Files heading as editable scope')
 check('Plan State:' not in evidence_hook_text, 'evidence gate hook must not accept lifecycle Plan State as RED evidence')
 check('return bool(re.search' not in evidence_hook_text, 'evidence gate hook must not accept narrative regex fallback as RED evidence')
-for token in ['PreToolUse', '$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.ps1', '.claude/settings.windows.json', 'Editable Scope', '대상 파일 또는 glob 범위', 'Files', 'Risk left', 'completed plan 직접 편집', 'HARNESS_EVIDENCE_HOOK_MODE=off', 'HARNESS_EVIDENCE_HOOK_BYPASS_REASON', 'Bash 도구로 파일을 수정하는 우회', '절대경로', 'parent traversal']:
+for token in ['PreToolUse', '$CLAUDE_PROJECT_DIR/scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.sh', 'scripts/check-evidence-gate-hook.ps1', '.claude/settings.windows.json', 'Editable Scope', '대상 파일 또는 glob 범위', 'Files', 'Risk left', 'completed plan 직접 편집', 'HARNESS_EVIDENCE_HOOK_MODE=off', 'HARNESS_EVIDENCE_HOOK_BYPASS_REASON', 'Bash 도구로 파일을 수정하는 우회', '절대경로', 'parent traversal', '대상 경로']:
     check(token in evidence_gate_text, f'evidence gate doc missing hook token: {token}')
 
 # No root generated 전체 스캔.

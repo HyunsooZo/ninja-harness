@@ -402,6 +402,26 @@ expect_fail "evidence hook rejects parent traversal scope pattern" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 rm -f "$evidence_hook_root/docs/harness/plans/active/traversal-scope.md"
 
+cat > "$evidence_hook_root/docs/harness/plans/active/broad-scope.md" <<'EOF'
+# Broad scope
+
+## RED Evidence
+
+- 예외 사유: broad scope fixture
+- 대체 검증: fixture
+- Risk left: none
+
+## Scope
+
+- `*`
+EOF
+printf '{"tool_name":"Edit","tool_input":{"file_path":"%s"}}\n' "$tmp_dir/outside.py" > "$tmp_dir/hook-outside-edit.json"
+
+expect_fail "evidence hook rejects outside-repo target despite broad scope" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-outside-edit.json"
+rm -f "$evidence_hook_root/docs/harness/plans/active/broad-scope.md"
+
 cat > "$evidence_hook_root/docs/harness/plans/active/notes-only.md" <<'EOF'
 # Notes only scope
 

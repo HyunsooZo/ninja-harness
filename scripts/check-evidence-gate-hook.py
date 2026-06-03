@@ -133,6 +133,12 @@ def explicit_scope_patterns(text: str) -> set[str]:
 
 
 def pattern_allows(pattern: str, target: str) -> bool:
+    target_normalized = target.strip().replace('\\', '/')
+    target_parsed = PurePosixPath(target_normalized)
+    if not target_normalized or target_parsed.is_absolute() or any(part == '..' for part in target_parsed.parts):
+        return False
+    target_normalized = target_parsed.as_posix()
+
     normalized = pattern.strip().replace('\\', '/')
     if not normalized or normalized in {'/', '.', './'}:
         return False
@@ -146,10 +152,10 @@ def pattern_allows(pattern: str, target: str) -> bool:
         normalized = f'{normalized}**'
     if normalized.endswith('/**'):
         prefix = normalized[:-3]
-        return target == prefix or target.startswith(f'{prefix}/')
+        return target_normalized == prefix or target_normalized.startswith(f'{prefix}/')
     if any(ch in normalized for ch in '*?[]'):
-        return fnmatch.fnmatch(target, normalized)
-    return target == normalized
+        return fnmatch.fnmatch(target_normalized, normalized)
+    return target_normalized == normalized
 
 
 def plan_allows_target(plan: Path, target: str) -> bool:

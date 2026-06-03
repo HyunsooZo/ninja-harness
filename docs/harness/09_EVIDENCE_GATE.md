@@ -62,7 +62,7 @@ Claude Code project settings는 `PreToolUse` hook으로 직접 파일 수정 도
 - 대상 도구: `Edit`, `MultiEdit`, `Write`, `NotebookEdit`
 
 hook은 `docs/harness/plans/active/*.md` 수정을 허용한다. 그 외 파일을 직접 수정하려면 활성 plan에 `RED Evidence` / `RED 증거`가 있거나 RED 예외 사유가 기록되어 있어야 하고, 같은 plan의 명시적 `Editable Scope` 또는 `Scope` 섹션에 대상 파일 또는 glob 범위가 있어야 한다. 증거와 명시 범위가 없으면 exit code 2로 tool call을 차단한다.
-Scope 패턴은 repository-relative 경로만 허용한다. 절대경로와 `..` parent traversal은 유효한 scope로 취급하지 않는다.
+Scope 패턴은 repository-relative 경로만 허용한다. 절대경로와 `..` parent traversal은 유효한 scope로 취급하지 않는다. 대상 경로도 repository-relative가 아니면 scope와 매칭하지 않는다.
 
 ```md
 ## Editable Scope
