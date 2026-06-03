@@ -80,6 +80,7 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 │   └── harness/
 │       ├── README.md
 │       ├── QUICKSTART_5_MIN.md
+│       ├── CONFIGURATION.md
 │       ├── 01_BACKEND.md
 │       ├── 02_PRIMARY_FRONTEND.md
 │       ├── 03_SECONDARY_APP.md
@@ -127,6 +128,8 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 ---
 
 ## 빠른 시작
+
+설정 가능한 `HARNESS_*` 환경변수 전체 목록은 `docs/harness/CONFIGURATION.md`를 본다.
 
 ### 1. 하네스 상태 확인
 

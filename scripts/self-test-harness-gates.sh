@@ -819,6 +819,11 @@ expect_fail "skill boilerplate rejects duplicated common block" \
   with_fixture_duplicate_skill_boilerplate \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
 
+expect_fail "configuration reference rejects undocumented env var" \
+  with_file_without_line "docs/harness/CONFIGURATION.md" \
+    '| `HARNESS_A11Y_CHECK_CMD` | 접근성 검사 legacy 명령. |' \
+  env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh
+
 expect_fail "project gate manifest rejects missing preferred script" \
   with_harness_yaml_without_line "backend: HARNESS_BACKEND_TEST_SCRIPT" \
   env HARNESS_VERIFY_MODE=template bash scripts/verify-harness-structure.sh

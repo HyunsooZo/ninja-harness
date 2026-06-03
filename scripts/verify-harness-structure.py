@@ -6,6 +6,7 @@ import subprocess
 import sys
 
 from harness_lib.stdio import configure_utf8_stdio
+from harness_lib.config_reference import reference_drift
 
 
 configure_utf8_stdio()
@@ -59,6 +60,7 @@ required = [
     'docs/harness/CHANGELOG.md',
     'docs/harness/UPGRADE.md',
     'docs/harness/SKILL_AUTHORING.md',
+    'docs/harness/CONFIGURATION.md',
     'docs/harness/harness.yaml',
     'docs/harness/CI_EXAMPLES.md',
     'docs/harness/ORG_ROLLOUT.md',
@@ -94,6 +96,8 @@ required = [
     'scripts/harness_lib/project_gates.py',
     'scripts/harness_lib/completed_plans.py',
     'scripts/harness_lib/stdio.py',
+    'scripts/harness_lib/config_reference.py',
+    'tests/harness/test_configuration_reference.py',
     'scripts/collect-eval-metrics.sh',
     'scripts/collect-eval-metrics.py',
     'scripts/collect-eval-metrics.ps1',
@@ -317,6 +321,7 @@ for test_file, tokens in {
     'tests/harness/test_completed_plans.py': ['plan_missing_markers', 'test_rejects_missing_residual_risk'],
     'tests/harness/test_project_gates.py': ['validate_repo_script', 'test_rejects_parent_traversal'],
     'tests/harness/test_evidence_hook.py': ['evidence_ready_for_target', 'test_state_only_red_is_not_evidence'],
+    'tests/harness/test_configuration_reference.py': ['reference_drift', 'test_repo_reference_is_in_sync'],
 }.items():
     test_text = (root/test_file).read_text(encoding='utf-8')
     for token in tokens:
@@ -440,6 +445,12 @@ for name, skill_dir in sorted(codex_skill_dirs.items()):
     check('기준을 적용한다' not in desc, f'skill description too generic: {skill_dir}/SKILL.md')
     check(len(desc) >= 50, f'skill description should include trigger words: {skill_dir}/SKILL.md')
 
+# CONFIGURATION.md must stay in sync with every HARNESS_* env var the harness actually
+# consumes (scripts) or declares (harness.yaml). Bidirectional: no undocumented var, no ghost.
+config_undocumented, config_ghost = reference_drift(root)
+check(not config_undocumented, f'CONFIGURATION.md missing HARNESS_* env vars used by harness: {config_undocumented}')
+check(not config_ghost, f'CONFIGURATION.md documents HARNESS_* env vars not used anywhere: {config_ghost}')
+
 # Claude agent preloaded skills should exist in source skill set.
 all_skill_names = set(codex_skill_dirs)
 for name, frontmatter in sorted(claude_frontmatters.items()):
@@ -466,7 +477,7 @@ for script_name in ['verify-project-gates.py', 'verify-project-gates.ps1', 'sync
     check(os.access(script_path, os.X_OK), f'scripts/{script_name} must be executable')
 
 self_test_text = (root/'scripts/self-test-harness-gates.sh').read_text(encoding='utf-8')
-for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'harness upgrade checker accepts current metadata', 'harness upgrade checker rejects newer from-version', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'skill boilerplate rejects duplicated common block', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
+for token in ['expect_pass', 'expect_fail', 'check-profile-readiness.sh', 'check-completed-plan-quality.sh', 'verify-harness-structure.sh', 'verify-project-gates.sh', 'HARNESS_VERIFY_MODE=invalid', 'HARNESS_REQUIRE_FILLED_PROFILE=1', 'completed plan quality accepts empty directory', 'completed plan quality accepts required evidence markers', 'completed plan quality rejects missing evidence markers', 'evidence hook allows active plan edit', 'evidence hook blocks edit without RED', 'evidence hook rejects unrelated stale plan scope', 'evidence hook blocks completed plan direct edit without scope', 'evidence hook rejects state-only RED', 'evidence hook accepts documented RED exception', 'evidence hook wrapper works outside repo cwd', 'harness upgrade checker accepts current metadata', 'harness upgrade checker rejects newer from-version', 'verify ignores ignored untracked env file', 'verify ignores ignored untracked token config file', 'verify ignores ignored untracked secret properties file', 'verify ignores ignored untracked local artifacts', 'tracked sensitive env file is rejected', 'token policy markdown remains allowed', 'template rejects tracked active plan', 'template rejects tracked completed plan', 'project allows tracked completed plan', 'source_of_truth rejects missing required entry', 'source_of_truth rejects missing required state', 'manifest parity rejects missing policy line', 'gitignore rejects missing active plan ignore', 'gitignore rejects missing completed plan ignore', 'gitignore rejects missing secret config ignore', 'project profile rejects missing frontend test command', 'clean removes nested macOS metadata', 'plan template rejects lifecycle Status', 'makefile rejects hardcoded bash path', 'source_of_truth rejects missing backend rubric', 'skill routing rejects missing agent mapping', 'skill routing rejects unknown agent mapping', 'organization manifest rejects missing governance', 'review_gates reject missing agent', 'owned API manifest rejects missing router skill', 'runtime manifest rejects missing override env', 'runtime rejects missing OS support manifest', 'runtime rejects missing PowerShell entrypoint manifest', 'runtime rejects missing Python verifier manifest', 'runtime rejects missing git required tool', 'runtime rejects missing POSIX utility manifest', 'runtime rejects missing Python TOML parser manifest', 'agent metadata rejects missing Codex skills preload', 'agent metadata rejects invalid sandbox mode', 'agent metadata rejects invalid reasoning effort', 'agent metadata rejects non-list skills preload', 'agent preload rejects missing local skill coverage', 'skill boilerplate rejects duplicated common block', 'configuration reference rejects undocumented env var', 'project gate manifest rejects missing preferred script', 'workflow manifest rejects missing integrity target', 'parallel manifest rejects overlapping file edits', 'rules manifest rejects unrelated refactor removal', 'agent orchestration rejects missing single integrator', 'context rules reject full scan default removal', 'project gate rejects symlink script', 'project gate rejects parent symlink script path', 'project gate rejects non-allowlisted repo script', 'project gate accepts allowlisted executable script', 'project gate accepts allowlisted python script', 'legacy command blocks without explicit opt-in', 'legacy command accepts explicit opt-in', 'HARNESS_REQUIRE_PROJECT_CHECKS=1', 'HARNESS_BACKEND_TEST_CMD']:
     check(token in self_test_text, f'self-test gate script missing token: {token}')
 for token in [
     'evidence hook settings command works outside repo cwd',
@@ -621,9 +632,16 @@ root_readme_text = (root/'README.md').read_text(encoding='utf-8')
 for token in ['배포 전 체크리스트', 'make doctor', 'make verify', 'make check-sync', 'make harness-upgrade', 'make integrity', 'make eval', 'make verify-org']:
     check(token in root_readme_text, f'root README release checklist missing token: {token}')
 harness_readme_text = (root/'docs/harness/README.md').read_text(encoding='utf-8')
+quickstart_text = (root/'docs/harness/QUICKSTART_5_MIN.md').read_text(encoding='utf-8')
 for doc_name, doc_text in [('README.md', root_readme_text), ('docs/harness/README.md', harness_readme_text)]:
     missing_doc_targets = [target for target in public_make_targets if f'make {target}' not in doc_text]
     check(not missing_doc_targets, f'{doc_name} missing public Makefile target docs: {missing_doc_targets}')
+for doc_name, doc_text in [
+    ('README.md', root_readme_text),
+    ('docs/harness/README.md', harness_readme_text),
+    ('docs/harness/QUICKSTART_5_MIN.md', quickstart_text),
+]:
+    check('docs/harness/CONFIGURATION.md' in doc_text, f'{doc_name} must point adopters to CONFIGURATION.md')
 check('| `make integrity` |' in root_readme_text, 'root README Makefile command table must document make integrity')
 for token in [
     'docs/harness/plans/active/*.md',
@@ -976,6 +994,7 @@ required_harness_refs = {
     'docs/harness/CHANGELOG.md',
     'docs/harness/UPGRADE.md',
     'docs/harness/SKILL_AUTHORING.md',
+    'docs/harness/CONFIGURATION.md',
     'docs/harness/OWNERSHIP.md',
     'docs/harness/ORG_ROLLOUT.md',
     'docs/harness/CI_EXAMPLES.md',

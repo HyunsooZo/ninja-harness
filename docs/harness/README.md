@@ -24,6 +24,7 @@
 | `CHANGELOG.md` | 버전 변경 이력 | 하네스 버전별 변경과 verifier 영향 |
 | `UPGRADE.md` | 업그레이드 | 다운스트림 레포 업그레이드 절차 |
 | `SKILL_AUTHORING.md` | 스킬 작성 | 스킬을 얇은 라우터로 유지하는 정책 |
+| `CONFIGURATION.md` | 설정 레퍼런스 | `HARNESS_*` 환경변수와 verifier drift 규칙 |
 | `OWNERSHIP.md` | 소유권 | owner, maintainer, security contact, code owner 기준 |
 | `harness.yaml` | 정책 설정 | 하네스 라우팅, 검증 게이트, 런타임별 공통 정책 |
 | `skill-routing.md` | 라우팅 | 요청 유형별 기본 skill/agent |
@@ -119,6 +120,8 @@ bash scripts/verify-harness-structure.sh
 ```
 
 Script gate가 비어 있으면 기본적으로 `SKIP` 처리한다. 조직 표준처럼 최소 하나 이상의 실제 게이트를 강제하려면 `HARNESS_REQUIRE_PROJECT_CHECKS=1`을 함께 지정한다. legacy `HARNESS_*_CMD`는 `HARNESS_ALLOW_LEGACY_BASH_LC=1`로 명시 허용된 경우에만 사용한다. 세부 성숙도 기준과 eval 루프는 `12_FIELD_VALIDATION.md`와 `docs/harness/evals/`를 따른다.
+
+모든 `HARNESS_*` 환경변수와 기본값/용도는 `docs/harness/CONFIGURATION.md`를 source of truth로 확인한다.
 
 ## Runtime / OS 지원 범위
 

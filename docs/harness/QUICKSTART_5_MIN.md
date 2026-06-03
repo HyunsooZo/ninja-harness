@@ -20,6 +20,7 @@
 - `docs/harness/profiles/project-profile.md`: 역할 용어, 리소스 범위, API prefix, package 예시
 - `docs/harness/profiles/design-system-profile.md`: 디자인 토큰, 테마, 레이아웃 기준
 - `docs/harness/harness.yaml`: source of truth, workflow, review gate
+- `docs/harness/CONFIGURATION.md`: `HARNESS_*` 환경변수 전체 목록과 기본값
 
 프로젝트 값은 numbered core 문서에 직접 넣지 않는다. core 문서는 범용 기준으로 유지한다.
 
@@ -95,6 +96,8 @@ bash scripts/verify-harness-structure.sh
 명령이 비어 있으면 해당 게이트는 `SKIP` 처리한다. 조직 표준으로 쓰려면 최소 하나 이상의 실제 프로젝트 게이트를 연결한다. 이를 강제하려면 `HARNESS_REQUIRE_PROJECT_CHECKS=1`을 함께 지정한다.
 
 PowerShell에서는 같은 `HARNESS_*_SCRIPT` 계약을 사용한다. `scripts/ci/*.ps1` 또는 `scripts/ci/*.py`는 PowerShell/Python으로 실행되고, `scripts/ci/*.sh`는 Bash가 있을 때만 실행된다.
+
+환경변수 이름이나 기본값이 헷갈리면 `docs/harness/CONFIGURATION.md`를 먼저 확인한다. 이 문서는 `make verify`에서 실제 사용처와 drift 검사를 받는다.
 
 ## 5. 작업은 active plan으로 시작한다
 

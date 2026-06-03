@@ -101,11 +101,22 @@ def has_red_evidence(path: Path) -> bool:
     return False
 
 
-def scoped_patterns(scope_text: str) -> set[str]:
+def scoped_patterns(scope_text: str, root: Path | None = None) -> set[str]:
+    root = root if root is not None else ROOT
     patterns: set[str] = set()
     for match in re.findall(r'`([^`\n]+)`', scope_text):
         value = match.strip()
-        if '/' in value or value.startswith('.'):
+        if not value or any(ch.isspace() for ch in value):
+            # Multi-word backticks are commands, not scope paths.
+            continue
+        # Accept directory/glob paths, dotted filenames (MANIFEST.md), and real
+        # root-level files without an extension (VERSION, LICENSE, Makefile).
+        if (
+            '/' in value
+            or '.' in value
+            or any(ch in value for ch in '*?[')
+            or (root / value).is_file()
+        ):
             patterns.add(value)
 
     for match in re.findall(r'(?<![\w./-])(?:[A-Za-z0-9_.-]+/[\w./*\-]+|\.[\w./*\-]+)(?![\w./-])', scope_text):

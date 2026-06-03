@@ -73,6 +73,20 @@ class EvidenceHookScopeTest(unittest.TestCase):
         self.write_plan('# Plan\n\n## RED Evidence\n\n실패를 재현했다.\n\n## Scope\n\n- `src/**`\n')
         self.assertFalse(self.hook.evidence_ready_for_target('src/app.py'))
 
+    def test_root_bare_filename_in_scope_allows_target(self) -> None:
+        self.write_plan('# Plan\n\n## RED Evidence\n\n- 예외 사유: fixture\n- 대체 검증: fixture\n\n## Scope\n\n- `MANIFEST.md`\n')
+        self.assertTrue(self.hook.evidence_ready_for_target('MANIFEST.md'))
+
+    def test_extensionless_root_file_in_scope_allows_target(self) -> None:
+        root = Path(self.tmp.name)
+        (root / 'VERSION').write_text('0.0.0\n', encoding='utf-8')
+        patterns = self.hook.scoped_patterns('- `VERSION`\n', root=root)
+        self.assertIn('VERSION', patterns)
+
+    def test_whitespace_backtick_is_not_a_scope_pattern(self) -> None:
+        patterns = self.hook.scoped_patterns('- `bash scripts/run.sh`\n')
+        self.assertNotIn('bash scripts/run.sh', patterns)
+
     def test_bypass_mode_requires_audit_reason(self) -> None:
         env = os.environ.copy()
         env['CLAUDE_PROJECT_DIR'] = str(Path(self.tmp.name))

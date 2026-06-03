@@ -1,5 +1,17 @@
 # 하네스 변경 이력
 
+## 0.3.1
+
+- evidence hook의 `scoped_patterns`가 Editable Scope 섹션의 루트 bare 파일명(`MANIFEST.md`, 점 포함 파일, 실제 존재하는 `VERSION`/`LICENSE`/`Makefile`)을 인식하도록 보강했다. 공백 포함 backtick(명령 문자열)은 scope 패턴에서 제외한다.
+- 회귀 단위테스트 3개를 추가했다(루트 파일명/확장자 없는 루트 파일/공백 backtick).
+
+## 0.3.0
+
+- `docs/harness/CONFIGURATION.md`를 추가해 모든 `HARNESS_*` 환경변수/모드를 단일 레퍼런스로 집약했다.
+- verifier가 문서 표와 실제 사용처(스크립트 + `harness.yaml`)를 양방향 대조해 미문서화/유령 변수를 거부한다(`scripts/harness_lib/config_reference.py`, 단위테스트, self-test 포함).
+- 루트 README, 5분 온보딩, 하네스 README에서 설정 레퍼런스를 직접 안내하고, Python 상수는 환경변수로 오인하지 않도록 drift 검사를 조정했다.
+- adopter가 해야 할 작업은 없다. 새 `HARNESS_*` 변수를 추가/제거하면 `CONFIGURATION.md`를 함께 갱신한다.
+
 ## 0.2.0
 
 - evidence hook command를 `CLAUDE_PROJECT_DIR` 기준 wrapper 호출로 고쳐 repo 외부 cwd와 exit code 보존을 강화했다.

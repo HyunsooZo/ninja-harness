@@ -1,4 +1,4 @@
-harness_version: 0.2.0
+harness_version: 0.3.1
 schema_version: 1
 
 project:
@@ -47,6 +47,7 @@ source_of_truth:
     - docs/harness/CHANGELOG.md
     - docs/harness/UPGRADE.md
     - docs/harness/SKILL_AUTHORING.md
+    - docs/harness/CONFIGURATION.md
     - docs/harness/OWNERSHIP.md
     - docs/harness/ORG_ROLLOUT.md
     - docs/harness/CI_EXAMPLES.md
