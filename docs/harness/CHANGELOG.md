@@ -8,7 +8,7 @@
 ## 0.3.0
 
 - `docs/harness/CONFIGURATION.md`를 추가해 모든 `HARNESS_*` 환경변수/모드를 단일 레퍼런스로 집약했다.
-- verifier가 문서 표와 실제 사용처(스크립트 + `harness.yaml`)를 양방향 대조해 미문서화/유령 변수를 거부한다(`scripts/harness_lib/config_reference.py`, 단위테스트, self-test 포함).
+- verifier가 문서 표와 실제 사용처(스크립트, workflow, `harness.yaml`)를 양방향 대조해 미문서화/유령 변수를 거부한다(`scripts/harness_lib/config_reference.py`, 단위테스트, self-test 포함).
 - 루트 README, 5분 온보딩, 하네스 README에서 설정 레퍼런스를 직접 안내하고, Python 상수는 환경변수로 오인하지 않도록 drift 검사를 조정했다.
 - adopter가 해야 할 작업은 없다. 새 `HARNESS_*` 변수를 추가/제거하면 `CONFIGURATION.md`를 함께 갱신한다.
 
