@@ -69,6 +69,46 @@ class ConfigurationReferenceTest(unittest.TestCase):
             self.assertNotIn('HARNESS_PY_COMMENT', reality)
             self.assertNotIn('HARNESS_PY_DOCSTRING', reality)
 
+    def test_python_env_import_aliases_are_tracked(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, 'all:\n\techo ok\n', '# config\n(no vars)\n')
+            script = tmp / 'scripts' / 'example.py'
+            script.write_text(
+                'import os as operating_system\n'
+                'from os import getenv as read_env\n'
+                'from os import environ as env_map\n'
+                'operating_system.getenv("HARNESS_OS_ALIAS")\n'
+                'read_env("HARNESS_GETENV_ALIAS")\n'
+                'env_map.get("HARNESS_ENVIRON_ALIAS")\n',
+                encoding='utf-8',
+            )
+
+            reality = reality_env_vars(tmp)
+            self.assertIn('HARNESS_OS_ALIAS', reality)
+            self.assertIn('HARNESS_GETENV_ALIAS', reality)
+            self.assertIn('HARNESS_ENVIRON_ALIAS', reality)
+
+    def test_python_non_env_objects_are_not_env_vars(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, 'all:\n\techo ok\n', '# config\n(no vars)\n')
+            script = tmp / 'scripts' / 'example.py'
+            script.write_text(
+                'class Config:\n'
+                '    environ = {}\n'
+                '    def getenv(self, name):\n'
+                '        return None\n'
+                'config = Config()\n'
+                'config.getenv("HARNESS_CONFIG_GETENV")\n'
+                'config.environ.get("HARNESS_CONFIG_ENVIRON")\n',
+                encoding='utf-8',
+            )
+
+            reality = reality_env_vars(tmp)
+            self.assertNotIn('HARNESS_CONFIG_GETENV', reality)
+            self.assertNotIn('HARNESS_CONFIG_ENVIRON', reality)
+
     def test_detects_workflow_env_vars(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw)

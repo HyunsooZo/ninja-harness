@@ -76,11 +76,34 @@ def _constant_harness_name(node: ast.AST) -> str | None:
     return None
 
 
-def _is_environ_ref(node: ast.AST) -> bool:
+def _python_env_aliases(tree: ast.AST) -> tuple[set[str], set[str], set[str]]:
+    os_aliases = {'os'}
+    environ_aliases = {'environ'}
+    getenv_aliases = {'getenv'}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == 'os':
+                    os_aliases.add(alias.asname or alias.name)
+        if isinstance(node, ast.ImportFrom) and node.module == 'os':
+            for alias in node.names:
+                target = alias.asname or alias.name
+                if alias.name == 'environ':
+                    environ_aliases.add(target)
+                if alias.name == 'getenv':
+                    getenv_aliases.add(target)
+    return os_aliases, environ_aliases, getenv_aliases
+
+
+def _is_environ_ref(node: ast.AST, os_aliases: set[str], environ_aliases: set[str]) -> bool:
     if isinstance(node, ast.Name):
-        return node.id == 'environ'
+        return node.id in environ_aliases
     if isinstance(node, ast.Attribute):
-        return node.attr == 'environ'
+        return (
+            node.attr == 'environ'
+            and isinstance(node.value, ast.Name)
+            and node.value.id in os_aliases
+        )
     return False
 
 
@@ -90,6 +113,7 @@ def env_vars_consumed_in_python_text(text: str) -> set[str]:
     except SyntaxError:
         return set()
 
+    os_aliases, environ_aliases, getenv_aliases = _python_env_aliases(tree)
     found: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and node.args:
@@ -97,19 +121,24 @@ def env_vars_consumed_in_python_text(text: str) -> set[str]:
             if (
                 isinstance(func, ast.Attribute)
                 and func.attr == 'get'
-                and _is_environ_ref(func.value)
+                and _is_environ_ref(func.value, os_aliases, environ_aliases)
             ):
                 name = _constant_harness_name(node.args[0])
                 if name:
                     found.add(name)
             if (
-                (isinstance(func, ast.Name) and func.id in {'getenv', 'float_env'})
-                or (isinstance(func, ast.Attribute) and func.attr == 'getenv')
+                (isinstance(func, ast.Name) and func.id in (getenv_aliases | {'float_env'}))
+                or (
+                    isinstance(func, ast.Attribute)
+                    and func.attr == 'getenv'
+                    and isinstance(func.value, ast.Name)
+                    and func.value.id in os_aliases
+                )
             ):
                 name = _constant_harness_name(node.args[0])
                 if name:
                     found.add(name)
-        if isinstance(node, ast.Subscript) and _is_environ_ref(node.value):
+        if isinstance(node, ast.Subscript) and _is_environ_ref(node.value, os_aliases, environ_aliases):
             name = _constant_harness_name(node.slice)
             if name:
                 found.add(name)
