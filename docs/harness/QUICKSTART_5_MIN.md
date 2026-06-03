@@ -2,6 +2,27 @@
 
 이 문서는 처음 하네스를 적용한 사람이 어디부터 읽고 어떤 명령을 실행해야 하는지 빠르게 확인하기 위한 진입 문서다.
 
+## 0. 최소 적용 경로
+
+개인 프로젝트나 작은 팀에서 처음 적용할 때는 아래만 먼저 끝낸다.
+
+1. `docs/harness/context/BASELINE.md`와 `docs/harness/profiles/project-profile.md`의 placeholder를 실제 값 또는 `N/A`로 바꾼다.
+2. 필요한 경우 `docs/harness/profiles/design-system-profile.md`와 `docs/harness/harness.yaml`의 프로젝트 값만 채운다.
+3. `make doctor`와 `make verify`를 실행한다.
+4. 실제 test/build/lint script가 있으면 `HARNESS_*_SCRIPT`로 연결한다. 없으면 일단 생략한다.
+5. 단순 작업은 active plan 없이 진행하고, 동작 변경/교차 레이어/보안/API 작업만 active plan을 쓴다.
+
+여기까지가 최소 경로다. 아래 섹션은 PowerShell, project gate, 조직 표준, active plan 운영을 자세히 다루는 레퍼런스다.
+
+## 개인 / 라이트 운영
+
+혼자 쓰거나 작은 프로젝트에 점진 적용할 때는 ceremony를 낮춘다.
+
+- 작은 오타, 문구, 단일 파일 정리는 `docs/harness/context/INDEX.md`의 `T0_MINIMAL` 기준으로 처리한다.
+- 동작 변경이 아니면 자동화 RED 대신 active plan 또는 최종 보고에 예외 사유와 대체 검증을 남긴다.
+- Claude Code hook을 바로 hard-stop으로 쓰기 부담스럽다면 `HARNESS_EVIDENCE_HOOK_MODE=warn`으로 시작하고, 중요한 작업부터 `strict`로 올린다.
+- 큰 기능, API 계약, 권한, 보안, 데이터 변경은 라이트 운영에서도 active plan과 RED/GREEN/VERIFY 증거를 남긴다.
+
 ## 1. 먼저 읽는다
 
 1. `AGENTS.md` 또는 `CLAUDE.md`

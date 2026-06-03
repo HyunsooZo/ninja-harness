@@ -4,6 +4,8 @@
 
 ## 기본 읽기 순서
 
+최소 필수 읽기는 아래 1~3이다. 4~5는 진행 중 작업이나 관련 이력이 있을 때만 추가한다.
+
 1. `AGENTS.md` 또는 `CLAUDE.md`
 2. `docs/harness/context/BASELINE.md`
 3. `docs/harness/plans/active/*.md`
@@ -22,6 +24,13 @@
 | `T3_FULL_SCAN` | 신규 적용, 경계 불명확, 대규모 마이그레이션, 사용자가 전체 스캔 요청 | T2 | `context/generated/`에 생성한 전체 스캔 요약 |
 
 작은 작업에서 T2/T3를 열었다면 이유를 active plan 또는 최종 보고에 짧게 남긴다.
+
+## 문서 표면 줄이기
+
+- 항상 먼저 읽는 문서: `AGENTS.md` 또는 `CLAUDE.md`, `BASELINE.md`, 이 `INDEX.md`
+- 처음 적용할 때만 먼저 보는 문서: `QUICKSTART_5_MIN.md`, `profiles/**`, `harness.yaml`
+- 필요할 때만 보는 레퍼런스: `01`~`14` 핵심 문서, `CONFIGURATION.md`, `ORG_ROLLOUT.md`, `CI_EXAMPLES.md`, `GOVERNANCE.md`
+- 전체 스캔과 `context/generated/**`는 기본 읽기 대상이 아니다.
 
 ## 작업별 추가 문서
 
