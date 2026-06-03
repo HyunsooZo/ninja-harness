@@ -29,6 +29,20 @@ class CompletedPlanQualityTest(unittest.TestCase):
         )
         self.assertIn('pending evidence placeholders', plan_missing_markers(text))
 
+    def test_rejects_pending_label_evidence_placeholders(self) -> None:
+        text = (
+            'RED Evidence\n'
+            '- Pending: add regression test\n'
+            'GREEN Evidence\n'
+            '- 확인: PASS\n'
+            'REFACTOR\n'
+            '- 결정: none\n'
+            'VERIFY\n'
+            '- 결과: PASS\n'
+            'Risk left: none\n'
+        )
+        self.assertIn('pending evidence placeholders', plan_missing_markers(text))
+
     def test_accepts_documented_temporary_command_placeholders(self) -> None:
         text = (
             'RED\n'

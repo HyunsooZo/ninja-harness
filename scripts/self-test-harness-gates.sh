@@ -313,7 +313,7 @@ expect_fail "completed plan quality rejects missing evidence markers" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
 
-printf '# Pending completed plan\n\nRED\n- 명령: pending\nGREEN\n- 확인: pending\nREFACTOR\nVERIFY\nRisk left: pending\n' > "$completed_quality_dir/pending.md"
+printf '# Pending completed plan\n\nRED\n- Pending: add RED evidence\n- 명령: pending\nGREEN\n- 확인: pending\nREFACTOR\nVERIFY\nRisk left: pending\n' > "$completed_quality_dir/pending.md"
 expect_fail "completed plan quality rejects pending evidence placeholders" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh

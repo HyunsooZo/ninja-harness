@@ -55,6 +55,8 @@ def has_unresolved_evidence_placeholder(text: str) -> bool:
     placeholder_value = r'(?:pending|대기 중)'
     for line in text.splitlines():
         stripped = line.strip()
+        if re.search(rf'(?i)^\s*-?\s*`?{placeholder_value}`?\s*:', stripped):
+            return True
         if re.search(rf'(?i)(?:^|\||:)\s*`?{placeholder_value}`?\s*(?:\||$)', stripped):
             return True
     return False
