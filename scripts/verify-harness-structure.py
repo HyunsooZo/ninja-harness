@@ -1487,6 +1487,7 @@ org_text = (root/'docs/harness/ORG_ROLLOUT.md').read_text(encoding='utf-8')
 for required in ['Project gate 명령 실행 정책', '신뢰된 CI', 'HARNESS_*_CMD', 'symlink']:
     check(required in org_text, f'ORG_ROLLOUT missing project gate trust policy: {required}')
 for path in [
+    root/'README.md',
     root/'docs/harness/SECURITY_POLICY.md',
     root/'docs/harness/CI_EXAMPLES.md',
     root/'docs/harness/ORG_ROLLOUT.md',

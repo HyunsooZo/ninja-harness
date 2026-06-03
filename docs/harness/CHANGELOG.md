@@ -9,6 +9,7 @@
 - completed plan 품질 검사를 보강해 미완성 evidence placeholder를 더 넓게 거부하고, Python 상수명/주석/docstring, 비-env 객체 메서드, shell/workflow 주석을 `HARNESS_*` 환경변수로 오인하지 않도록 설정 대조 정밀도를 조정했다.
 - PowerShell project gate 실행 시 `-NoProfile -NonInteractive`를 사용해 로컬/CI profile script나 프롬프트에 따른 비결정성을 줄였다.
 - PowerShell project gate의 deterministic invocation 정책을 보안/CI/조직 배포/README 문서에 명시하고 구조 검증으로 회귀를 막았다.
+- 루트 `README.md`에도 PowerShell project gate의 deterministic invocation 정책을 명시하고 구조 검증 대상에 포함했다.
 
 ## 0.3.0
 

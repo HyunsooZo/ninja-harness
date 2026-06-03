@@ -155,7 +155,7 @@ make verify
 
 template mode와 project mode를 모두 검증합니다.
 
-PowerShell 환경에서는 template/project 구조 검증을 아래처럼 실행할 수 있습니다. `HARNESS_*_SCRIPT` project gate도 `scripts/verify-project-gates.ps1`로 실행할 수 있으며, `.ps1`/`.py` gate는 네이티브로 실행되고 `.sh` gate만 Bash가 필요합니다.
+PowerShell 환경에서는 template/project 구조 검증을 아래처럼 실행할 수 있습니다. `HARNESS_*_SCRIPT` project gate도 `scripts/verify-project-gates.ps1`로 실행할 수 있으며, `.ps1` gate는 하네스 runner가 `-NoProfile -NonInteractive`로 실행하고 `.py` gate는 네이티브로 실행됩니다. `.sh` gate만 Bash가 필요합니다.
 
 ```powershell
 $env:HARNESS_VERIFY_MODE = "template"
