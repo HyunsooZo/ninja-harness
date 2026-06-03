@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import fnmatch
 import json
 import os
@@ -136,7 +136,12 @@ def pattern_allows(pattern: str, target: str) -> bool:
     normalized = pattern.strip().replace('\\', '/')
     if not normalized or normalized in {'/', '.', './'}:
         return False
-    normalized = normalized.lstrip('./')
+    while normalized.startswith('./'):
+        normalized = normalized[2:]
+    parsed = PurePosixPath(normalized)
+    if parsed.is_absolute() or any(part == '..' for part in parsed.parts):
+        return False
+    normalized = parsed.as_posix()
     if normalized.endswith('/'):
         normalized = f'{normalized}**'
     if normalized.endswith('/**'):

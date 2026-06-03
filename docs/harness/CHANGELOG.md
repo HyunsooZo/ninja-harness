@@ -11,6 +11,7 @@
 - PowerShell project gate의 deterministic invocation 정책을 보안/CI/조직 배포/README 문서에 명시하고 구조 검증으로 회귀를 막았다.
 - 루트 `README.md`에도 PowerShell project gate의 deterministic invocation 정책을 명시하고 구조 검증 대상에 포함했다.
 - Upgrade changed path audit 입력에서 절대경로와 `..` parent traversal을 거부하고 self-test/문서 검증을 보강했다.
+- Evidence hook scope 패턴에서 절대경로와 `..` parent traversal을 거부해 scope 확장 오탐을 막았다.
 
 ## 0.3.0
 

@@ -383,6 +383,25 @@ expect_fail "evidence hook rejects unrelated stale plan scope" \
   env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
       python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
 
+cat > "$evidence_hook_root/docs/harness/plans/active/traversal-scope.md" <<'EOF'
+# Traversal scope
+
+## RED Evidence
+
+- 예외 사유: traversal scope fixture
+- 대체 검증: fixture
+- Risk left: none
+
+## Scope
+
+- `../src/**`
+EOF
+
+expect_fail "evidence hook rejects parent traversal scope pattern" \
+  env CLAUDE_PROJECT_DIR="$evidence_hook_root" \
+      python3 scripts/check-evidence-gate-hook.py < "$tmp_dir/hook-src-edit.json"
+rm -f "$evidence_hook_root/docs/harness/plans/active/traversal-scope.md"
+
 cat > "$evidence_hook_root/docs/harness/plans/active/notes-only.md" <<'EOF'
 # Notes only scope
 
