@@ -1,7 +1,8 @@
 """Cross-check helpers for the HARNESS_* configuration reference.
 
 CONFIGURATION.md must document every HARNESS_* env var the harness actually
-consumes (scripts) or declares (harness.yaml), and must not list ghost vars.
+consumes (scripts/workflows) or declares (harness.yaml), and must not list
+ghost vars.
 """
 from __future__ import annotations
 
@@ -23,6 +24,11 @@ _SHELL_READ_PATTERNS = [
     r"(?m)^[ \t]*(HARNESS_[A-Z0-9_]+)\s*[:?]?=",
     r"\benv\s+(HARNESS_[A-Z0-9_]+)=",
     r"(?<![A-Za-z0-9_])(HARNESS_[A-Z0-9_]+)=",
+]
+
+_WORKFLOW_READ_PATTERNS = [
+    r"(?m)^[ \t]*(HARNESS_[A-Z0-9_]+)\s*:",
+    r"\$env:(HARNESS_[A-Z0-9_]+)\b",
 ]
 
 # Boundary-guarded token match (drops path-name false hits like 08_HARNESS_AUDIT.md).
@@ -60,6 +66,17 @@ def env_vars_consumed_in_scripts(root: Path) -> set[str]:
     return found
 
 
+def env_vars_consumed_in_workflows(root: Path) -> set[str]:
+    found: set[str] = set()
+    workflow_dir = root / '.github' / 'workflows'
+    workflow_sources = sorted(workflow_dir.glob('*.yml')) + sorted(workflow_dir.glob('*.yaml'))
+    for src in workflow_sources:
+        text = src.read_text(encoding='utf-8')
+        for pattern in _WORKFLOW_READ_PATTERNS + _SHELL_READ_PATTERNS:
+            found |= _clean(re.findall(pattern, text))
+    return found
+
+
 def env_vars_declared_in_yaml(root: Path) -> set[str]:
     yaml_path = root / 'docs/harness/harness.yaml'
     if not yaml_path.exists():
@@ -68,7 +85,11 @@ def env_vars_declared_in_yaml(root: Path) -> set[str]:
 
 
 def reality_env_vars(root: Path) -> set[str]:
-    return env_vars_consumed_in_scripts(root) | env_vars_declared_in_yaml(root)
+    return (
+        env_vars_consumed_in_scripts(root)
+        | env_vars_consumed_in_workflows(root)
+        | env_vars_declared_in_yaml(root)
+    )
 
 
 def documented_env_vars(root: Path) -> set[str]:

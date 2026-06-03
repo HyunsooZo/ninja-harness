@@ -54,6 +54,28 @@ class ConfigurationReferenceTest(unittest.TestCase):
             script.write_text('HARNESS_NOT_ENV = {"fixture"}\n', encoding='utf-8')
             self.assertNotIn('HARNESS_NOT_ENV', reality_env_vars(tmp))
 
+    def test_detects_workflow_env_vars(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            self._scaffold(tmp, 'all:\n\techo ok\n', '# config\n(no vars)\n')
+            workflow_dir = tmp / '.github' / 'workflows'
+            workflow_dir.mkdir(parents=True)
+            (workflow_dir / 'verify.yml').write_text(
+                'jobs:\n'
+                '  verify:\n'
+                '    env:\n'
+                '      HARNESS_WORKFLOW_FLAG: "1"\n'
+                '    steps:\n'
+                '      - shell: pwsh\n'
+                '        run: |\n'
+                '          $env:HARNESS_WORKFLOW_PS_FLAG = "1"\n',
+                encoding='utf-8',
+            )
+
+            reality = reality_env_vars(tmp)
+            self.assertIn('HARNESS_WORKFLOW_FLAG', reality)
+            self.assertIn('HARNESS_WORKFLOW_PS_FLAG', reality)
+
 
 if __name__ == '__main__':
     unittest.main()
