@@ -4,9 +4,23 @@ Codex와 Claude Code를 함께 사용하는 프로젝트를 위한 **운영형 A
 
 이 하네스는 단순한 프롬프트 모음이 아니라, 에이전트·스킬·검증 게이트·오케스트레이션·프로젝트 프로파일·조직 운영 규칙을 함께 제공하여 AI 코딩 작업을 더 안전하고 일관되게 수행하기 위한 구조입니다.
 
+핵심은 세 가지입니다. 첫째, 에이전트가 작업 전에 읽을 기준을 `AGENTS.md`, `CLAUDE.md`, `docs/harness/**`에 고정합니다. 둘째, 작업 범위에 맞춰 active plan, RED/GREEN/REFACTOR/VERIFY 증거, review gate를 남깁니다. 셋째, template 구조 검증과 실제 프로젝트 build/test/lint gate를 분리해 개인 프로젝트부터 조직 표준까지 같은 골격을 단계적으로 적용합니다.
+
 현재 하네스 버전은 루트 `VERSION`과 `docs/harness/harness.yaml`의 `harness_version`이 source of truth입니다. 다운스트림 레포 업그레이드는 `docs/harness/CHANGELOG.md`와 `docs/harness/UPGRADE.md`를 따릅니다.
 
 소유권과 법무 메타데이터는 `LICENSE`, `.github/CODEOWNERS`, `docs/harness/OWNERSHIP.md`, `docs/harness/SECURITY_POLICY.md`에 둡니다. 새 조직에 적용할 때 placeholder를 승인된 팀/연락처/license로 교체합니다.
+
+## 한눈에 보는 사용 경로
+
+| 상황 | 먼저 할 일 | 권장 검증 |
+|---|---|---|
+| 개인 프로젝트에 처음 적용 | `BASELINE.md`, `project-profile.md` placeholder를 실제 값 또는 `N/A`로 정리 | `make doctor`, `make verify`, 필요 시 `make project-ready` |
+| 작은 문서/문구/단일 파일 수정 | `T0_MINIMAL`로 대상 파일과 직접 문맥만 확인 | 대상 확인, `git diff --check` |
+| 동작 변경 / 교차 레이어 / API / 보안 작업 | active plan 생성, RED 예외 또는 실패 증거 기록, editable scope 명시 | 대상 테스트, project gate, 필요 리뷰 |
+| 하네스 자체 수정 | 관련 `docs/harness/**`, script, test를 함께 점검 | `make verify`, `make unit-tests`, 필요 시 `make integrity` |
+| 팀/조직 표준 후보 | repository script gate를 `HARNESS_*_SCRIPT`로 연결 | `make verify-org`, `make eval`, CI required check |
+
+처음 적용자는 `docs/harness/QUICKSTART_5_MIN.md`를 먼저 보면 됩니다. 전체 레퍼런스는 `docs/harness/README.md`, 모든 `HARNESS_*` 설정값은 `docs/harness/CONFIGURATION.md`가 기준입니다.
 
 ## 목적
 
@@ -17,6 +31,17 @@ Codex와 Claude Code를 함께 사용하는 프로젝트를 위한 **운영형 A
 - 백엔드, 프론트엔드, API 계약 변경의 영향도를 누락하지 않는다.
 - 작업 계획, 검증 증거, 완료 기록을 파일로 남긴다.
 - 개인 실무부터 팀/조직 표준까지 확장 가능한 운영 기준을 제공한다.
+
+## 운영 프로파일
+
+| 프로파일 | 적합한 사용 | 기본 운영 |
+|---|---|---|
+| 개인 / 라이트 | 혼자 쓰는 프로젝트, 작은 실험, 기존 코드베이스에 점진 적용 | 작은 작업은 active plan 없이 처리하고, 큰 변경부터 plan과 증거를 사용한다. Claude hook은 필요하면 `HARNESS_EVIDENCE_HOOK_MODE=warn`으로 시작한다. |
+| 팀 표준 | 여러 개발자가 같은 AI 작업 기준을 공유하는 프로젝트 | `make verify`, project gate script, completed plan 품질 검사, review routing을 CI/로컬에 연결한다. |
+| 조직 표준 후보 | 여러 repo에 공통 적용하려는 platform/team | `HARNESS_ORG_STANDARD=1`, `make verify-org`, ownership/security/governance 문서, eval metric을 함께 운영한다. |
+| 대형 조직 표준 | 전사 강제 표준 또는 branch protection 연결 | 파일럿 프로젝트의 completed plan, gate 실패율, reviewer FAIL 사유, regression capture 지표를 먼저 축적한다. |
+
+라이트 운영은 규칙을 없애는 모드가 아닙니다. 작은 작업의 의식 비용을 줄이고, 위험한 작업에만 강한 증거 게이트를 집중하는 운영 방식입니다.
 
 ## 핵심 원칙
 
@@ -131,6 +156,18 @@ HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 
 설정 가능한 `HARNESS_*` 환경변수 전체 목록은 `docs/harness/CONFIGURATION.md`를 본다.
 
+### 0. 최소 적용 경로
+
+개인 프로젝트나 작은 팀에서 처음 적용할 때는 아래만 먼저 끝냅니다.
+
+1. `docs/harness/context/BASELINE.md`의 프로젝트 구조와 검증 명령 placeholder를 실제 값 또는 `N/A`로 바꿉니다.
+2. `docs/harness/profiles/project-profile.md`의 행위자, 리소스, API prefix, package 예시를 실제 프로젝트 용어로 바꿉니다.
+3. 디자인 기준을 쓰는 프로젝트라면 `docs/harness/profiles/design-system-profile.md`만 추가로 채웁니다.
+4. `make doctor`와 `make verify`를 실행합니다.
+5. 실제 build/test/lint script가 준비된 뒤 `HARNESS_*_SCRIPT`로 project gate를 연결합니다.
+
+이 단계에서는 모든 문서를 다 읽을 필요가 없습니다. `AGENTS.md`, `docs/harness/context/BASELINE.md`, `docs/harness/context/INDEX.md`, `docs/harness/QUICKSTART_5_MIN.md`만 먼저 봅니다.
+
 ### 1. 하네스 상태 확인
 
 ```bash
@@ -190,6 +227,22 @@ make check-sync
 ```bash
 HARNESS_BACKEND_TEST_SCRIPT='scripts/ci/backend-test.sh' make verify-org
 ```
+
+---
+
+## 검증 범위 구분
+
+하네스 검증은 세 층으로 나뉩니다.
+
+| 층 | 명령 | 확인 대상 |
+|---|---|---|
+| 로컬 도구 준비 | `make doctor` / `pwsh -File scripts/doctor.ps1` | Python, Git, Bash/Make, POSIX utility, script 실행 가능 여부 |
+| 하네스 구조 검증 | `make verify` / `verify-harness-structure.ps1` | core 문서, agents, skills, profiles, `HARNESS_*` 설정 drift, template/project 구조 |
+| 실제 프로젝트 검증 | `HARNESS_*_SCRIPT=... make verify-org` 또는 `verify-project-gates.*` | 해당 repo의 build/test/lint/security/a11y script |
+
+`make verify`가 통과했다는 말은 하네스 구조가 맞다는 뜻입니다. 실제 프로젝트 코드 품질까지 확인하려면 project gate를 별도로 연결해야 합니다. 반대로 개인 프로젝트 초기 적용에서는 project gate가 준비되지 않았으면 `SKIP`으로 시작하고, 실제 스크립트가 생긴 뒤 연결해도 됩니다.
+
+`make integrity`는 하네스 자체를 수정했거나 릴리스 전 확인이 필요할 때 쓰는 최종 gate입니다. `doctor`, `verify`, gate self-test, unit test, completed plan 품질 검사, active plan 잔여 검사, `git diff --check`를 묶어서 실행합니다.
 
 ---
 
@@ -443,6 +496,37 @@ legacy command 방식인 `HARNESS_*_CMD`는 기본 사용하지 않습니다.
 ```bash
 HARNESS_ALLOW_LEGACY_BASH_LC=1
 HARNESS_ACK_TRUSTED_PROJECT_CMDS=1
+```
+
+---
+
+## Windows / PowerShell 운영 메모
+
+Windows native 환경에서는 PowerShell wrapper를 우선 사용할 수 있습니다.
+
+```powershell
+pwsh -File scripts/doctor.ps1
+$env:HARNESS_VERIFY_MODE = "template"
+pwsh -File scripts/verify-harness-structure.ps1
+$env:HARNESS_VERIFY_MODE = "project"
+pwsh -File scripts/verify-harness-structure.ps1
+```
+
+PowerShell project gate는 `HARNESS_*_SCRIPT`에 `.ps1` 또는 `.py` script를 지정하는 방식이 가장 안정적입니다. `.sh` gate를 쓰면 Git Bash, MSYS2, Cygwin, WSL, Linux runner 중 하나가 필요합니다.
+
+Windows에서 `.git/index.lock` 지연이 자주 보이면 하네스 자체보다 Git index를 쓰는 작업과 IDE/백신/동기화 도구가 겹치는 경우가 많습니다. 일상 작업 중에는 `make verify`와 대상 테스트를 우선 사용하고, `make integrity`는 커밋 전이나 최종 확인 시점에 실행하는 편이 낫습니다. OneDrive/Dropbox 동기화 폴더 안의 repo는 피하고, 필요하면 Windows Defender 예외나 IDE Git auto-refresh 설정을 조정합니다.
+
+stale lock이 의심될 때는 Git 프로세스가 없는지 먼저 확인합니다.
+
+```powershell
+Get-Process git,git-remote-https -ErrorAction SilentlyContinue
+Test-Path .git\index.lock
+```
+
+Git 프로세스가 없을 때만 stale lock을 제거합니다.
+
+```powershell
+Remove-Item .git\index.lock
 ```
 
 ---
