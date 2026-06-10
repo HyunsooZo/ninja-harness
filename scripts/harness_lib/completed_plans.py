@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import subprocess
@@ -148,7 +149,61 @@ def plan_missing_markers(text: str) -> list[str]:
     return missing
 
 
-def main() -> int:
+def quality_failures(plans: list[Path]) -> list[tuple[Path, list[str]]]:
+    failures: list[tuple[Path, list[str]]] = []
+    for plan in plans:
+        if not plan.exists():
+            failures.append((plan, ['file not found']))
+            continue
+        if not plan.is_file():
+            failures.append((plan, ['not a file']))
+            continue
+        if plan.suffix != '.md':
+            failures.append((plan, ['not a markdown plan']))
+            continue
+        missing = plan_missing_markers(plan.read_text(encoding='utf-8'))
+        if missing:
+            failures.append((plan, missing))
+    return failures
+
+
+def print_plan_results(plans: list[Path], failures: list[tuple[Path, list[str]]]) -> None:
+    failure_map = {plan: missing for plan, missing in failures}
+    for plan in plans:
+        label = relative_label(plan)
+        missing = failure_map.get(plan)
+        if missing:
+            print(f'[FAIL] {label} missing: {" ".join(missing)}')
+        else:
+            print(f'[OK] {label}')
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='Check completed plan evidence quality.')
+    parser.add_argument(
+        '--file',
+        action='append',
+        default=[],
+        metavar='PATH',
+        help='Check one completed-plan candidate file before moving it to completed/. May be repeated.',
+    )
+    return parser.parse_args(argv)
+
+
+def candidate_plan_path(value: str) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else ROOT / path
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    if args.file:
+        plans = [candidate_plan_path(value) for value in args.file]
+        print(f'[INFO] completed plan candidate files: {len(plans)}')
+        failures = quality_failures(plans)
+        print_plan_results(plans, failures)
+        return 1 if failures else 0
+
     completed_dir = completed_plan_dir()
     source = completed_plan_source()
     try:
@@ -161,14 +216,6 @@ def main() -> int:
         print(f'[OK] completed plan quality: no completed plans in {relative_label(completed_dir)} source={source}')
         return 0
 
-    failed = False
-    for plan in plans:
-        missing = plan_missing_markers(plan.read_text(encoding='utf-8'))
-        label = relative_label(plan)
-        if missing:
-            print(f'[FAIL] {label} missing: {" ".join(missing)}')
-            failed = True
-        else:
-            print(f'[OK] {label}')
-
-    return 1 if failed else 0
+    failures = quality_failures(plans)
+    print_plan_results(plans, failures)
+    return 1 if failures else 0

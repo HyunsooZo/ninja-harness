@@ -46,7 +46,7 @@
 5. 작업 계획을 `1. [Step] 구현 -> verify: [검증 방법]` 형식으로 짧게 고정한다.
 6. 동작 변경은 `09_EVIDENCE_GATE.md` 기준으로 RED/GREEN/REFACTOR/VERIFY 증거를 남긴다.
 7. 구현 후 `05_TESTING.md` 기준으로 검증하고 관련 컨텍스트/프로필 문서를 갱신한다.
-8. 완료 시 활성 계획을 `completed/`로 이동하고 완료 보고를 채운다.
+8. 완료 시 완료 보고를 채운 뒤 `bash scripts/check-completed-plan-quality.sh --file <active-plan-path>`를 통과한 plan만 `completed/`로 이동하고, 이동 후 `make check-plans`를 실행한다.
 9. 교차 변경은 `04_INTEGRATION.md` 기준으로 리뷰한다.
 
 ## 번호 문서 정책
@@ -204,7 +204,7 @@ HARNESS_VERIFY_MODE=project bash scripts/verify-harness-structure.sh
 make integrity
 ```
 
-이 target은 `make doctor`, `make verify`, gate self-test, completed plan 품질 검사, active plan 잔여 여부, `git diff --check`를 함께 확인한다. completed plan 품질 검사는 기본적으로 `HARNESS_COMPLETED_PLAN_SOURCE=local`이라 템플릿에서 ignored 처리된 로컬 evidence도 점검한다. package/CI parity만 보려면 `HARNESS_COMPLETED_PLAN_SOURCE=tracked`를 명시한다. 실제 프로젝트 build/test/lint는 여전히 project gate 영역이므로 조직 표준에서는 `HARNESS_*_SCRIPT=... make verify-org`를 별도로 연결한다.
+이 target은 `make doctor`, `make verify`, gate self-test, completed plan 품질 검사, active plan 잔여 여부, `git diff --check`를 함께 확인한다. completed plan 품질 검사는 기본적으로 `HARNESS_COMPLETED_PLAN_SOURCE=local`이라 템플릿에서 ignored 처리된 로컬 evidence도 점검한다. active plan을 completed로 이동하기 전에는 `bash scripts/check-completed-plan-quality.sh --file <active-plan-path>`로 단일 후보 파일을 먼저 검사한다. package/CI parity만 보려면 `HARNESS_COMPLETED_PLAN_SOURCE=tracked`를 명시한다. 실제 프로젝트 build/test/lint는 여전히 project gate 영역이므로 조직 표준에서는 `HARNESS_*_SCRIPT=... make verify-org`를 별도로 연결한다.
 
 템플릿 레포 자체는 `.github/workflows/harness-verify.yml`에서 `make integrity`와 Windows PowerShell 구조 검증을 실행한다. 다운스트림 조직 gate 예시는 `docs/harness/examples/github-actions/harness-verify.yml`에 둔다.
 

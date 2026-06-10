@@ -92,6 +92,7 @@ workflow:
   upgrade_readiness_gate: scripts/check-harness-upgrade.py
   final_integrity_target: make integrity
   gate_self_test: scripts/self-test-harness-gates.sh
+  completed_plan_candidate_gate: scripts/check-completed-plan-quality.sh --file
   orchestration_default_mode: SINGLE_AGENT
   orchestration_requires_active_plan_when_split: true
 

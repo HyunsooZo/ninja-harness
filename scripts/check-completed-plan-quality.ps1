@@ -1,3 +1,8 @@
+param(
+  [Parameter(ValueFromRemainingArguments = $true)]
+  [string[]]$RemainingArgs
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $env:PYTHONUTF8 = "1"
@@ -17,7 +22,7 @@ if ($null -eq $Python) {
   exit 1
 }
 
-& $Python.Source "scripts/check-completed-plan-quality.py"
+& $Python.Source "scripts/check-completed-plan-quality.py" @RemainingArgs
 if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }

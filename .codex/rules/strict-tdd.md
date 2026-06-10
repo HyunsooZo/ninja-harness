@@ -7,6 +7,7 @@
 - RED 증거 없이 production code 수정 금지
 - GREEN 전 refactor 금지
 - VERIFY 전 완료 선언 금지
+- active plan을 completed로 이동하기 전 `bash scripts/check-completed-plan-quality.sh --file <active-plan-path>` 통과 필요
 - 테스트 실패를 숨기거나 임시 mock으로 통과 처리 금지
 
 ## 예외

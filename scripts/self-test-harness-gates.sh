@@ -330,10 +330,16 @@ expect_pass "completed plan quality accepts required evidence markers" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
 
+expect_pass "completed plan quality accepts single completed candidate file" \
+  bash scripts/check-completed-plan-quality.sh --file "$completed_quality_dir/good.md"
+
 printf '# Bad completed plan\n\nVERIFY only\n' > "$completed_quality_dir/bad.md"
 expect_fail "completed plan quality rejects missing evidence markers" \
   env HARNESS_COMPLETED_PLAN_DIR="$completed_quality_dir" \
       bash scripts/check-completed-plan-quality.sh
+
+expect_fail "completed plan quality rejects slim audit candidate file before move" \
+  bash scripts/check-completed-plan-quality.sh --file "$completed_quality_dir/bad.md"
 
 printf '# Word-only completed plan\n\nNo RED evidence yet. No GREEN evidence yet. No REFACTOR decision yet. No VERIFY evidence yet. No Risk left yet.\n' > "$completed_quality_dir/word-only.md"
 expect_fail "completed plan quality rejects marker words without evidence sections" \

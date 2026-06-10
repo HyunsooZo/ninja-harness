@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import tempfile
 
-from scripts.harness_lib.completed_plans import completed_plan_files, plan_missing_markers
+from scripts.harness_lib.completed_plans import completed_plan_files, quality_failures, plan_missing_markers
 
 
 class CompletedPlanQualityTest(unittest.TestCase):
@@ -33,6 +33,23 @@ class CompletedPlanQualityTest(unittest.TestCase):
         self.assertIn('REFACTOR decision', missing)
         self.assertIn('VERIFY evidence', missing)
         self.assertIn('residual risk', missing)
+
+    def test_rejects_slim_audit_completed_candidate_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = Path(tmp) / 'slim-audit.md'
+            plan.write_text(
+                '# Slim audit\n\n'
+                '## Findings\n\n'
+                '- Verdict: PASS\n',
+                encoding='utf-8',
+            )
+            failures = quality_failures([plan])
+            self.assertEqual(failures[0][0], plan)
+            self.assertIn('RED evidence', failures[0][1])
+            self.assertIn('GREEN evidence', failures[0][1])
+            self.assertIn('REFACTOR decision', failures[0][1])
+            self.assertIn('VERIFY evidence', failures[0][1])
+            self.assertIn('residual risk', failures[0][1])
 
     def test_rejects_empty_evidence_sections(self) -> None:
         text = '## RED Evidence\n\n## GREEN Evidence\n\n## REFACTOR Decision\n\n## VERIFY Evidence\n\n## Residual Risk\n\n'

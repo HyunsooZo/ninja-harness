@@ -42,7 +42,7 @@
 
 ## 완료
 
-완료 시 활성 계획을 `completed/`로 이동하고 `Completion Report`를 채운다. 하네스 자체 변경은 완료 후 `make integrity`를 통과해야 한다. 관련 domain/view/API 사실은 `docs/harness/context/**`에 반영한다.
+완료 시 `Completion Report`를 채우고, 이동 전 후보 파일에 `bash scripts/check-completed-plan-quality.sh --file <active-plan-path>`를 실행한다. 이 검사가 통과할 때만 활성 계획을 `completed/`로 이동하고, 이동 후 `make check-plans`로 completed 전체 품질을 확인한다. 하네스 자체 변경은 완료 후 `make integrity`를 통과해야 한다. 관련 domain/view/API 사실은 `docs/harness/context/**`에 반영한다.
 
 전체 스캔 산출물은 완료 계획에 복사하지 않는다. 장기적으로 필요한 사실만 `docs/harness/context/BASELINE.md`, `DECISIONS.md`, 관련 세부 컨텍스트 문서에 반영한다.
 
@@ -52,6 +52,12 @@ completed plan 품질 검사는 기본적으로 `docs/harness/plans/completed/*.
 
 ```bash
 make check-plans
+```
+
+completed로 이동하기 전 단일 후보 파일을 검사할 때는 `--file`을 사용한다.
+
+```bash
+bash scripts/check-completed-plan-quality.sh --file docs/harness/plans/active/<plan>.md
 ```
 
 격리된 fixture나 외부 plan 디렉터리를 검사할 때는 `HARNESS_COMPLETED_PLAN_DIR`를 지정한다.

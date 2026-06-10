@@ -487,6 +487,8 @@ for token in [
     'evidence hook rejects narrative-only RED evidence',
     'evidence hook bypass mode requires audit reason',
     'evidence hook bypass mode accepts audit reason',
+    'completed plan quality accepts single completed candidate file',
+    'completed plan quality rejects slim audit candidate file before move',
     'completed plan quality tracked source ignores local fixture files',
     'completed plan quality rejects marker words without evidence sections',
     'eval tracked source ignores local fixture files',
@@ -505,7 +507,7 @@ for token in [
     check(token in self_test_text, f'self-test gate script missing hardening token: {token}')
 
 completed_quality_text = (root/'scripts/harness_lib/completed_plans.py').read_text(encoding='utf-8')
-for token in ['HARNESS_COMPLETED_PLAN_DIR', 'HARNESS_COMPLETED_PLAN_SOURCE', 'completed_plan_files', 'completed plan quality: no completed plans', 'plan_missing_markers', '_has_evidence_marker']:
+for token in ['HARNESS_COMPLETED_PLAN_DIR', 'HARNESS_COMPLETED_PLAN_SOURCE', 'completed_plan_files', 'completed plan quality: no completed plans', 'plan_missing_markers', '_has_evidence_marker', '--file', 'quality_failures']:
     check(token in completed_quality_text, f'completed plan quality script missing token: {token}')
 
 print(f'[OK] repo skills: {len(codex_skill_dirs)}')
@@ -1060,6 +1062,7 @@ expected_workflow_scalars = {
     'project_readiness_gate': 'scripts/check-profile-readiness.py',
     'final_integrity_target': 'make integrity',
     'gate_self_test': 'scripts/self-test-harness-gates.sh',
+    'completed_plan_candidate_gate': 'scripts/check-completed-plan-quality.sh --file',
     'orchestration_default_mode': 'SINGLE_AGENT',
     'orchestration_requires_active_plan_when_split': 'true',
 }
@@ -1069,6 +1072,10 @@ for script_key in ['project_readiness_gate', 'gate_self_test']:
     script_ref = workflow_scalars[script_key]
     check((root/script_ref).exists(), f'missing workflow script path: {script_key} -> {script_ref}')
     check(os.access(root/script_ref, os.X_OK), f'workflow script must be executable: {script_key} -> {script_ref}')
+candidate_gate = workflow_scalars['completed_plan_candidate_gate']
+candidate_gate_script = candidate_gate.split(' ', 1)[0]
+check((root/candidate_gate_script).exists(), f'missing workflow script path: completed_plan_candidate_gate -> {candidate_gate}')
+check(os.access(root/candidate_gate_script, os.X_OK), f'workflow script must be executable: completed_plan_candidate_gate -> {candidate_gate}')
 final_target = workflow_scalars['final_integrity_target']
 check(final_target.startswith('make '), f'workflow.final_integrity_target must be a make target: {final_target}')
 final_target_name = final_target.split(' ', 1)[1]
